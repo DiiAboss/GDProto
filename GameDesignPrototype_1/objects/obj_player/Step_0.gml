@@ -2,21 +2,46 @@
 // You can write your code in this editor
 
 // Movement
-
 var _left = false;
 var _right = false;
 var _down = false;
 var _up = false;
 var _dash = false;
 
+var _mainAtk = false;
+var _altAtk = false;
+
+var _mainHold = false;
+var _altHold = false;
+
 var _currentSpeed = mySpeed;
 var _diagonalSpeedMod = 0.71;
 
-_left	 = (keyboard_check(ord("A"))) ? true : false;
-_right	 = (keyboard_check(ord("D"))) ? true : false;
-_down	 = (keyboard_check(ord("S"))) ? true : false;
-_up		 = (keyboard_check(ord("W"))) ? true : false;
-_dash	 = (keyboard_check_pressed(vk_space));
+if (controllerType == CONTROL_TYPE.KBM)
+{
+    _left	 = (keyboard_check(ord("A"))) ? true : false;
+    _right	 = (keyboard_check(ord("D"))) ? true : false;
+    _down	 = (keyboard_check(ord("S"))) ? true : false;
+    _up		 = (keyboard_check(ord("W"))) ? true : false;
+    _dash	 = (keyboard_check_pressed(vk_space));
+    _mainAtk  = (mouse_check_button_pressed(mb_left));
+    _mainHold = (mouse_check_button(mb_left));
+    _altAtk   = (mouse_check_button_pressed(mb_right));
+    _altHold  = (mouse_check_button(mb_right));    
+}
+
+if (controllerType == CONTROL_TYPE.LAPTOP)
+{
+    _left	 = (keyboard_check(vk_left)) ? true : false;
+    _right	 = (keyboard_check(vk_right)) ? true : false;
+    _down	 = (keyboard_check(vk_down)) ? true : false;
+    _up		 = (keyboard_check(vk_up)) ? true : false;
+    _dash	 = (keyboard_check_pressed(vk_shift));
+    _mainAtk  = (keyboard_check_pressed(vk_space));
+    _mainHold = (mouse_check_button(mb_left));
+    _altAtk   = (mouse_check_button_pressed(mb_right));
+    _altHold  = (mouse_check_button(mb_right));    
+}
 
 
 if ((_left || _right) && (_up || _down))

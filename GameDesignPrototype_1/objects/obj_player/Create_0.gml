@@ -15,6 +15,9 @@ image_speed = 0.2;
 
 dashSpeed = 6;
 
+orb = instance_create_depth(x, y, depth - 1, obj_player_orb);
+orb.owner = self;
+
 sword = instance_create_depth(x, y, depth-1, obj_sword);
 sword.owner = self;
 
@@ -26,6 +29,15 @@ enum Weapon
 	Sword = 0,
 	Bow = 1,
 }
+
+enum CONTROL_TYPE
+{
+    KBM,
+    LAPTOP,
+    GAMEPAD
+}
+
+controllerType = CONTROL_TYPE.KBM;
 
 canDash = true;
 dashTimer = 0;
