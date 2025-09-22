@@ -13,3 +13,9 @@ enum ENEMY_TYPE
 }
 
 nextType =  0;
+
+
+x_min = 350;
+y_min = 180;
+x_max = 990;
+y_max = 570;

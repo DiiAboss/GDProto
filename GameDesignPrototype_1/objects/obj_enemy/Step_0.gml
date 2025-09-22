@@ -21,25 +21,68 @@ if (knockbackCooldown <= 0 && abs(knockbackX) < 1 && abs(knockbackY) < 1 && inst
     image_angle = _dir;
 }
 
-// Apply knockback movement
+// In Step Event - Replace the knockback section with this:
 if (abs(knockbackX) > knockbackThreshold || abs(knockbackY) > knockbackThreshold) {
-    // We're being knocked back
     isKnockingBack = true;
-    
-    // Calculate current knockback power (for chain reaction)
     knockbackPower = point_distance(0, 0, knockbackX, knockbackY);
     
-    // Move with knockback
-    if (!place_meeting(x + knockbackX, y, obj_wall)) {
-        x += knockbackX;
-    } else {
-        knockbackX = 0;
+    // Store original position
+    var prevX = x;
+    var prevY = y;
+    
+    // Try to move
+    var nextX = x + knockbackX;
+    var nextY = y + knockbackY;
+    
+    var hitHorizontal = false;
+    var hitVertical = false;
+    
+    // Check both axes simultaneously for corner detection
+    if (place_meeting(nextX * 1.01, nextY * 1.01, obj_wall)) {
+        // We hit something, figure out what
+        
+        // Check horizontal collision
+        if (place_meeting(nextX * 1.01, y, obj_wall)) {
+            hitHorizontal = true;
+        }
+        
+        // Check vertical collision
+        if (place_meeting(x, nextY * 1.01, obj_wall)) {
+            hitVertical = true;
+        }
+        
+        // Apply bounces with dampening
+        if (hitHorizontal && abs(knockbackX) > minBounceSpeed && wallBounceCooldown == 0) {
+            knockbackX = -knockbackX * bounceDampening;
+        } else if (hitHorizontal) {
+            knockbackX = 0;
+        }
+        
+        if (hitVertical && abs(knockbackY) > minBounceSpeed && wallBounceCooldown == 0) {
+            knockbackY = -knockbackY * bounceDampening;
+        } else if (hitVertical) {
+            knockbackY = 0;
+        }
+        
+        // Set bounce cooldown if we bounced
+        if (hitHorizontal || hitVertical) {
+            wallBounceCooldown = 2;
+            
+            // Corner bounce effect (both axes hit)
+            if (hitHorizontal && hitVertical) {
+                // effect_create_above(ef_star, x, y, 1, c_yellow);
+                // Special corner bounce bonus
+                // global.cornerBounceBonus += 100;
+            }
+        }
     }
     
+    // Move to new position if not blocked
+    if (!place_meeting(x + knockbackX, y, obj_wall)) {
+        x += knockbackX;
+    }
     if (!place_meeting(x, y + knockbackY, obj_wall)) {
         y += knockbackY;
-    } else {
-        knockbackY = 0;
     }
     
     // Apply friction
@@ -51,7 +94,7 @@ if (abs(knockbackX) > knockbackThreshold || abs(knockbackY) > knockbackThreshold
     knockbackY = 0;
     isKnockingBack = false;
     knockbackPower = 0;
-    hasTransferredKnockback = false; // Reset for next knockback
+    hasTransferredKnockback = false;
 }
 
 // Death check

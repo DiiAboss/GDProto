@@ -7,6 +7,12 @@ enum ENEMY_STATE
 }
 
 
+// Wall bounce properties
+bounceDampening = 1.1; // How much speed is retained after bounce (0.7 = 70%)
+minBounceSpeed = 0; // Minimum speed required to bounce (prevents tiny bounces)
+wallBounceCooldown = 0; // Prevents multiple bounces per frame
+lastBounceDir = 0; // Track last bounce for combos
+
 // Separation/pushing variables (new)
 separationRadius = 24; // How close enemies can get to each other
 pushForce = 0.5; // How strongly enemies push each other

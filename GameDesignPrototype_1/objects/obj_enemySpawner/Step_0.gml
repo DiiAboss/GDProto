@@ -3,8 +3,8 @@
 if (spawner_timer > 0)
 {
 	spawner_timer--;
-	nextX = irandom(room_width);
-	nextY = irandom(room_height);
+	nextX = irandom_range(x_min, x_max);
+	nextY = irandom_range(y_min, y_max);
 	summon_timer = 60;
 }
 else

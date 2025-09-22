@@ -101,7 +101,7 @@ if (instance_exists(owner)) {
     // Apply knockback using custom knockback variables
     if (hit.knockbackCooldown <= 0) {
         var knockbackDir = point_direction(owner.x, owner.y, hit.x, hit.y);
-        var knockbackForce = 32 + (comboCount * 1); // Stronger knockback with combo
+        knockbackForce = 64 + (comboCount * 1); // Stronger knockback with combo
         
         // Set the enemy's knockback velocity
         hit.knockbackX = lengthdir_x(knockbackForce, knockbackDir);
