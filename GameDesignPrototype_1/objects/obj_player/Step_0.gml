@@ -120,15 +120,15 @@ if (mouseDirection > _NE && mouseDirection < _NW) aimDirection = 90;
 if (mouseDirection > _NW && mouseDirection < _SW) aimDirection = 180;
 if (mouseDirection > _SW && mouseDirection < _SE) aimDirection = 270;
 
-var _leftSprite = spr_char_left;
+var _leftSprite   = spr_char_left;
 var _righttSprite = spr_char_right;
-var _upSprite = spr_char_up;
+var _upSprite     = spr_char_up;
 
 switch (aimDirection)
 {
 	case 0:
-		mySprite = _righttSprite;
-		img_xscale = -1;
+		mySprite     = _righttSprite;
+		img_xscale   = -1;
 	break;
 	case 90:
 		mySprite = _upSprite;
