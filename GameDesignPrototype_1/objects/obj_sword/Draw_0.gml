@@ -25,11 +25,11 @@ if (active) {
                        owner.mouseDirection + trailOffset, c_white, trailAlpha);
     }
     
-    // Debug: Show combo counter (remove in final version)
+    // Show combo counter
     if (comboCount > 0 && comboTimer > 0) {
         draw_set_color(c_yellow);
         draw_set_halign(fa_center);
-        //draw_text(owner.x, owner.y - 40, "Combo x" + string(comboCount));
+        draw_text(owner.x, owner.y - 40, "Combo x" + string(comboCount));
         draw_set_halign(fa_left);
         draw_set_color(c_white);
     }

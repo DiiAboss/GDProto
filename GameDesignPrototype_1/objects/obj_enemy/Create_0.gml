@@ -39,6 +39,8 @@ hitFlashTimer = 0;
 damage = 0;
 moveSpeed = 2;
 
+took_damage = 0;
+
 // Chain knockback tracking
 isKnockingBack = false; // True when this enemy is being knocked back
 knockbackPower = 0; // Current knockback force (for passing to others)

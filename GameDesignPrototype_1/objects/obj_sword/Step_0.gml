@@ -86,7 +86,6 @@ if (instance_exists(owner)) {
     // Increment combo if within window
     if (comboTimer > 0) {
         comboCount++;
-        if (comboCount > 5) comboCount = 5; // Cap combo at 5
     } else {
         comboCount = 1;
     }
@@ -97,7 +96,7 @@ if (instance_exists(owner)) {
     
     // Deal damage
     hit.hp -= damage;
-    
+    hit.took_damage = damage;
     // Apply knockback using custom knockback variables
     if (hit.knockbackCooldown <= 0) {
         var knockbackDir = point_direction(owner.x, owner.y, hit.x, hit.y);
@@ -110,12 +109,7 @@ if (instance_exists(owner)) {
         // Set cooldown to prevent knockback stacking
         hit.knockbackCooldown = hit.knockbackCooldownMax;
     }
-    
-    // Create hit effect (if you have one)
-    // instance_create_depth(hit.x, hit.y, depth-100, obj_hit_effect);
-    
-    // Screen shake for impact (optional)
-    // with (obj_camera) { shake = 2 + comboCount; }
+
 }
     }
 } else {

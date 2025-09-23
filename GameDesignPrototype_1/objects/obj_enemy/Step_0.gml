@@ -119,6 +119,18 @@ if (isMoving) {
 }
 
 
+if (took_damage != 0)
+{
+	// Spawn damage number
+	//var isCrit = (random(1) < 0.1); // 10% crit chance
+	//if (isCrit) took_damage *= 2;
+	var isCrit = false;
+	var dmg = spawn_damage_number(x, y - 16, took_damage, c_white, isCrit);
+	dmg.owner = self;
+	took_damage = 0;
+}
+
+
 // Death check
 if (hp <= 0) {
     instance_destroy();
