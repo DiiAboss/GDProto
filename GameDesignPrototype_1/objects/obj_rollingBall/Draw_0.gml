@@ -12,7 +12,7 @@ draw_sprite_ext(
     y,
     image_xscale * (1 + level * 0.1), // Slightly bigger at higher levels
     image_yscale * (1 + level * 0.1),
-    myDir,
+    0,
     drawColor,
     image_alpha
 );
@@ -38,7 +38,7 @@ if (currentSpeed > mySpeed || level > 3) {
         y - lengthdir_y(10, myDir),
         image_xscale * (1 + level * 0.1) * 0.7,
         image_yscale * (1 + level * 0.1) * 0.7,
-        myDir,
+        0,
         drawColor,
         0.3
     );

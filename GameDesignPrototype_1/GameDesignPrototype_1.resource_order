@@ -44,5 +44,6 @@
     {"name":"spr_triangle","order":7,"path":"sprites/spr_triangle/spr_triangle.yy",},
     {"name":"spr_wall","order":10,"path":"sprites/spr_wall/spr_wall.yy",},
     {"name":"Sprite13","order":14,"path":"sprites/Sprite13/Sprite13.yy",},
+    {"name":"Sprite16","order":13,"path":"sprites/Sprite16/Sprite16.yy",},
   ],
 }

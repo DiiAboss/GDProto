@@ -35,6 +35,9 @@
     "name":"spr_char_left",
     "path":"sprites/spr_char_left/spr_char_left.yy",
   },
-  "spriteMaskId":null,
+  "spriteMaskId":{
+    "name":"Sprite16",
+    "path":"sprites/Sprite16/Sprite16.yy",
+  },
   "visible":true,
 }

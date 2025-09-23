@@ -85,22 +85,22 @@ else
 
 
 
-if (_left)
+if (_left && !place_meeting(x - _currentSpeed, y, obj_wall))
 {
 	x -= _currentSpeed;
 }
 
-if (_right)
+if (_right && !place_meeting(x + _currentSpeed, y, obj_wall))
 {
 	x += _currentSpeed;
 }
 
-if (_down)
+if (_down && !place_meeting(x, y + _currentSpeed, obj_wall))
 {
 	y += _currentSpeed;
 }
 
-if (_up)
+if (_up && !place_meeting(x, y - _currentSpeed, obj_wall))
 {
 	y -= _currentSpeed;
 }
@@ -176,8 +176,54 @@ if (mouse_check_button_pressed(mb_left) && currentWeapon == Weapon.Sword) {
 
 // Apply knockback from DVD ball or other sources
 if (abs(knockbackX) > 0.1 || abs(knockbackY) > 0.1) {
-    x += knockbackX;
-    y += knockbackY;
+     // Store original position
+    var prevX = x;
+    var prevY = y;
+    
+    // Try to move
+    var nextX = x + knockbackX;
+    var nextY = y + knockbackY;
+    
+    var hitHorizontal = false;
+    var hitVertical = false;
+    
+    // Check both axes simultaneously for corner detection
+    if (place_meeting(nextX * 1.01, nextY * 1.01, obj_wall)) {
+        // We hit something, figure out what
+        
+        // Check horizontal collision
+        if (place_meeting(nextX * 1.01, y, obj_wall)) {
+            hitHorizontal = true;
+        }
+        
+        // Check vertical collision
+        if (place_meeting(x, nextY * 1.01, obj_wall)) {
+            hitVertical = true;
+        }
+        
+        // Apply bounces with dampening
+        if (hitHorizontal && abs(knockbackX)) {
+            knockbackX = -knockbackX;
+        } else if (hitHorizontal) {
+            knockbackX = 0;
+        }
+        
+        if (hitVertical && abs(knockbackY)) {
+            knockbackY = -knockbackY;
+        } else if (hitVertical) {
+            knockbackY = 0;
+        }
+        
+    }
+    
+    // Move to new position if not blocked
+    if (!place_meeting(x + knockbackX, y, obj_wall)) {
+        x += knockbackX;
+    }
+    if (!place_meeting(x, y + knockbackY, obj_wall)) {
+        y += knockbackY;
+    }
+	
     knockbackX *= knockbackFriction;
     knockbackY *= knockbackFriction;
 }

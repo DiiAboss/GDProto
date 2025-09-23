@@ -21,7 +21,7 @@ if (knockbackCooldown <= 0 && abs(knockbackX) < 1 && abs(knockbackY) < 1 && inst
     //image_angle = _dir;
 }
 
-// In Step Event - Replace the knockback section with this:
+
 if (abs(knockbackX) > knockbackThreshold || abs(knockbackY) > knockbackThreshold) {
     isKnockingBack = true;
     knockbackPower = point_distance(0, 0, knockbackX, knockbackY);
