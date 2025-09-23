@@ -6,6 +6,9 @@ enum ENEMY_STATE
 	HIT = 3
 }
 
+mySprite = spr_enemy_1;
+
+size = sprite_get_height(mySprite);
 
 // Wall bounce properties
 bounceDampening = 1.1; // How much speed is retained after bounce (0.7 = 70%)
@@ -29,9 +32,33 @@ knockbackThreshold = 0.1; // Minimum speed before knockback stops completely
 knockbackCooldown = 0;
 knockbackCooldownMax = 10; // Frames of immunity after being hit
 
+knockbackForce = 8;
+myDir = 0;
+levelDecayTimer = 0;
+hitFlashTimer = 0;
+damage = 0;
 moveSpeed = 2;
 
 // Chain knockback tracking
 isKnockingBack = false; // True when this enemy is being knocked back
 knockbackPower = 0; // Current knockback force (for passing to others)
 hasTransferredKnockback = false; // Prevents multiple transfers per knockback
+
+
+// Breathing/Pulse effect (idle animation)
+breathTimer = 0;
+breathSpeed = 0.05; // Speed of breathing (lower = slower)
+breathScaleAmount = 0.05; // How much to scale (0.05 = 5% size change)
+baseScale = 1; // Original scale
+
+// Walking wobble effect
+wobbleTimer = 0;
+wobbleSpeed = 0.3; // Speed of wobble (higher = faster)
+wobbleAmount = 10; // Degrees of rotation wobble
+isMoving = false;
+lastX = x;
+lastY = y;
+
+// Individual variation (so enemies don't all pulse in sync)
+breathOffset = random(2 * pi); // Random starting point in breath cycle
+wobbleOffset = random(2 * pi); // Random starting point in wobble

@@ -5,7 +5,7 @@ active = true;
 // Swing properties
 swinging = false;
 startSwing = false;
-swingSpeed = 12; // How fast the sword swings (degrees per step)
+swingSpeed = 8; // How fast the sword swings (degrees per step)
 swingProgress = 0; // 0 to 1, tracks swing completion
 
 // Position states

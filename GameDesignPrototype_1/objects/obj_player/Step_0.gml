@@ -172,3 +172,12 @@ else
 if (mouse_check_button_pressed(mb_left) && currentWeapon == Weapon.Sword) {
     sword.startSwing = true;
 }
+
+
+// Apply knockback from DVD ball or other sources
+if (abs(knockbackX) > 0.1 || abs(knockbackY) > 0.1) {
+    x += knockbackX;
+    y += knockbackY;
+    knockbackX *= knockbackFriction;
+    knockbackY *= knockbackFriction;
+}

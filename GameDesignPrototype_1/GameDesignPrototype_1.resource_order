@@ -38,6 +38,7 @@
     {"name":"spr_crossbow","order":4,"path":"sprites/spr_crossbow/spr_crossbow.yy",},
     {"name":"spr_enemy_spawn","order":9,"path":"sprites/spr_enemy_spawn/spr_enemy_spawn.yy",},
     {"name":"spr_enemyAttack","order":8,"path":"sprites/spr_enemyAttack/spr_enemyAttack.yy",},
+    {"name":"spr_large_ball","order":12,"path":"sprites/spr_large_ball/spr_large_ball.yy",},
     {"name":"spr_orb","order":11,"path":"sprites/spr_orb/spr_orb.yy",},
     {"name":"spr_sword","order":5,"path":"sprites/spr_sword/spr_sword.yy",},
     {"name":"spr_triangle","order":7,"path":"sprites/spr_triangle/spr_triangle.yy",},

@@ -18,7 +18,7 @@ if (knockbackCooldown <= 0 && abs(knockbackX) < 1 && abs(knockbackY) < 1 && inst
         y += moveY;
     }
     
-    image_angle = _dir;
+    //image_angle = _dir;
 }
 
 // In Step Event - Replace the knockback section with this:
@@ -96,6 +96,28 @@ if (abs(knockbackX) > knockbackThreshold || abs(knockbackY) > knockbackThreshold
     knockbackPower = 0;
     hasTransferredKnockback = false;
 }
+
+
+// Check if enemy is moving (for wobble effect)
+var moveDistance = point_distance(x, y, lastX, lastY);
+isMoving = (moveDistance > 0.5); // Moving if we've moved more than 0.5 pixels
+lastX = x;
+lastY = y;
+
+// Update breathing/pulse effect (always active)
+breathTimer += breathSpeed;
+var breathScale = baseScale + sin(breathTimer + breathOffset) * breathScaleAmount;
+
+// Update walking wobble
+if (isMoving) {
+    wobbleTimer += wobbleSpeed;
+    // Reset wobble smoothly when starting to move
+    if (wobbleTimer > 2 * pi) wobbleTimer -= 2 * pi;
+} else {
+    // Smoothly return to center when stopped
+    wobbleTimer = lerp(wobbleTimer, 0, 0.1);
+}
+
 
 // Death check
 if (hp <= 0) {

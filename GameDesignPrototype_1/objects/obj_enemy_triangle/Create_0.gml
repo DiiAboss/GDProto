@@ -9,3 +9,5 @@ shotTimer = -1;
 state = ENEMY_STATE.FOLLOW;
 
 myDir = 0;
+
+

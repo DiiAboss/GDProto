@@ -34,3 +34,7 @@ if (active)
 		active = false;
 	}
 }
+else
+{
+	instance_destroy();
+}
