@@ -44,7 +44,7 @@ switch (state)
 			
 			image_xscale = 1;
 			image_yscale = 1;
-			var _bullet = instance_create_depth(x + lengthdir_x(16, myDir), y + lengthdir_y(16, myDir), depth - 1, obj_enemyAttack);
+			var _bullet = instance_create_depth(x + lengthdir_x(16, myDir), y + lengthdir_y(16, myDir), depth - 1, obj_enemy_attack_orb);
 			_bullet.direction = myDir;
 			_bullet.speed = 6;
 			

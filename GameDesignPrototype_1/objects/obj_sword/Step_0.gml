@@ -75,42 +75,52 @@ if (instance_exists(owner)) {
     y = owner.y + lengthdir_y(actualDistance, image_angle);
     
     // Collision detection during swing
-    if (swinging && swingProgress > 0.2 && swingProgress < 0.8) {
+    if (swinging && swingProgress > 0.5 && swingProgress < 0.95) {
         // Check for enemy collisions
         var hit = instance_place(x, y, obj_enemy); // Assuming you have obj_enemy
-        
+		
        if (hit != noone && ds_list_find_index(hitList, hit) == -1) {
-    // Add to hit list to prevent multiple hits
-    ds_list_add(hitList, hit);
+		    // Add to hit list to prevent multiple hits
+		    ds_list_add(hitList, hit);
     
-    // Increment combo if within window
-    if (comboTimer > 0) {
-        comboCount++;
-    } else {
-        comboCount = 1;
-    }
+		    // Increment combo if within window
+		    if (comboTimer > 0) {
+		        comboCount++;
+		    } else {
+		        comboCount = 1;
+		    }
     
-    // Calculate damage with combo bonus
-    var baseDamage = 10;
-    var damage = baseDamage * (1 + comboCount * 0.25); // +25% per combo
+		    // Calculate damage with combo bonus
+		    var baseDamage = 10;
+		    var damage = baseDamage * (1 + comboCount * 0.25); // +25% per combo
     
-    // Deal damage
-    hit.hp -= damage;
-    hit.took_damage = damage;
-    // Apply knockback using custom knockback variables
-    if (hit.knockbackCooldown <= 0) {
-        var knockbackDir = point_direction(owner.x, owner.y, hit.x, hit.y);
-        knockbackForce = 64 + (comboCount * 1); // Stronger knockback with combo
+		    // Deal damage
+		    hit.hp -= damage;
+		    hit.took_damage = damage;
+		    // Apply knockback using custom knockback variables
+		    if (hit.knockbackCooldown <= 0) {
+		        var knockbackDir = point_direction(owner.x, owner.y, hit.x, hit.y);
+		        knockbackForce = 64 + (comboCount * 1); // Stronger knockback with combo
         
-        // Set the enemy's knockback velocity
-        hit.knockbackX = lengthdir_x(knockbackForce, knockbackDir);
-        hit.knockbackY = lengthdir_y(knockbackForce, knockbackDir);
+		        // Set the enemy's knockback velocity
+		        hit.knockbackX = lengthdir_x(knockbackForce, knockbackDir);
+		        hit.knockbackY = lengthdir_y(knockbackForce, knockbackDir);
         
-        // Set cooldown to prevent knockback stacking
-        hit.knockbackCooldown = hit.knockbackCooldownMax;
-    }
+		        // Set cooldown to prevent knockback stacking
+		        hit.knockbackCooldown = hit.knockbackCooldownMax;
+				return;
+		    }
+		}
 
-}
+		hit = instance_place(x, y, obj_canhit);
+		
+		if (hit != noone)
+		{
+			var direction_to_sword = point_direction(x, y, hit.x, hit.y);
+			hit.direction = direction_to_sword;
+		}
+
+
     }
 } else {
     // Owner doesn't exist, destroy sword
