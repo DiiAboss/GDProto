@@ -8,8 +8,8 @@ floatSpeed = 1; // How fast it floats up
 floatAccel = -0.01; // Slows down as it rises
 currentSpeed = floatSpeed;
 
-// Horizontal drift (slight random movement)
-driftX = random_range(-0.5, 0.5);
+
+driftX = random_range(-0.5, 0.5); // Horizontal drift (slight random movement)
 driftDecay = 0.95; // Drift slows over time
 
 // Visual properties
@@ -18,7 +18,6 @@ currentAlpha = 1;
 scale = 0.4;
 scaleSpeed = 0.01; // Grows slightly as it rises
 
-// Lifetime
 lifetime = 60; // Frames before destruction
 age = 0;
 
