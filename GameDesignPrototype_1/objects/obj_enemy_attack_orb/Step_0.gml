@@ -1,11 +1,10 @@
-/// @description Insert description here
-// You can write your code in this editor
+/// @description
+
+// Inherit the parent event
+event_inherited();
+
 event_inherited();
 if (life > 0)
 {
 	life -= 1;
-}
-else
-{
-	instance_destroy();
 }

@@ -1,5 +1,4 @@
-/// @description Insert description here
-// You can write your code in this editor
+/// @description
 event_inherited();
 life = 200;
 has_friction = false;

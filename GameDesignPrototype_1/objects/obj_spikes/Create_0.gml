@@ -19,3 +19,5 @@ hitCooldown = 15; // Frames before same enemy can be hit again
 
 // Sound/effect flags
 playedSound = false;
+
+depth = 10;
