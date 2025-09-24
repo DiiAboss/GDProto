@@ -12,6 +12,9 @@ if (hitEnemy != noone) {
         // Deal damage (scaled by level)
         hitEnemy.hp -= damage;
         
+		// Visual feedback - spawn damage number
+        spawn_damage_number(x, y - 16, damage, currentColor, false);
+            
         // Apply knockback (scaled by level)
         var kbDir = point_direction(x, y, hitEnemy.x, hitEnemy.y);
         hitEnemy.knockbackX = lengthdir_x(knockbackForce, kbDir);

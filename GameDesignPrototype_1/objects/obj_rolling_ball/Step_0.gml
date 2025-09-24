@@ -4,11 +4,11 @@ var nextY = y + lengthdir_y(currentSpeed, myDir);
 
 // Wall bouncing (DVD style)
 var bounced = false;
-if (place_meeting(nextX, y, obj_wall)) {
+if (place_meeting(nextX, y, obj_obstacle)) {
     myDir = 180 - myDir;
     bounced = true;
 }
-if (place_meeting(x, nextY, obj_wall)) {
+if (place_meeting(x, nextY, obj_obstacle)) {
     myDir = -myDir;
     bounced = true;
 }

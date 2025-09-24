@@ -1,18 +1,15 @@
 {
   "$GMObject":"",
-  "%Name":"obj_wall",
+  "%Name":"obj_obstacle",
   "eventList":[],
   "managed":true,
-  "name":"obj_wall",
+  "name":"obj_obstacle",
   "overriddenProperties":[],
   "parent":{
     "name":"Objects",
     "path":"folders/Objects.yy",
   },
-  "parentObjectId":{
-    "name":"obj_obstacle",
-    "path":"objects/obj_obstacle/obj_obstacle.yy",
-  },
+  "parentObjectId":null,
   "persistent":false,
   "physicsAngularDamping":0.1,
   "physicsDensity":0.5,
@@ -30,10 +27,7 @@
   "resourceType":"GMObject",
   "resourceVersion":"2.0",
   "solid":false,
-  "spriteId":{
-    "name":"spr_wall",
-    "path":"sprites/spr_wall/spr_wall.yy",
-  },
+  "spriteId":null,
   "spriteMaskId":null,
   "visible":true,
 }

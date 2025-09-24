@@ -1,6 +1,15 @@
+
 // Handle knockback cooldown
 if (knockbackCooldown > 0) {
     knockbackCooldown--;
+}
+
+if (wallBounceCooldown > 0) {
+    wallBounceCooldown--;
+}
+
+if (wallHitCooldown > 0) {
+    wallHitCooldown--;
 }
 
 // Movement toward player (when not in heavy knockback)
@@ -11,90 +20,156 @@ if (knockbackCooldown <= 0 && abs(knockbackX) < 1 && abs(knockbackY) < 1 && inst
     var moveX = lengthdir_x(_spd, _dir);
     var moveY = lengthdir_y(_spd, _dir);
     
-    if (!place_meeting(x + moveX, y, obj_wall)) {
+    if (!place_meeting(x + moveX, y, obj_obstacle)) {
         x += moveX;
     }
-    if (!place_meeting(x, y + moveY, obj_wall)) {
+    if (!place_meeting(x, y + moveY, obj_obstacle)) {
         y += moveY;
     }
     
     //image_angle = _dir;
 }
 
-
+// Apply knockback with wall bouncing AND damage
 if (abs(knockbackX) > knockbackThreshold || abs(knockbackY) > knockbackThreshold) {
     isKnockingBack = true;
     knockbackPower = point_distance(0, 0, knockbackX, knockbackY);
     
-    // Store original position
-    var prevX = x;
-    var prevY = y;
-    
-    // Try to move
+    // Check for wall collision
     var nextX = x + knockbackX;
     var nextY = y + knockbackY;
     
-    var hitHorizontal = false;
-    var hitVertical = false;
+    var hitWall = false;
+    var impactSpeed = 0;
     
-    // Check both axes simultaneously for corner detection
-    if (place_meeting(nextX * 1.01, nextY * 1.01, obj_wall)) {
-        // We hit something, figure out what
+    // Horizontal wall check (left/right walls)
+    if (place_meeting(nextX, y, obj_obstacle) && wallBounceCooldown == 0) {
+        hitWall = true;
+        impactSpeed = abs(knockbackX);
         
-        // Check horizontal collision
-        if (place_meeting(nextX * 1.01, y, obj_wall)) {
-            hitHorizontal = true;
-        }
-        
-        // Check vertical collision
-        if (place_meeting(x, nextY * 1.01, obj_wall)) {
-            hitVertical = true;
-        }
-        
-        // Apply bounces with dampening
-        if (hitHorizontal && abs(knockbackX) > minBounceSpeed && wallBounceCooldown == 0) {
-            knockbackX = -knockbackX * bounceDampening;
-        } else if (hitHorizontal) {
-            knockbackX = 0;
-        }
-        
-        if (hitVertical && abs(knockbackY) > minBounceSpeed && wallBounceCooldown == 0) {
-            knockbackY = -knockbackY * bounceDampening;
-        } else if (hitVertical) {
-            knockbackY = 0;
-        }
-        
-        // Set bounce cooldown if we bounced
-        if (hitHorizontal || hitVertical) {
-            wallBounceCooldown = 2;
+        // Check if we should take damage
+        if (impactSpeed > minImpactSpeed && wallHitCooldown == 0) {
+            // Calculate impact damage
+            var impactDamage = impactSpeed * impactDamageMultiplier;
+            impactDamage = min(impactDamage, maxImpactDamage);
+            impactDamage = round(impactDamage);
             
-            // Corner bounce effect (both axes hit)
-            if (hitHorizontal && hitVertical) {
-                // effect_create_above(ef_star, x, y, 1, c_yellow);
-                // Special corner bounce bonus
-                // global.cornerBounceBonus += 100;
+            // Apply damage
+            hp -= impactDamage;
+            wallHitCooldown = 30; // Prevent multiple hits
+            
+            // Visual feedback - spawn damage number
+            if (instance_exists(obj_damage_number)) {
+                spawn_damage_number(x, y - 16, impactDamage, c_orange, false);
+            }
+            
+            // Screen shake for hard impacts
+            if (impactSpeed > 8) {
+                // with (obj_camera) { shake = impactSpeed * 0.3; }
+            }
+            
+            // Impact effect at wall
+            var wallX = x + sign(knockbackX) * (sprite_width / 2);
+            // effect_create_above(ef_spark, wallX, y, 0, c_white);
+            
+            // Sound based on impact force
+            if (impactSpeed > 10) {
+                // audio_play_sound(snd_heavy_impact, 1, false);
+            } else if (impactSpeed > 5) {
+                // audio_play_sound(snd_medium_impact, 1, false);
+            } else {
+                // audio_play_sound(snd_light_impact, 1, false);
             }
         }
+        
+        // Bounce or stop based on speed
+        if (abs(knockbackX) > minBounceSpeed) {
+            knockbackX = -knockbackX * bounceDampening;
+        } else {
+            knockbackX = 0;
+        }
+    } else if (!place_meeting(nextX, y, obj_obstacle)) {
+        x = nextX;
     }
     
-    // Move to new position if not blocked
-    if (!place_meeting(x + knockbackX, y, obj_wall)) {
-        x += knockbackX;
+    // Vertical wall check (top/bottom walls)
+    if (place_meeting(x, nextY, obj_obstacle) && wallBounceCooldown == 0) {
+        hitWall = true;
+        impactSpeed = abs(knockbackY);
+        
+        // Check if we should take damage
+        if (impactSpeed > minImpactSpeed && wallHitCooldown == 0) {
+            // Calculate impact damage
+            var impactDamage = impactSpeed * impactDamageMultiplier;
+            impactDamage = min(impactDamage, maxImpactDamage);
+            impactDamage = round(impactDamage);
+            
+            // Apply damage
+            hp -= impactDamage;
+            wallHitCooldown = 30;
+            
+            // Visual feedback
+            if (instance_exists(obj_damage_number)) {
+                spawn_damage_number(x, y - 16, impactDamage, c_orange, false);
+            }
+            
+            // Screen shake for hard impacts
+            if (impactSpeed > 8) {
+                // with (obj_camera) { shake = impactSpeed * 0.3; }
+            }
+            
+            // Impact effect at wall
+            var wallY = y + sign(knockbackY) * (sprite_height / 2);
+            // effect_create_above(ef_spark, x, wallY, 0, c_white);
+            
+            // Sound
+            if (impactSpeed > 10) {
+                // audio_play_sound(snd_heavy_impact, 1, false);
+            } else if (impactSpeed > 5) {
+                // audio_play_sound(snd_medium_impact, 1, false);
+            }
+        }
+        
+        // Bounce or stop
+        if (abs(knockbackY) > minBounceSpeed) {
+            knockbackY = -knockbackY * bounceDampening;
+        } else {
+            knockbackY = 0;
+        }
+    } else if (!place_meeting(x, nextY, obj_obstacle)) {
+        y = nextY;
     }
-    if (!place_meeting(x, y + knockbackY, obj_wall)) {
-        y += knockbackY;
+    
+    // Set bounce cooldown if we hit a wall
+    if (hitWall) {
+        wallBounceCooldown = 2;
+        lastBounceDir = point_direction(0, 0, knockbackX, knockbackY);
+        
+        // Track wall hit for combo scoring
+        // global.wallBounceCombo++;
+        
+        // Credit damage to whoever knocked them
+        if (hp <= 0 && instance_exists(lastKnockedBy)) {
+            // lastKnockedBy.score += 50; // Wall kill bonus
+        }
     }
     
     // Apply friction
     knockbackX *= knockbackFriction;
     knockbackY *= knockbackFriction;
 } else {
-    // Knockback ended
+    // Knockback ended - reset wall hit tracking
     knockbackX = 0;
     knockbackY = 0;
     isKnockingBack = false;
     knockbackPower = 0;
     hasTransferredKnockback = false;
+    hasHitWall = false;
+    
+    // Allow wall damage again after knockback ends
+    if (wallHitCooldown > 0 && !isKnockingBack) {
+        wallHitCooldown = 0;
+    }
 }
 
 
