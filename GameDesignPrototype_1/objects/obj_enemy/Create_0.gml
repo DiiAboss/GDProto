@@ -38,7 +38,7 @@ levelDecayTimer = 0;
 hitFlashTimer = 0;
 damage = 0;
 moveSpeed = 2;
-
+lastKnockedBy = noone; // Track who knocked this enemy
 took_damage = 0;
 
 // Chain knockback tracking
@@ -60,6 +60,14 @@ wobbleAmount = 10; // Degrees of rotation wobble
 isMoving = false;
 lastX = x;
 lastY = y;
+
+
+// Wall impact properties
+minImpactSpeed = 3; // Minimum speed to take damage
+impactDamageMultiplier = 0.1; // Damage = speed * this
+maxImpactDamage = 20; // Cap on wall damage
+wallHitCooldown = 0; // Prevents multiple wall damages per knockback
+hasHitWall = false; // Track if we've hit a wall this knockback
 
 // Individual variation (so enemies don't all pulse in sync)
 breathOffset = random(2 * pi); // Random starting point in breath cycle

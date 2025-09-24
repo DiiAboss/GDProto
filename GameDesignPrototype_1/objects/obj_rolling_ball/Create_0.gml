@@ -1,8 +1,11 @@
-// --- Create Event ---
+
 myDir = irandom(360);
 mySpeed = 4;
 maxSpeed = 8;
 currentSpeed = mySpeed;
+
+
+name = "rolling_ball";
 
 // Level system
 level = 0;
@@ -19,7 +22,7 @@ colorIndex = 0;
 // Stats that scale with level
 baseDamage = 5;
 damage = baseDamage;
-baseKnockback = 12;
+baseKnockback = 24;
 knockbackForce = baseKnockback;
 
 // State tracking
