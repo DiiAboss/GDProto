@@ -26,7 +26,7 @@ if (abs(velocityX) > minSpeed || abs(velocityY) > minSpeed) {
         if (canBounce && abs(velocityX) > 2) {
             velocityX = -velocityX * bounceDampening;
         } else {
-            velocityX = 0;
+            instance_destroy();
         }
     } else {
         x = nextX;
@@ -37,7 +37,7 @@ if (abs(velocityX) > minSpeed || abs(velocityY) > minSpeed) {
         if (canBounce && abs(velocityY) > 2) {
             velocityY = -velocityY * bounceDampening;
         } else {
-            velocityY = 0;
+            instance_destroy();
         }
     } else {
         y = nextY;

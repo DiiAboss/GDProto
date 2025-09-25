@@ -91,13 +91,24 @@ if (instance_exists(owner)) {
 		    }
     
 		    // Calculate damage with combo bonus
-		    var baseDamage = 10;
+		    var baseDamage = attack;
 		    var damage = baseDamage * (1 + comboCount * 0.25); // +25% per combo
-    
+				
 		    // Deal damage
 		    hit.hp -= damage;
 		    hit.took_damage = damage;
-		    // Apply knockback using custom knockback variables
+		    
+			if (hit.hp <= 0)
+			{
+				obj_game_manager.gm_trigger_event("on_kill", obj_player, self);
+			}
+			else
+			{
+				// Fire mods with on_attack trigger
+				obj_game_manager.gm_trigger_event("on_attack", obj_player, self);
+			}
+			
+			// Apply knockback using custom knockback variables
 		    if (hit.knockbackCooldown <= 0) {
 		        var knockbackDir = point_direction(owner.x, owner.y, hit.x, hit.y);
 		        knockbackForce = 64 + (comboCount * 1); // Stronger knockback with combo

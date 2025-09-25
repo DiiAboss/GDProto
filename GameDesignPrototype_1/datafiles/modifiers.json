@@ -1,0 +1,38 @@
+[
+  {
+    "id": "attack_up",
+    "name": "Attack Up",
+    "description": "Increase attack by 5%",
+    "sprite": "spr_orb",
+    "attack": 0.5,
+    "hp": 0,
+    "knockback": 0,
+    "spd": 0,
+    "effect": null,
+    "trigger": null
+  },
+  {
+    "id": "third_strike_bonus",
+    "name": "Third Strike",
+    "description": "Every 3rd attack deals double damage",
+    "sprite": "spr_orb",
+    "attack": 0,
+    "hp": 0,
+    "knockback": 0,
+    "spd": 0,
+    "effect": "mod_third_strike",
+    "trigger": "on_attack"
+  },
+  {
+    "id": "heal_on_kill",
+    "name": "Blood Feast",
+    "description": "Heal 5 HP whenever you kill an enemy",
+    "sprite": "spr_orb",
+    "attack": 0,
+    "hp": 0,
+    "knockback": 0,
+    "spd": 0,
+    "effect": "mod_heal_on_kill",
+    "trigger": "on_kill"
+  }
+]

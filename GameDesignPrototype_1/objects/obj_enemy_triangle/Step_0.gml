@@ -14,7 +14,7 @@ switch (state)
 	break;
 	
 	case ENEMY_STATE.FOLLOW:
-		image_angle = _dir;
+		//image_angle = _dir;
 		myDir = _dir;
 			
 		if (_dist < 128 && state == ENEMY_STATE.FOLLOW)
@@ -36,12 +36,13 @@ switch (state)
 			image_xscale += 0.005;
 			image_yscale += 0.005;
 			shotTimer -= 1;
-			image_angle = _dir;
+			//image_angle = _dir;
 			myDir = _dir;
+			img_index = 0;
 		}
 		else
 		{
-			
+			img_index = 1;
 			image_xscale = 1;
 			image_yscale = 1;
 			var _bullet = instance_create_depth(x + lengthdir_x(16, myDir), y + lengthdir_y(16, myDir), depth - 1, obj_enemy_attack_orb);

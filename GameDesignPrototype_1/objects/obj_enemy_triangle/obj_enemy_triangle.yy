@@ -11,8 +11,8 @@
   "name":"obj_enemy_triangle",
   "overriddenProperties":[],
   "parent":{
-    "name":"Objects",
-    "path":"folders/Objects.yy",
+    "name":"Enemies",
+    "path":"folders/Objects/Enemies.yy",
   },
   "parentObjectId":{
     "name":"obj_enemy",
@@ -36,8 +36,8 @@
   "resourceVersion":"2.0",
   "solid":false,
   "spriteId":{
-    "name":"spr_triangle",
-    "path":"sprites/spr_triangle/spr_triangle.yy",
+    "name":"spr_ghost_guy",
+    "path":"sprites/spr_ghost_guy/spr_ghost_guy.yy",
   },
   "spriteMaskId":null,
   "visible":true,

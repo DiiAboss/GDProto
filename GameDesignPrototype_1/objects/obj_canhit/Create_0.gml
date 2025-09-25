@@ -37,3 +37,5 @@ hazardDamage = 5; // Damage if hazardous
 // Chain hit properties
 canChainHit = true; // Can this knock into other objects?
 chainForceMultiplier = 0.5; // How much force transfers to next object
+
+owner = noone;

@@ -17,7 +17,7 @@ if (shotTimer > 0)
 		// Draw the main enemy sprite with effects
 	draw_sprite_ext(
 	    sprite_index,
-	    image_index,
+	    img_index,
 	    x,
 	    y,
 	    currentScale * image_xscale,

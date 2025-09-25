@@ -1,6 +1,19 @@
 /// @description Insert description here
 // You can write your code in this editor
 
+
+// Always recalc stats with passive mods
+var stats = obj_game_manager.gm_calculate_player_stats(
+    base_attack, base_maxHp, base_knockback, base_speed
+);
+
+attack        = stats[0];
+maxHp         = stats[1];
+knockbackPower= stats[2];
+mySpeed       = stats[3];
+
+
+
 // Movement
 var _left = false;
 var _right = false;
@@ -170,7 +183,8 @@ else
 
 // Attack input - trigger sword swing
 if (mouse_check_button_pressed(mb_left) && currentWeapon == Weapon.Sword) {
-    sword.startSwing = true;
+    sword.attack = attack;
+	sword.startSwing = true;
 }
 
 
@@ -227,3 +241,65 @@ if (abs(knockbackX) > 0.1 || abs(knockbackY) > 0.1) {
     knockbackX *= knockbackFriction;
     knockbackY *= knockbackFriction;
 }
+
+
+// Cannon cooldown
+if (cannonCooldown > 0) {
+    cannonCooldown--;
+}
+
+// Cannon ability (right click)
+if (mouse_check_button_pressed(mb_right) && cannonCooldown <= 0) {
+	
+	mouseDistance = distance_to_point(mouse_x, mouse_y);
+	
+    // Launch player backwards like a cannonball
+    var cannonForce = 25; // Adjust for power
+    knockbackX = lengthdir_x(-cannonForce, mouseDirection);
+    knockbackY = lengthdir_y(-cannonForce, mouseDirection);
+    knockbackPower = cannonForce;
+    lob(self, mouseDirection, mouseDistance);
+    // Set cannon state
+    isCannonBalling = true;
+    cannonCooldown = cannonCooldownMax;
+    
+    // Visual effect
+    // effect_create_above(ef_smoke, x, y, 1, c_gray);
+    
+    // Sound
+    // audio_play_sound(snd_cannon_fire, 1, false);
+    
+    // Make player temporarily invincible during launch?
+    // invulnerableTimer = 10;
+}
+
+// Update cannonball state
+if (isCannonBalling) {
+    // Check if we've slowed down enough
+    if (abs(knockbackX) < 2 && abs(knockbackY) < 2) {
+        isCannonBalling = false;
+    }
+    
+    // Trail effect while cannonballing
+    if (current_time % 2 == 0) {
+        // Create afterimage or particle
+    }
+}
+
+
+function lob(_owner = self, _direction, _distance)
+{
+	#region Single Shot
+	var _totalAcc     = 1;//abs((Accuracy * _owner.maxAccuracy) - (Accuracy * _owner.accuracy));
+	var _acc		  = clamp(_totalAcc, 0, _totalAcc);
+			
+	var _dir		  =	_direction + irandom_range(-_acc, _acc);
+	var _bullet		  = instance_create_depth(_owner.x, _owner.y, _owner.depth, obj_lobbed);
+	_bullet.owner	  = _owner;
+	_bullet.direction = _direction;
+	_bullet.speed	  = 4;
+	_bullet.targetDistance = _distance;
+	_bullet.color     = c_white;
+	#endregion Single Shot
+}
+

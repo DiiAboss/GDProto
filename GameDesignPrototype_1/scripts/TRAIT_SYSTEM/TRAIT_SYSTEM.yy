@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"TRAIT_SYSTEM",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"TRAIT_SYSTEM",
+  "parent":{
+    "name":"Scripts",
+    "path":"folders/Scripts.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

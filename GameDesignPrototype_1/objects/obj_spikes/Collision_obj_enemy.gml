@@ -39,25 +39,5 @@ if (enemy != noone) {
         if (instance_exists(obj_damage_number)) {
             spawn_damage_number(enemy.x, enemy.y - 16, damage, c_red, impactSpeed > 10);
         }
-        
-        // Credit the kill to whoever knocked them in
-        if (enemy.hp <= 0 && instance_exists(enemy.lastKnockedBy)) {
-            // Give bonus points for spike kill
-            // enemy.lastKnockedBy.score += 150; // Spike kill bonus
-            
-            // Special effect for spike kill
-            // effect_create_above(ef_ring, x, y, 1, c_red);
-        }
-        
-        // Sound effect (only once per frame)
-        if (!playedSound) {
-            // audio_play_sound(snd_spike_impale, 1, false);
-            playedSound = true;
-        }
-        
-        // Screenshake for hard impacts
-        if (impactSpeed > 15) {
-            // with (obj_camera) { shake = 3; }
-        }
     }
 }

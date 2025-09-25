@@ -14,6 +14,8 @@ enum SwingPosition {
     Up = 1
 }
 
+attack = 10;
+
 // Current position state (starts at down position)
 currentPosition = SwingPosition.Down;
 targetPosition = SwingPosition.Up; // Where we're swinging to next

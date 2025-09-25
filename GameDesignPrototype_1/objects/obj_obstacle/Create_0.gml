@@ -1,0 +1,4 @@
+/// @description
+
+hp = -999;
+

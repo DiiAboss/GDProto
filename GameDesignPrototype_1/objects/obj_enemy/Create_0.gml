@@ -9,6 +9,9 @@ enum ENEMY_STATE
 mySprite = spr_enemy_1;
 
 size = sprite_get_height(mySprite);
+img_index = 0;
+
+marked_for_death = false;
 
 // Wall bounce properties
 bounceDampening = 1.1; // How much speed is retained after bounce (0.7 = 70%)

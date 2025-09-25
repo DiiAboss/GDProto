@@ -12,23 +12,7 @@ if (wallHitCooldown > 0) {
     wallHitCooldown--;
 }
 
-// Movement toward player (when not in heavy knockback)
-if (knockbackCooldown <= 0 && abs(knockbackX) < 1 && abs(knockbackY) < 1 && instance_exists(obj_player)) {
-    var _dir = point_direction(x, y, obj_player.x, obj_player.y);
-    var _spd = moveSpeed;
-    
-    var moveX = lengthdir_x(_spd, _dir);
-    var moveY = lengthdir_y(_spd, _dir);
-    
-    if (!place_meeting(x + moveX, y, obj_obstacle)) {
-        x += moveX;
-    }
-    if (!place_meeting(x, y + moveY, obj_obstacle)) {
-        y += moveY;
-    }
-    
-    //image_angle = _dir;
-}
+
 
 // Apply knockback with wall bouncing AND damage
 if (abs(knockbackX) > knockbackThreshold || abs(knockbackY) > knockbackThreshold) {
@@ -107,7 +91,7 @@ if (abs(knockbackX) > knockbackThreshold || abs(knockbackY) > knockbackThreshold
             // Apply damage
             hp -= impactDamage;
             wallHitCooldown = 30;
-            
+			
             // Visual feedback
             if (instance_exists(obj_damage_number)) {
                 spawn_damage_number(x, y - 16, impactDamage, c_orange, false);
@@ -116,6 +100,11 @@ if (abs(knockbackX) > knockbackThreshold || abs(knockbackY) > knockbackThreshold
             // Screen shake for hard impacts
             if (impactSpeed > 8) {
                 // with (obj_camera) { shake = impactSpeed * 0.3; }
+				if (hp <= 0)
+				{
+					knockbackFriction = 0.01;
+					marked_for_death = true;
+				}
             }
             
             // Impact effect at wall
@@ -172,27 +161,48 @@ if (abs(knockbackX) > knockbackThreshold || abs(knockbackY) > knockbackThreshold
     }
 }
 
+if !(marked_for_death)
+{
+	
+	// Movement toward player (when not in heavy knockback)
+	if (knockbackCooldown <= 0 && abs(knockbackX) < 1 && abs(knockbackY) < 1 && instance_exists(obj_player)) {
+	    var _dir = point_direction(x, y, obj_player.x, obj_player.y);
+	    var _spd = moveSpeed;
+    
+	    var moveX = lengthdir_x(_spd, _dir);
+	    var moveY = lengthdir_y(_spd, _dir);
+    
+	    if (!place_meeting(x + moveX, y, obj_obstacle)) {
+	        x += moveX;
+	    }
+	    if (!place_meeting(x, y + moveY, obj_obstacle)) {
+	        y += moveY;
+	    }
+    
+	    //image_angle = _dir;
+	}
+	
+	
+	// Check if enemy is moving (for wobble effect)
+	var moveDistance = point_distance(x, y, lastX, lastY);
+	isMoving = (moveDistance > 0.5); // Moving if we've moved more than 0.5 pixels
+	lastX = x;
+	lastY = y;
 
-// Check if enemy is moving (for wobble effect)
-var moveDistance = point_distance(x, y, lastX, lastY);
-isMoving = (moveDistance > 0.5); // Moving if we've moved more than 0.5 pixels
-lastX = x;
-lastY = y;
+	// Update breathing/pulse effect (always active)
+	breathTimer += breathSpeed;
+	var breathScale = baseScale + sin(breathTimer + breathOffset) * breathScaleAmount;
 
-// Update breathing/pulse effect (always active)
-breathTimer += breathSpeed;
-var breathScale = baseScale + sin(breathTimer + breathOffset) * breathScaleAmount;
-
-// Update walking wobble
-if (isMoving) {
-    wobbleTimer += wobbleSpeed;
-    // Reset wobble smoothly when starting to move
-    if (wobbleTimer > 2 * pi) wobbleTimer -= 2 * pi;
-} else {
-    // Smoothly return to center when stopped
-    wobbleTimer = lerp(wobbleTimer, 0, 0.1);
+	// Update walking wobble
+	if (isMoving) {
+	    wobbleTimer += wobbleSpeed;
+	    // Reset wobble smoothly when starting to move
+	    if (wobbleTimer > 2 * pi) wobbleTimer -= 2 * pi;
+	} else {
+	    // Smoothly return to center when stopped
+	    wobbleTimer = lerp(wobbleTimer, 0, 0.1);
+	}
 }
-
 
 if (took_damage != 0)
 {
@@ -207,6 +217,23 @@ if (took_damage != 0)
 
 
 // Death check
-if (hp <= 0) {
-    instance_destroy();
+if (hp <= 0) && !marked_for_death {
+	marked_for_death = true;
+	image_angle = choose(90, 270);
+}
+
+
+if (marked_for_death) {
+    if (knockbackX == 0 && knockbackY == 0) {
+        // Spawn EXP through manager
+            // Spawn 1-3 orbs based on enemy type
+            var orbCount = irandom_range(1, 3);
+            for (var i = 0; i < orbCount; i++) {
+                var _exp = instance_create_depth(x, y, depth -1, obj_exp);
+				_exp.direction = irandom(359);
+				_exp.speed = 3;
+            }
+        
+        instance_destroy();
+    }
 }

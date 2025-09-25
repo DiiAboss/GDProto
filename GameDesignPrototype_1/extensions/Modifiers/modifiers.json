@@ -1,0 +1,24 @@
+[
+  {
+    "id": "attack_up",
+    "name": "Attack Up",
+    "description": "Increase attack by 5%",
+    "sprite": "spr_mod_attack",
+    "attack": 0.05,
+    "hp": 0,
+    "knockback": 0,
+    "spd": 0,
+    "effect": null
+  },
+  {
+    "id": "third_strike_bonus",
+    "name": "Third Strike",
+    "description": "Every 3rd attack deals double damage",
+    "sprite": "spr_mod_third",
+    "attack": 0,
+    "hp": 0,
+    "knockback": 0,
+    "spd": 0,
+    "effect": "mod_third_strike"
+  }
+]
