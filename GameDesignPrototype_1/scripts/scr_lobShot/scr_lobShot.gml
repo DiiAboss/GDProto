@@ -1,3 +1,4 @@
+///=
 function lobShot(_self, _spd, _direction, _xStart, _yStart, _targetDistance) {
     var radDirection = degtorad(_direction);
     

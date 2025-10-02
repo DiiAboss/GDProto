@@ -1,13 +1,13 @@
 {
   "$GMObject":"",
-  "%Name":"obj_enemy_test2",
+  "%Name":"obj_charcter_parent",
   "eventList":[],
   "managed":true,
-  "name":"obj_enemy_test2",
+  "name":"obj_charcter_parent",
   "overriddenProperties":[],
   "parent":{
-    "name":"Enemies",
-    "path":"folders/Objects/In-Game/Enemies.yy",
+    "name":"Player",
+    "path":"folders/Objects/In-Game/Player.yy",
   },
   "parentObjectId":null,
   "persistent":false,
@@ -27,10 +27,7 @@
   "resourceType":"GMObject",
   "resourceVersion":"2.0",
   "solid":false,
-  "spriteId":{
-    "name":"spr_ghost_guy",
-    "path":"sprites/spr_ghost_guy/spr_ghost_guy.yy",
-  },
+  "spriteId":null,
   "spriteMaskId":null,
   "visible":true,
 }

@@ -161,6 +161,9 @@ if (abs(knockbackX) > knockbackThreshold || abs(knockbackY) > knockbackThreshold
     }
 }
 
+
+
+
 if !(marked_for_death)
 {
 	

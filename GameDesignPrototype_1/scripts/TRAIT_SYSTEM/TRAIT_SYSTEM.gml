@@ -123,7 +123,7 @@ function WeaponModificationSystem() constructor {
     // TIER 2: Conditional - behavior modifications
     applyTier2Mods = function(_weapon, _character, _tier1Mods) {
         var mods = {
-            comboPattern: array_clone(_weapon.baseComboPattern),
+            comboPattern: _weapon.baseComboPattern,
             projectileType: "default",
             specialFinisher: "none",
             attackEffects: []

@@ -8,7 +8,7 @@ weight = 10; // Default weight (medium object)
 // 20-40 = medium objects (boxes, small rocks)
 // 50-80 = heavy objects (large crates, boulders)
 // 100+ = immovable (basically walls)
-
+destroyOnWall = true;
 // Physics properties
 velocityX = 0;
 velocityY = 0;

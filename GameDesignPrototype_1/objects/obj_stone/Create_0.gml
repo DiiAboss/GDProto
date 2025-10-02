@@ -3,4 +3,5 @@
 // Inherit the parent event
 event_inherited();
 
-weight = 25;
+weight = 40;
+destroyOnWall = false;

@@ -11,8 +11,8 @@
   "name":"obj_sword",
   "overriddenProperties":[],
   "parent":{
-    "name":"Objects",
-    "path":"folders/Objects.yy",
+    "name":"Player",
+    "path":"folders/Objects/In-Game/Player.yy",
   },
   "parentObjectId":null,
   "persistent":false,

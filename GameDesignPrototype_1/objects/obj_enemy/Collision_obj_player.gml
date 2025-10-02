@@ -110,3 +110,4 @@ if (hitPlayer != noone) {
         hitFlashTimer = 5;
     }
 }
+

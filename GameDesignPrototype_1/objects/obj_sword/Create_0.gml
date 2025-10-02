@@ -2,11 +2,38 @@
 owner = noone;
 active = true;
 
+baseRange = 32;
+
 // Swing properties
 swinging = false;
 startSwing = false;
 swingSpeed = 8; // How fast the sword swings (degrees per step)
 swingProgress = 0; // 0 to 1, tracks swing completion
+
+
+comboSequence = [];  // Array to store button presses
+maxComboLength = 3;  // Maximum combo length
+comboInputWindow = 30; // Frames to input next combo move
+comboInputTimer = 0;
+
+// Attack types
+//enum AttackType {
+//    Light,
+//    Heavy,
+//    Spin,
+//    Jump
+//}
+
+current_combo_state = ComboState.LIGHT_1;
+
+// Rotation attack variables
+isSpinning = false;
+spinProgress = 0;
+spinSpeed = 8;  // How fast the spin completes
+spinStartAngle = 0;
+lightAttackTriggered = false;
+heavyAttackTriggered = false;
+spinStartPosition = SwingPosition.Down; // Track where spin started
 
 // Position states
 enum SwingPosition {

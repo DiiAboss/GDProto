@@ -14,8 +14,8 @@
   "name":"obj_spikes",
   "overriddenProperties":[],
   "parent":{
-    "name":"Objects",
-    "path":"folders/Objects.yy",
+    "name":"Obstacles",
+    "path":"folders/Objects/In-Game/Obstacles.yy",
   },
   "parentObjectId":null,
   "persistent":false,

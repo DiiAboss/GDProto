@@ -11,10 +11,13 @@
   "name":"obj_canhit",
   "overriddenProperties":[],
   "parent":{
-    "name":"Objects",
-    "path":"folders/Objects.yy",
+    "name":"Controllers",
+    "path":"folders/Objects/In-Game/Controllers.yy",
   },
-  "parentObjectId":null,
+  "parentObjectId":{
+    "name":"obj_obstacle",
+    "path":"objects/obj_obstacle/obj_obstacle.yy",
+  },
   "persistent":false,
   "physicsAngularDamping":0.1,
   "physicsDensity":0.5,

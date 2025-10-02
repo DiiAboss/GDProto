@@ -8,8 +8,8 @@
   "name":"obj_stone",
   "overriddenProperties":[],
   "parent":{
-    "name":"Objects",
-    "path":"folders/Objects.yy",
+    "name":"Obstacles",
+    "path":"folders/Objects/In-Game/Obstacles.yy",
   },
   "parentObjectId":{
     "name":"obj_canhit",
