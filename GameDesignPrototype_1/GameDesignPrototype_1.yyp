@@ -44,6 +44,7 @@
   "name":"GameDesignPrototype_1",
   "resources":[
     {"id":{"name":"Modifiers","path":"extensions/Modifiers/Modifiers.yy",},},
+    {"id":{"name":"Note1","path":"notes/Note1/Note1.yy",},},
     {"id":{"name":"obj_afterImage","path":"objects/obj_afterImage/obj_afterImage.yy",},},
     {"id":{"name":"obj_arrow","path":"objects/obj_arrow/obj_arrow.yy",},},
     {"id":{"name":"obj_ball","path":"objects/obj_ball/obj_ball.yy",},},
