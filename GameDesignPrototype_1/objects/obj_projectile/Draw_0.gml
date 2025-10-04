@@ -1,16 +1,15 @@
+// DRAW EVENT - Better shadow for lob projectiles
 draw_sprite_ext(sprite, img, x, y, image_xscale, image_yscale, direction, c_white, 1);
 
-var shadowX = x;
-var shadowY = y + 16;
+var shadowX, shadowY;
 
-if (projectileType == PROJECTILE_TYPE.LOB)
-{
-	var outlineX = xStart + oval_width * cos(radDirection);
-	var outlineY = yStart - oval_height * sin(radDirection); // Note the minus sign to adjust for GameMaker's coordinate system
-	var shadowX = lerp(xStart, outlineX, lobStep);
-	var shadowY = lerp(yStart, outlineY + 16, lobStep); // If shadowY should be constant, set it to outlineY or a fixed ground level
+// DRAW EVENT - Use stored target values
+if (projectileType == PROJECTILE_TYPE.LOB) {
+    shadowX = lerp(xStart, targetX, lobStep);
+    shadowY = lerp(yStart, targetY, lobStep); // or use groundShadowY for fixed ground
+} else {
+    shadowX = x;
+    shadowY = y + 16;
 }
-
-
 
 draw_sprite_shadow(self, sprite, img, shadowX, shadowY, direction);

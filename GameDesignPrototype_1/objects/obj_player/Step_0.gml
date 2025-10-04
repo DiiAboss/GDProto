@@ -246,22 +246,39 @@ if (cannonCooldown > 0) {
     cannonCooldown--;
 }
 
-// Cannon ability (right click)
+// Modified CANNON ABILITY
 if (mouse_check_button_pressed(mb_right) && cannonCooldown <= 0) {
-	
-	mouseDistance = distance_to_point(mouse_x, mouse_y);
-	
-    // Launch player backwards like a cannonball
-    var cannonForce = 25; // Adjust for power
+    mouseDistance = distance_to_point(mouse_x, mouse_y);
+    
+    // Create the cannonball first
+    var cannonball = instance_create_depth(x, y, depth, obj_projectile);
+    cannonball.direction = mouseDirection;
+    cannonball.speed = 15;
+    cannonball.owner = id;
+    
+    // Launch player backwards
+    var cannonForce = 25;
     knockbackX = lengthdir_x(-cannonForce, mouseDirection);
     knockbackY = lengthdir_y(-cannonForce, mouseDirection);
     knockbackPower = cannonForce;
-
-    // Set cannon state
+    
     isCannonBalling = true;
     cannonCooldown = cannonCooldownMax;
     
+    // TRIGGER MODIFIERS - Pass the projectile reference
+    var attack_event = {
+        attack_type: "cannon",
+        attack_direction: mouseDirection,
+        attack_position_x: x,
+        attack_position_y: y,
+        projectile: cannonball,  // Pass the actual projectile
+        damage: attack * 2,
+        weapon: undefined
+    };
+    
+    TriggerModifiers(id, MOD_TRIGGER.ON_ATTACK, attack_event);
 }
+
 
 // Update cannonball state
 if (isCannonBalling) {
@@ -279,4 +296,15 @@ if (isCannonBalling) {
 
 
 
+// In Player Step Event - Debug modifier adding
+if (keyboard_check_pressed(ord("M"))) {
+    AddModifier(id, "TripleRhythmFire");
+    show_debug_message("Added TripleRhythmFire - attack count: " + string(array_length(mod_list)));
+}
 
+
+if (keyboard_check_pressed((ord("Q"))))
+{
+	var _near_enemy = instance_nearest(x, y, obj_enemy);
+	scr_chain_lightning(self, _near_enemy, 10, 256, 100, 10)
+}

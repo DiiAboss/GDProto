@@ -185,268 +185,10 @@ cannonDamage = 20; // Damage dealt when ramming enemies
 
 
 
-enum WeaponType
-{
-	None,
-	Melee,
-	Range,
-}
 
-enum MOD_TAG {
-    FIRE = 1 << 0,
-    ICE = 1 << 1,
-    PROJECTILE = 1 << 2,
-    MELEE = 1 << 3,
-    DEFENSIVE = 1 << 4,
-    OFFENSIVE = 1 << 5,
-    MOVEMENT = 1 << 6,
-    CRITICAL = 1 << 7,
-    // ... up to 32 tags with bit flags
-}
-
-// Triggers as enums
-enum MOD_TRIGGER {
-    ON_ATTACK,
-    ON_HIT,
-    ON_KILL,
-    ON_DAMAGED,
-    ON_DODGE,
-    ON_ROOM_CLEAR,
-    ON_PICKUP,
-    PASSIVE, // Always active
-    // ...
-}
-
-enum MOD_ID
-{
-	FLAME_SHOT,
-	OIL_SLICK,
-	WIND_BOOST,
-	TRIPLE_RHYTHM_FIRE,
-	TRIPLE_RHYTHM_CHAOS,
-	LUCKY_SHOT
-}
-
-enum PATTERN_TYPE {
-    EVERY_N,        // Every Nth action
-    CHANCE,         // Random chance
-    CONDITIONAL,    // When condition met (low health, etc)
-    SEQUENCE,       // Follow a pattern [true, false, true, false]
-    CHARGE,         // Build up charge
-    COMBO          // Within time window
-}
-
-enum EFFECT_TYPE {
-    SPAWN_PROJECTILE,
-    MODIFY_PROJECTILE,
-    APPLY_BUFF,
-    CREATE_EXPLOSION,
-    RANDOM_EFFECT
-}
-// Base pattern handler
-function CreatePattern(_type, _config) {
-    switch (_type) {
-        case PATTERN_TYPE.EVERY_N:
-            return {
-                type: _type,
-                counter: 0,
-                trigger_on: _config.n ?? 3,
-                
-                should_trigger: function() {
-                    counter++;
-                    if (counter >= trigger_on) {
-                        counter = 0;
-                        return true;
-                    }
-                    return false;
-                }
-            };
-            
-        case PATTERN_TYPE.CHANCE:
-            return {
-                type: _type,
-                chance: _config.chance ?? 0.25,
-                
-                should_trigger: function() {
-                    return random(1) < chance;
-                }
-            };
-            
-        case PATTERN_TYPE.SEQUENCE:
-            return {
-                type: _type,
-                pattern: _config.pattern ?? [false, false, true],
-                index: 0,
-                
-                should_trigger: function() {
-                    var result = pattern[index];
-                    index = (index + 1) % array_length(pattern);
-                    return result;
-                }
-            };
-    }
-}
-
-// Base effect executor
-function CreateEffect(_type, _config) {
-    switch (_type) {
-        case EFFECT_TYPE.SPAWN_PROJECTILE:
-            return {
-                type: _type,
-                projectile: _config.projectile,
-                count: _config.count ?? 1,
-                spread: _config.spread ?? 0,
-                
-                execute: function(_entity, _event) {
-                    with (_entity) {
-                        for (var i = 0; i < other.count; i++) {
-                            var proj = instance_create_depth(x, y, depth, other.projectile);
-                            proj.direction = _event.attack_direction + (i - other.count/2) * other.spread;
-                            proj.owner = id;
-                        }
-                    }
-                }
-            };
-            
-        case EFFECT_TYPE.MODIFY_PROJECTILE:
-            return {
-                type: _type,
-                modifications: _config.mods,
-                
-                execute: function(_entity, _event) {
-                    // Modify the projectile that was just created
-                    if (_event.projectile != noone) {
-                        with (_event.projectile) {
-                            // Apply modifications
-                            var mods = other.modifications;
-                            if (variable_struct_exists(mods, "element")) {
-                                element = mods.element;
-                                
-                                // Visual changes based on element
-                                switch (element) {
-                                    case "fire":
-                                        sprite_index = spr_fire_projectile;
-                                        image_blend = c_orange;
-                                        break;
-                                    case "ice":
-                                        sprite_index = spr_ice_projectile;
-                                        image_blend = c_aqua;
-                                        break;
-                                }
-                            }
-                            
-                            if (variable_struct_exists(mods, "scale")) {
-                                image_xscale *= mods.scale;
-                                image_yscale *= mods.scale;
-                                damage *= mods.scale;
-                            }
-                            
-                            if (variable_struct_exists(mods, "piercing")) {
-                                piercing = mods.piercing;
-                            }
-                        }
-                    }
-                }
-            };
-            
-        case EFFECT_TYPE.RANDOM_EFFECT:
-            return {
-                type: _type,
-                pool: _config.pool,
-                
-                execute: function(_entity, _event) {
-                    // Pick random effect from pool
-                    var random_effect = pool[irandom(array_length(pool) - 1)];
-                    random_effect.execute(_entity, _event);
-                }
-            };
-    }
-}
-// Player/Entity would have:
-mod_list = [];           // Active modifier instances
-mod_cache = {           // Cached calculations
-    stats: {},          // Combined stat mods
-    dirty: true,        // Needs recalculation?
-    last_update: 0
-};
 mod_triggers = {};      // Modifiers sorted by trigger for fast lookup
 
 
-global.Modifiers = {
-    // Fire shot every third attack
-    TripleRhythmFire: {
-        id: MOD_ID.TRIPLE_RHYTHM_FIRE,
-        name: "Rhythmic Flames",
-        
-        pattern: CreatePattern(PATTERN_TYPE.EVERY_N, {n: 3}),
-        effect: CreateEffect(EFFECT_TYPE.SPAWN_PROJECTILE, {
-            projectile: obj_fireball,
-            count: 1
-        }),
-        
-        triggers: [MOD_TRIGGER.ON_ATTACK],
-        
-        action: function(_entity, _event) {
-            var mod_instance = _event.mod_instance;
-            
-            if (mod_instance.pattern.should_trigger()) {
-                mod_instance.effect.execute(_entity, _event);
-            }
-        }
-    },
-    
-    // Random element every third shot
-    TripleRhythmChaos: {
-        id: MOD_ID.TRIPLE_RHYTHM_CHAOS,
-        name: "Chaotic Rhythm",
-        
-        pattern: CreatePattern(PATTERN_TYPE.EVERY_N, {n: 3}),
-        effect: CreateEffect(EFFECT_TYPE.RANDOM_EFFECT, {
-            pool: [
-                CreateEffect(EFFECT_TYPE.MODIFY_PROJECTILE, {
-                    mods: {element: "fire", scale: 1.5}
-                }),
-                CreateEffect(EFFECT_TYPE.MODIFY_PROJECTILE, {
-                    mods: {element: "ice", scale: 0.8, piercing: true}
-                }),
-                CreateEffect(EFFECT_TYPE.MODIFY_PROJECTILE, {
-                    mods: {element: "lightning", scale: 1.0}
-                })
-            ]
-        }),
-        
-        triggers: [MOD_TRIGGER.ON_ATTACK],
-        
-        action: function(_entity, _event) {
-            var mod_instance = _event.mod_instance;
-            
-            if (mod_instance.pattern.should_trigger()) {
-                mod_instance.effect.execute(_entity, _event);
-            }
-        }
-    },
-    
-    // 25% chance to double shot
-    LuckyShot: {
-        id: MOD_ID.LUCKY_SHOT,
-        name: "Lucky Shot",
-        
-        pattern: CreatePattern(PATTERN_TYPE.CHANCE, {chance: 0.25}),
-        effect: CreateEffect(EFFECT_TYPE.SPAWN_PROJECTILE, {
-            projectile: obj_arrow,  // Same as original
-            count: 1
-        }),
-        
-        triggers: [MOD_TRIGGER.ON_ATTACK],
-        action: function(_entity, _event) {
-            var mod_instance = _event.mod_instance;
-            
-            if (mod_instance.pattern.should_trigger()) {
-                mod_instance.effect.execute(_entity, _event);
-            }
-        }
-    }
-};
 
 
 Weapon_ =
@@ -463,13 +205,25 @@ Weapon_ =
 			primary_cooldown: 30,
 			secondar_cooldown: 30,
 			
-			primary_attack: function(_self, _direction, _range, _projectile_struct)
-			{
-				var _attack = Shoot_Projectile(_self, _direction, _self, _range, _projectile_struct, obj_arrow);
-				var _angle_rad = degtorad(_direction);
-				return _attack;
-				
-			},
+			primary_attack: function(_self, _direction, _range, _projectile_struct) {
+            // Create the arrow
+            var _attack = Shoot_Projectile(_self, _direction, _self, _range, _projectile_struct, obj_arrow);
+            
+            // Trigger modifiers with projectile reference
+            var attack_event = {
+                attack_type: "ranged",
+                attack_direction: _direction,
+                attack_position_x: _self.x,
+                attack_position_y: _self.y,
+                projectile: _attack,  // The created arrow
+                weapon: self,
+                damage: _self.attack
+            };
+            
+            TriggerModifiers(_self, MOD_TRIGGER.ON_ATTACK, attack_event);
+            
+            return _attack;
+        	},
 			secondary_attack: function(_self, _direction, _range, _projectile_struct)
 			{
 				var _attack = Lob_Projectile(_self, _direction, _range, projectile_struct.object);
@@ -522,57 +276,22 @@ Modifiers =
 }
 
 
-function ApplyStatModifiers(_self, _mods)
-{
-	var mod_hp_total = 0;
-	var mod_attack_total = 0;
-	var mod_knockback_total = 0;
-	var mod_speed_total = 0;
-	
-	
-	
-	for (var i = 0; i < array_length(_mods) - 1; i++)
-	{
-		var _current_mod = _mods[i];
-		
-		if (variable_struct_exists(_current_mod, "hp_mod")) mod_hp_total += _current_mod.hp_mod;
-		
-		if (variable_struct_exists(_current_mod, "attack_mod")) mod_attack_total += _current_mod.attack_mod;
-		
-		if (variable_struct_exists(_current_mod, "knockback_mod")) mod_knockback_total += _current_mod.knockback_mod;
-		
-		if (variable_struct_exists(_current_mod, "speed_mod")) mod_speed_total += _current_mod.speed_mod;
-	}
-	
-	
-	
-	var _ret = 
-	{
-		hp_mod:			0,
-		attack_mod:   	0,
-		knockback_mod: 	0,
-		speed_mod:		0,
-	}
-}
-
-function RunActiveModifiers(_self, _mods)
-{
-	for (var i = 0; i < array_length(_mods) - 1; i++)
-	{
-		var _current_mod = _mods[i];
-		
-		if (variable_struct_exists(_current_mod, "action")) _current_mod.action(_self);
-	}
-}
 
 mods = [];
 
 
 
-
-
-
-
 weaponCurrent = Weapon_.Bow;
 
+// In your Player CREATE event:
+mod_list = [];
+mod_cache = {
+    stats: {},
+    dirty: true,
+    last_update: 0
+};
 
+// TEST: Add some modifiers for testing
+AddModifier(id, "TripleRhythmFire");  // Every 3rd attack spawns fireball
+AddModifier(id, "DoubleLightning");    // Every 2nd attack adds lightning
+AddModifier(id, "SpreadFire");

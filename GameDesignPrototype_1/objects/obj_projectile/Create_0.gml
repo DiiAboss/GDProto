@@ -33,3 +33,7 @@ owner = noone;
 shadowSprite = spr_orb;
 
 drawDirection = direction;
+
+targetX = 0;
+targetY = 0;
+groundShadowY = 0;

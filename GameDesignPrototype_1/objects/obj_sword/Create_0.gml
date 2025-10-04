@@ -48,6 +48,9 @@ currentPosition = SwingPosition.Down;
 targetPosition = SwingPosition.Up; // Where we're swinging to next
 
 // Position offsets from player direction
+baseAngleOffset = 100;
+angleOffsetMod = 1;
+
 downAngleOffset = 100; // Down/right position offset
 upAngleOffset = -100; // Up/left position offset
 currentAngleOffset = downAngleOffset; // Start at down position
