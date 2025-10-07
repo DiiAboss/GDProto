@@ -5,6 +5,23 @@ enum Weapon
 	Bow = 1,
 }
 
+enum AttackType {
+    LIGHT = 0,
+    HEAVY = 1,
+    DASH = 2
+}
+
+enum ComboState {
+    IDLE = 0,
+    LIGHT_1 = 1,
+    LIGHT_2 = 2,
+    LIGHT_3 = 3,
+    HEAVY_1 = 4,
+    HEAVY_FINISHER = 5
+}
+
+
+
 enum CONTROL_TYPE
 {
     KBM,
