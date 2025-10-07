@@ -75,10 +75,7 @@ if (hitPlayer != noone) {
             
             // Damage based on impact speed
             var impactDamage = round(playerSpeed * 2); // Speed-based damage
-            hp -= impactDamage;
-            
-
-            spawn_damage_number(x, y - 16, impactDamage, c_yellow, false);
+            takeDamage(self, impactDamage);
             
             
             // Screen shake for hard impact

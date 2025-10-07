@@ -8,6 +8,9 @@ speed = 8;
 life = 100;
 active = true;
 
+damage = 10;
+piercing = false;
+
 
 // Drawing
 sprite = sprite_index;
@@ -37,3 +40,5 @@ drawDirection = direction;
 targetX = 0;
 targetY = 0;
 groundShadowY = 0;
+
+can_trigger_modifiers = true;  // Default to true, set to false if needed

@@ -10,7 +10,7 @@ if (enemy != noone) {
         }
     }
     
-    if (canHit) {
+    if (canHit) && enemy != noone {
         // Calculate impact velocity for bonus damage
         var impactSpeed = point_distance(0, 0, enemy.knockbackX, enemy.knockbackY);
         
@@ -20,7 +20,7 @@ if (enemy != noone) {
         damage = round(damage);
         
         // Deal damage
-        enemy.hp -= damage;
+        takeDamage(enemy, damage);
         
         // STOP the enemy completely (key spike behavior)
         enemy.knockbackX = 0;
@@ -35,9 +35,6 @@ if (enemy != noone) {
         bloodTimer = 20;
         shake = min(impactSpeed * 0.5, 5);
         
-        // Spawn damage number with special color for spike damage
-        if (instance_exists(obj_damage_number)) {
-            spawn_damage_number(enemy.x, enemy.y - 16, damage, c_red, impactSpeed > 10);
-        }
+        
     }
 }

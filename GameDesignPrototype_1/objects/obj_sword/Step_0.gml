@@ -37,8 +37,8 @@ if (instance_exists(owner)) {
         
         if (swingProgress <= 1) {
             // Interpolate between positions
-            var startOffset = (currentPosition == SwingPosition.Down) ? downAngleOffset : upAngleOffset;
-            var endOffset = (targetPosition == SwingPosition.Up) ? upAngleOffset : downAngleOffset;
+            var startOffset = (currentPosition == SwingPosition.Down) ? angleOffset : -angleOffset;
+            var endOffset = (targetPosition == SwingPosition.Up) ? -angleOffset : angleOffset;
             
             // Smooth easing curve for more dynamic swing
             var t = swingProgress;
@@ -53,7 +53,7 @@ if (instance_exists(owner)) {
             
             // Update current position to where we swung to
             currentPosition = targetPosition;
-            currentAngleOffset = (currentPosition == SwingPosition.Down) ? downAngleOffset : upAngleOffset;
+            currentAngleOffset = (currentPosition == SwingPosition.Down) ? angleOffset : -angleOffset;
             
             // Reset combo timer
             comboTimer = comboWindow;
@@ -95,8 +95,8 @@ if (instance_exists(owner)) {
 		    var damage = baseDamage * (1 + comboCount * 0.25); // +25% per combo
 				
 		    // Deal damage
-		    hit.hp -= damage;
-		    hit.took_damage = damage;
+		
+		    takeDamage(hit, damage);
 		    
 			if (hit.hp <= 0)
 			{

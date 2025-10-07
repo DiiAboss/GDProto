@@ -31,6 +31,8 @@ function Input() constructor
 	AltButtonType = BUTTON_TYPE.MOUSE;
 	Alt		  = false;
 	AltPress  = false;
+	AltHold = mouse_check_button(mb_right);
+	AltRelease = mouse_check_button_released(mb_right);
 	
 	Action    = false;
 	Back      = false;

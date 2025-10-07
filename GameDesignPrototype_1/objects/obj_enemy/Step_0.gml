@@ -38,14 +38,10 @@ if (abs(knockbackX) > knockbackThreshold || abs(knockbackY) > knockbackThreshold
             impactDamage = min(impactDamage, maxImpactDamage);
             impactDamage = round(impactDamage);
             
-            // Apply damage
-            hp -= impactDamage;
+   
             wallHitCooldown = 30; // Prevent multiple hits
-            
-            // Visual feedback - spawn damage number
-            if (instance_exists(obj_damage_number)) {
-                spawn_damage_number(x, y - 16, impactDamage, c_orange, false);
-            }
+            takeDamage(self, impactDamage);
+   
             
             // Screen shake for hard impacts
             if (impactSpeed > 8) {
@@ -89,13 +85,10 @@ if (abs(knockbackX) > knockbackThreshold || abs(knockbackY) > knockbackThreshold
             impactDamage = round(impactDamage);
             
             // Apply damage
-            hp -= impactDamage;
+            takeDamage(self, impactDamage);
             wallHitCooldown = 30;
 			
-            // Visual feedback
-            if (instance_exists(obj_damage_number)) {
-                spawn_damage_number(x, y - 16, impactDamage, c_orange, false);
-            }
+
             
             // Screen shake for hard impacts
             if (impactSpeed > 8) {
@@ -219,24 +212,39 @@ if (took_damage != 0)
 }
 
 
-// Death check
-if (hp <= 0) && !marked_for_death {
-	marked_for_death = true;
-	image_angle = choose(90, 270);
+if (hp <= 0 && !marked_for_death) {
+    marked_for_death = true;
+    image_angle = choose(90, 270);
+    
+    // IMPORTANT: Trigger ON_KILL only ONCE when first marked for death
+    var killer = obj_player;  // Or whoever killed them
+    
+    if (killer != noone && instance_exists(killer)) {
+        var kill_event = {
+            enemy_x: x,
+            enemy_y: y,
+            damage: killer.attack,
+            kill_source: "direct",
+            enemy_type: object_index
+        };
+        
+        TriggerModifiers(killer, MOD_TRIGGER.ON_KILL, kill_event);
+    }
 }
-
 
 if (marked_for_death) {
     if (knockbackX == 0 && knockbackY == 0) {
-        // Spawn EXP through manager
-            // Spawn 1-3 orbs based on enemy type
-            var orbCount = irandom_range(1, 3);
-            for (var i = 0; i < orbCount; i++) {
-                var _exp = instance_create_depth(x, y, depth -1, obj_exp);
-				_exp.direction = irandom(359);
-				_exp.speed = 3;
-            }
+        // Spawn EXP
+        var orbCount = irandom_range(1, 3);
+        for (var i = 0; i < orbCount; i++) {
+            var _exp = instance_create_depth(x, y, depth -1, obj_exp);
+            _exp.direction = irandom(359);
+            _exp.speed = 3;
+        }
         
+        // NOW destroy - no more ON_KILL triggers here!
         instance_destroy();
     }
 }
+
+

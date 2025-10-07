@@ -1,11 +1,22 @@
 global.Projectile_ = 
 {
-	Arrow:
-		{
-			name: "arrow",
-			description: "Basic Arrow",
-			object: obj_arrow
-		}
+    Arrow: {
+        name: "arrow",
+        description: "Basic Arrow",
+        object: obj_arrow
+    },
+    
+    Cannonball: {
+        name: "cannonball",
+        description: "Heavy cannonball projectile",
+        object: obj_projectile  // or obj_cannonball if you have a specific one
+    },
+    
+    Boomerang: {
+        name: "boomerang",
+        description: "Returning projectile",
+        object: obj_boomerang
+    }
 }
 
 

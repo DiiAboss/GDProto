@@ -1,16 +1,13 @@
 {
   "$GMObject":"",
-  "%Name":"obj_exp",
-  "eventList":[
-    {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":0,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
-    {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":3,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
-  ],
+  "%Name":"obj_lightning_strike",
+  "eventList":[],
   "managed":true,
-  "name":"obj_exp",
+  "name":"obj_lightning_strike",
   "overriddenProperties":[],
   "parent":{
-    "name":"Player",
-    "path":"folders/Objects/In-Game/Player.yy",
+    "name":"Objects",
+    "path":"folders/Objects.yy",
   },
   "parentObjectId":null,
   "persistent":false,
@@ -30,10 +27,7 @@
   "resourceType":"GMObject",
   "resourceVersion":"2.0",
   "solid":false,
-  "spriteId":{
-    "name":"spr_exp",
-    "path":"sprites/spr_exp/spr_exp.yy",
-  },
+  "spriteId":null,
   "spriteMaskId":null,
   "visible":true,
 }

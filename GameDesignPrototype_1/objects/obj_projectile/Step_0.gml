@@ -66,5 +66,57 @@ if (projectileType == PROJECTILE_TYPE.LOB) {
 }
 
 
+if (place_meeting(x, y, obj_enemy)) {
+    var enemy = instance_place(x, y, obj_enemy);
+    
+    if (enemy != noone) {
+        // IMPORTANT: Skip if enemy is already dead
+        if (variable_instance_exists(enemy, "marked_for_death") && enemy.marked_for_death) {
+            // Don't hit dead enemies
+            return;
+        }
+        
+        // Track who hit the enemy
+        enemy.last_hit_by = owner;
+        enemy.last_damage_taken = damage;
+        
+        // Deal damage
+        takeDamage(enemy, damage);
+		
+        // Trigger ON_HIT modifiers
+        var should_trigger = variable_instance_exists(id, "can_trigger_modifiers") ? can_trigger_modifiers : true;
+        
+        if (owner != noone && should_trigger) {
+            var hit_event = {
+                target: enemy,
+                damage: damage,
+                attack_position_x: x,
+                attack_position_y: y,
+                projectile: id
+            };
+            
+            TriggerModifiers(owner, MOD_TRIGGER.ON_HIT, hit_event);
+        }
+        
+        // Check for kill - but don't trigger if already marked
+        if (enemy.hp <= 0 && !enemy.marked_for_death) {
+            if (owner != noone) {
+                var kill_event = {
+                    enemy_x: enemy.x,
+                    enemy_y: enemy.y,
+                    damage: damage,
+                    kill_source: "projectile",
+                    enemy_type: enemy.object_index
+                };
+                
+                TriggerModifiers(owner, MOD_TRIGGER.ON_KILL, kill_event);
+            }
+        }
+        
+        if (!piercing) {
+            instance_destroy();
+        }
+    }
+}
 
 

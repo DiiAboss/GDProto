@@ -20,8 +20,7 @@ if (hit != noone) {
 	var damage = baseDamage;
 	
 	// Deal damage
-	hit.hp -= damage;
-	hit.took_damage = damage;
+	takeDamage(hit, damage);
 	// Apply knockback using custom knockback variables
 	if (hit.knockbackCooldown <= 0) {
 		var knockbackDir = point_direction(owner.x, owner.y, hit.x, hit.y);

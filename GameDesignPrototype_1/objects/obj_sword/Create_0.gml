@@ -50,9 +50,10 @@ targetPosition = SwingPosition.Up; // Where we're swinging to next
 // Position offsets from player direction
 baseAngleOffset = 100;
 angleOffsetMod = 1;
+angleOffset = baseAngleOffset * angleOffsetMod;
 
-downAngleOffset = 100; // Down/right position offset
-upAngleOffset = -100; // Up/left position offset
+downAngleOffset = angleOffset; // Down/right position offset
+upAngleOffset = -angleOffset; // Up/left position offset
 currentAngleOffset = downAngleOffset; // Start at down position
 knockbackForce = 64;
 // Combo tracking

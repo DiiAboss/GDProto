@@ -21,3 +21,11 @@ function calculate_stats(self, base_attack, base_hp, base_knockback, base_spd) {
     
     return [atk, hp, kb, spd];
 }
+
+
+function takeDamage(_self, _damage, _damage_object = noone)
+{
+	_self.hp -= _damage;
+	spawn_damage_number(_self.x, _self.y - 16, _damage, c_orange, false);
+	
+}

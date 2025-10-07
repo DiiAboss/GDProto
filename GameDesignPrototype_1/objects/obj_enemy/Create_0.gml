@@ -56,7 +56,9 @@ knockbackConfig =
 }
 
 
-
+last_hit_by = noone;
+last_damage_taken = 0;
+hp = hp ?? 100;  // Default HP if not set
 
 
 // Breathing/Pulse effect (idle animation)

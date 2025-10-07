@@ -24,7 +24,7 @@ mySpeed        = base_speed;
 
 attack_counter = 0;
 
-
+projectile_count_bonus = 0;
 
 mouseDirection = 0;
 mouseDistance = 0;
@@ -51,6 +51,12 @@ enum ComboState {
     HEAVY_FINISHER = 5
 }
 
+
+// Charge weapon system
+charge_amount = 0;        // 0 to 1
+charge_rate = 0.02;       // How fast it charges per frame
+max_charge_time = 100;    // Frames to full charge
+is_charging = false;
 // ===========================================
 // PLAYER CREATE EVENT
 // ===========================================
@@ -231,19 +237,170 @@ Weapon_ =
 			},
 		},
 	
-	Sword:
-		{
-			name: "",
-			description: "",
-			type: WeaponType.Melee,
-			
-			primary_attack_type: "swing",
-			secondary_attack_type: "lunge",
-
-			object: obj_sword,
-			primary_attack: function(){},
-			secondary_attack: function(){}
-		}
+	Sword: {
+        name: "Sword",
+        type: WeaponType.Melee,
+        projectile_struct: undefined,  // Add this - swords don't use projectiles
+        
+        primary_attack: function(_self, _direction, _range, _projectile_struct) {
+            // _projectile_struct is ignored for melee
+            if (!instance_exists(_self.sword)) return noone;
+            
+            _self.sword.attack = _self.attack;
+            _self.sword.startSwing = true;
+            
+            var attack_event = {
+                attack_type: "melee",
+                attack_direction: _direction,
+                attack_position_x: _self.x,
+                attack_position_y: _self.y,
+                damage: _self.attack,
+                weapon: self
+            };
+            
+            TriggerModifiers(_self, MOD_TRIGGER.ON_ATTACK, attack_event);
+            
+            return _self.sword;
+        },
+        
+        secondary_attack: function(_self, _direction, _range, _projectile_struct) {
+            // Heavy attack or block
+        }
+    },
+    
+    Boomerang: {
+        name: "Boomerang",
+        type: WeaponType.Range,
+        projectile_struct: global.Projectile_.Boomerang,  // Add this
+        cooldown: 0,
+        cooldown_max: 60,
+        
+        primary_attack: function(_self, _direction, _range, _projectile_struct) {
+            if (cooldown > 0) return noone;
+            
+            var _b = instance_create_layer(_self.x, _self.y, "Instances", obj_boomerang);
+            _b.owner = _self.id;
+            _b.direction = _direction;
+            _b.image_angle = _direction;
+            
+            cooldown = cooldown_max;
+            
+            var attack_event = {
+			    attack_type: "ranged",  // Changed from "boomerang"
+			    attack_direction: _direction,
+			    attack_position_x: _self.x,
+			    attack_position_y: _self.y,
+			    damage: _b.damage,
+			    projectile: _b,
+			    weapon: self
+			};
+            
+            TriggerModifiers(_self, MOD_TRIGGER.ON_ATTACK, attack_event);
+            return _b;
+        },
+        
+        secondary_attack: function(_self, _direction, _range, _projectile_struct) {
+            // No secondary for now
+        },
+        
+        step: function(_self) {
+            if (cooldown > 0) cooldown--;
+        }
+    },
+	ChargeCannon: {
+        name: "Charge Cannon",
+        description: "Hold right-click to charge, left-click to fire",
+        type: WeaponType.Range,
+        projectile_struct: global.Projectile_.Cannonball,
+        
+        // Charge properties
+        min_charge: 0.2,
+        charge_rate: 0.015,
+        
+        // Knockback to player on fire
+        self_knockback: true,
+        self_knockback_force: 25,
+        
+        primary_attack: function(_self, _direction, _range, _projectile_struct) {
+            // Only fire if charged enough
+            if (_self.charge_amount < min_charge) return noone;
+            
+            var charge_mult = _self.charge_amount;
+            
+            // Create cannonball
+            var proj = instance_create_depth(
+                _self.x, 
+                _self.y, 
+                _self.depth - 1, 
+                obj_projectile
+            );
+            
+            // Scale by charge
+            proj.direction = _direction;
+            proj.speed = lerp(10, 20, charge_mult);
+            proj.damage = _self.attack * lerp(1, 3, charge_mult);
+            proj.owner = _self.id;
+            proj.image_angle = _direction;
+            
+            // Visual scaling
+            proj.image_xscale = lerp(1, 2.5, charge_mult);
+            proj.image_yscale = lerp(1, 2.5, charge_mult);
+            
+            // Knockback power for projectile
+            if (variable_instance_exists(proj, "knockback_power")) {
+                proj.knockback_power = lerp(10, 50, charge_mult);
+            }
+            
+            // Launch player backwards
+            if (self_knockback) {
+                var recoil = self_knockback_force * charge_mult;
+                _self.knockbackX = lengthdir_x(-recoil, _direction);
+                _self.knockbackY = lengthdir_y(-recoil, _direction);
+                _self.knockbackPower = recoil;
+                _self.isCannonBalling = true;
+            }
+            
+            // Trigger modifiers
+            var attack_event = {
+                attack_type: "cannon",
+                attack_direction: _direction,
+                attack_position_x: _self.x,
+                attack_position_y: _self.y,
+                projectile: proj,
+                weapon: self,
+                damage: proj.damage,
+                charge_amount: charge_mult
+            };
+            
+            TriggerModifiers(_self, MOD_TRIGGER.ON_ATTACK, attack_event);
+            
+            // Reset charge
+            _self.charge_amount = 0;
+            _self.is_charging = false;
+            
+            return proj;
+        },
+        
+        secondary_attack: function(_self, _direction, _range, _projectile_struct) {
+            // Secondary is just the charging mechanic (handled in step)
+            // Could add alternate fire mode here if desired
+        },
+        
+        step: function(_self) {
+            // Update cannonball state
+            if (_self.isCannonBalling) {
+                // Check if we've slowed down enough
+                if (abs(_self.knockbackX) < 2 && abs(_self.knockbackY) < 2) {
+                    _self.isCannonBalling = false;
+                }
+                
+                // Trail effect while cannonballing
+                if (current_time % 2 == 0) {
+                    // Create afterimage or particle
+                }
+            }
+        }
+    },
 }
 
 
@@ -294,4 +451,15 @@ mod_cache = {
 // TEST: Add some modifiers for testing
 AddModifier(id, "TripleRhythmFire");  // Every 3rd attack spawns fireball
 AddModifier(id, "DoubleLightning");    // Every 2nd attack adds lightning
-AddModifier(id, "SpreadFire");
+
+AddModifier(id, "MultiShot");  
+
+AddModifier(id, "SpreadFire"); 
+AddModifier(id, "ChainLightning");  // 25% chance on every attack
+// or
+AddModifier(id, "StaticCharge");    // Builds up then releases
+// or  
+AddModifier(id, "ThunderStrike");   // Melee-only lightning
+AddModifier(id, "ChainLightning");  // Lightning on hit
+AddModifier(id, "DeathFireworks");  // Explosion on kill
+AddModifier(id, "ChainReaction");   // Explosion kills cause more explosions
