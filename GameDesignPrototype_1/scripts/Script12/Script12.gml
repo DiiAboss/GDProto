@@ -16,6 +16,11 @@ global.Projectile_ =
         name: "boomerang",
         description: "Returning projectile",
         object: obj_boomerang
+    },
+	Knife: {
+        name: "knife",
+        description: "Thrown dagger",
+        object: obj_knife  // or obj_projectile if you don't have obj_knife yet
     }
 }
 

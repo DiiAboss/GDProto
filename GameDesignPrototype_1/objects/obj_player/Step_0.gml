@@ -22,21 +22,46 @@ mouseDistance = distance_to_point(mouse_x, mouse_y);
 // ===================================
 // WEAPON SWITCHING
 // ===================================
+// In weapon switching code:
 if (keyboard_check_pressed(ord("1"))) {
+    if (instance_exists(melee_weapon)) instance_destroy(melee_weapon);
     weaponCurrent = Weapon_.Bow;
+    melee_weapon = noone; // Ranged weapon, no melee object
     show_debug_message("Switched to Bow");
 }
+
 if (keyboard_check_pressed(ord("2"))) {
+    if (instance_exists(melee_weapon)) instance_destroy(melee_weapon);
     weaponCurrent = Weapon_.Sword;
+    melee_weapon = instance_create_depth(x, y, depth-1, obj_sword);
+    melee_weapon.owner = id;
     show_debug_message("Switched to Sword");
 }
+
+if (keyboard_check_pressed(ord("5"))) {
+    if (instance_exists(melee_weapon)) instance_destroy(melee_weapon);
+    weaponCurrent = Weapon_.Dagger;
+    melee_weapon = instance_create_depth(x, y, depth-1, obj_dagger);
+    melee_weapon.owner = id;
+    show_debug_message("Switched to Dagger");
+}
 if (keyboard_check_pressed(ord("3"))) {
+	if (instance_exists(melee_weapon)) instance_destroy(melee_weapon);
     weaponCurrent = Weapon_.Boomerang;
     show_debug_message("Switched to Boomerang");
 }
 if (keyboard_check_pressed(ord("4"))) {
+	if (instance_exists(melee_weapon)) instance_destroy(melee_weapon);
     weaponCurrent = Weapon_.ChargeCannon;
     show_debug_message("Switched to Charge Cannon");
+}
+
+if (keyboard_check_pressed(ord("6"))) {
+    if (instance_exists(melee_weapon)) instance_destroy(melee_weapon);
+    weaponCurrent = Weapon_.BaseballBat;
+    melee_weapon = instance_create_depth(x, y, depth-1, obj_baseball_bat);
+    melee_weapon.owner = id;
+    show_debug_message("Switched to Baseball Bat");
 }
 
 // ===================================

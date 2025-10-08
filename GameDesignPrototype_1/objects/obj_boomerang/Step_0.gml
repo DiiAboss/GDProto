@@ -26,7 +26,7 @@ else { // RETURN
         // Catch when close
         if (point_distance(x, y, owner.x, owner.y) < 32) {
             var attack_event = {
-                attack_type: "ranged_return",
+                attack_type: AttackType.RANGED,
                 attack_direction: direction,
                 attack_position_x: x,
                 attack_position_y: y,

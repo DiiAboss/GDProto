@@ -21,7 +21,7 @@ function mod_heal_on_kill(player, _mod, enemy) {
 }
 
 function CreateBonusProjectiles(_entity, _event) {
-    if (_event.attack_type != "ranged" && _event.attack_type != "cannon") return;
+    if (_event.attack_type != AttackType.RANGED && _event.attack_type != AttackType.CANNON) return;
     
     var bonus_count = _event.projectile_count_bonus;
     if (bonus_count <= 0) return;
@@ -62,37 +62,26 @@ function CreateBonusProjectiles(_entity, _event) {
 
 
 function TriggerModifiers(_entity, _trigger, _event_data) {
-    if (!variable_instance_exists(_entity, "mod_list")) return;
+    if (!variable_instance_exists(_entity, "mod_cache")) return;
     
-    _event_data.trigger_type = _trigger;
+    // Get cached list of modifiers for this trigger
+    var trigger_str = string(_trigger);
+    var trigger_mods = _entity.mod_cache[$ trigger_str];
     
-    // Ensure we have a struct
-    if (!is_struct(_event_data)) _event_data = {};
+    if (trigger_mods == undefined || array_length(trigger_mods) == 0) return;
     
-    // Normalize common fields with safe defaults
-    if (!variable_struct_exists(_event_data, "attack_type"))       _event_data.attack_type = "unknown";
-    if (!variable_struct_exists(_event_data, "attack_direction"))  _event_data.attack_direction = 0;
-    if (!variable_struct_exists(_event_data, "attack_position_x")) _event_data.attack_position_x = (variable_instance_exists(_entity, "x") ? _entity.x : 0);
-    if (!variable_struct_exists(_event_data, "attack_position_y")) _event_data.attack_position_y = (variable_instance_exists(_entity, "y") ? _entity.y : 0);
-    if (!variable_struct_exists(_event_data, "damage"))            _event_data.damage = 0;
-    if (!variable_struct_exists(_event_data, "projectile"))        _event_data.projectile = noone;
-    if (!variable_struct_exists(_event_data, "weapon"))            _event_data.weapon = (variable_instance_exists(_entity, "weaponCurrent") ? _entity.weaponCurrent : noone);
-    if (!variable_struct_exists(_event_data, "projectile_count_bonus")) _event_data.projectile_count_bonus = 0;
-    
-    // Run all modifiers
-    for (var i = 0; i < array_length(_entity.mod_list); i++) {
-        var mod_instance = _entity.mod_list[i];
+    // Run all modifiers that respond to this trigger
+    for (var i = 0; i < array_length(trigger_mods); i++) {
+        var mod_instance = trigger_mods[i];
+        
+        if (!mod_instance.active) continue; // Skip inactive mods
+        
         var mod_template = global.Modifiers[$ mod_instance.template_key];
         
-        if (mod_template == undefined) {
-            show_debug_message("Modifier template not found: " + mod_instance.template_key);
-            continue;
-        }
+        if (mod_template == undefined) continue;
         
-        if (array_contains(mod_template.triggers, _trigger)) {
-            _event_data.mod_instance = mod_instance;
-            mod_template.action(_entity, _event_data);
-        }
+        _event_data.mod_instance = mod_instance;
+        mod_template.action(_entity, _event_data);
     }
     
     // AFTER all modifiers run, create bonus projectiles
@@ -104,6 +93,7 @@ function TriggerModifiers(_entity, _trigger, _event_data) {
 function AddModifier(_entity, _modifier_key) {
     if (!variable_instance_exists(_entity, "mod_list")) {
         _entity.mod_list = [];
+        _entity.mod_cache = {}; // Cache modifiers by trigger
     }
     
     // Check if modifier exists
@@ -113,18 +103,29 @@ function AddModifier(_entity, _modifier_key) {
     }
     
     var mod_template = global.Modifiers[$ _modifier_key];
+    
+    // Create instance
     var mod_instance = {
         template_key: _modifier_key,
         counter: 0,
         active: true
     };
     
-    // Initialize any template-specific state
-    if (variable_struct_exists(mod_template, "init_state")) {
-        mod_template.init_state(mod_instance);
+    array_push(_entity.mod_list, mod_instance);
+    
+    // Cache by trigger type for fast lookup
+    for (var i = 0; i < array_length(mod_template.triggers); i++) {
+        var trigger = mod_template.triggers[i];
+        var trigger_str = string(trigger); // Convert enum to string for struct key
+        
+        if (!variable_struct_exists(_entity.mod_cache, trigger_str)) {
+            _entity.mod_cache[$ trigger_str] = [];
+        }
+        
+        array_push(_entity.mod_cache[$ trigger_str], mod_instance);
     }
     
-    array_push(_entity.mod_list, mod_instance);
+    show_debug_message("Added modifier: " + _modifier_key);
     return mod_instance;
 }
 
@@ -297,18 +298,48 @@ function CreateEffect(_type, _config) {
 }
 
 
-function CreateAttackEvent(_entity, _direction, _projectile = noone) {
+function CreateAttackEvent(_entity, _attack_type, _direction, _projectile = noone) {
     return {
-        attack_type: "ranged",
-        attack_direction: _direction,
+        trigger_type: MOD_TRIGGER.ON_ATTACK,
+        attack_type:	   _attack_type,
+        attack_direction:  _direction,
         attack_position_x: _entity.x,
         attack_position_y: _entity.y,
-        damage: _entity.attack,
-        projectile: _projectile,
-        weapon: _entity.weaponCurrent
+        damage:		 	   _entity.attack,
+        projectile:		   _projectile,
+        weapon:			   _entity.weaponCurrent,
+        projectile_count_bonus: 0,
+        combo_hit: 0
     };
 }
 
+function CreateHitEvent(_entity, _target, _damage, _attack_type = AttackType.MELEE) {
+    return {
+        trigger_type: MOD_TRIGGER.ON_HIT,
+        target: _target,
+        damage: _damage,
+        attack_position_x: _entity.x,
+        attack_position_y: _entity.y,
+        attack_type: _attack_type,
+        attack_direction: point_direction(_entity.x, _entity.y, _target.x, _target.y),
+        projectile: noone,
+        weapon: _entity.weaponCurrent,
+        projectile_count_bonus: 0
+    };
+}
+
+function CreateKillEvent(_entity, _enemy_x, _enemy_y, _damage) {
+    return {
+        trigger_type: MOD_TRIGGER.ON_KILL,
+        enemy_x: _enemy_x,
+        enemy_y: _enemy_y,
+        damage: _damage,
+        kill_source: "direct",
+        enemy_type: object_index,
+        attack_type: AttackType.UNKNOWN,
+        projectile_count_bonus: 0
+    };
+}
 
 
 
@@ -390,7 +421,7 @@ function scr_lightning_effect(x1, y1, x2, y2) {
 
 function EventData(_data = []) {
     var _event = _data;
-    if (!variable_struct_exists(_event, "attack_type")) _event.attack_type = "unknown";
+    if (!variable_struct_exists(_event, "attack_type")) _event.attack_type = AttackType.UNKNOWN;
     if (!variable_struct_exists(_event, "projectile"))  _event.projectile  = noone;
     if (!variable_struct_exists(_event, "target"))      _event.target      = noone;
     if (!variable_struct_exists(_event, "damage"))      _event.damage      = 0;

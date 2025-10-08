@@ -1,10 +1,4 @@
 
-enum WeaponType
-{
-	None,
-	Melee,
-	Range,
-}
 
 enum MOD_TAG {
     FIRE = 1 << 0,
@@ -143,7 +137,7 @@ global.Modifiers.DoubleLightning = {
             // Execute effect
             with (_entity) {
                 // Different effect based on attack type
-                if (_event.attack_type == "melee") {
+                if (_event.attack_type == AttackType.MELEE) {
                     // Create lightning strike at sword position
                     if (object_exists(obj_lightning_strike)) {
                         var lightning = instance_create_depth(
@@ -155,7 +149,7 @@ global.Modifiers.DoubleLightning = {
                         lightning.damage = _event.damage;
                         lightning.owner = id;
                     }
-                } else if (_event.attack_type == "cannon" || _event.attack_type == "ranged") {
+                } else if (_event.attack_type == AttackType.CANNON || _event.attack_type == AttackType.RANGED) {
                     // Create chain lightning from player
                     if (object_exists(obj_chain_lightning)) {
                         var chain = instance_create_depth(
@@ -185,18 +179,18 @@ global.Modifiers.SpreadFire = {
         var mod_template = global.Modifiers[$ _event.mod_instance.template_key];
         
         // MELEE: Keep this exactly as is
-        if (_event.attack_type == "melee") {
+        if (_event.attack_type == AttackType.MELEE) {
             with (_entity) {
-                if (instance_exists(sword)) {
-                    if (!variable_instance_exists(sword, "swing_arc")) {
-                        sword.swing_arc = 90;
+                if (instance_exists(melee_weapon)) {
+                    if (!variable_instance_exists(melee_weapon, "swing_arc")) {
+                        melee_weapon.swing_arc = 90;
                     }
-                    sword.swing_arc += mod_template.melee_arc_bonus;
+                    melee_weapon.swing_arc += mod_template.melee_arc_bonus;
                 }
             }
         } 
         // RANGED: Only add to bonus count, don't create projectiles
-        else if (_event.attack_type == "ranged" || _event.attack_type == "cannon") {
+        else if (_event.attack_type == AttackType.RANGED || _event.attack_type == AttackType.CANNON) {
             _event.projectile_count_bonus += mod_template.extra_projectiles;
         }
     }
@@ -352,19 +346,19 @@ global.Modifiers.ThunderStrike = {
         var mod_template = global.Modifiers[$ _event.mod_instance.template_key];
         
         // Only works on melee attacks
-        if (_event.attack_type != "melee") return;
+        if (_event.attack_type != AttackType.MELEE) return;
         
         // Roll for proc
         if (random(1) > mod_template.proc_chance) return;
         
         // Create lightning at sword impact point
         with (_entity) {
-            if (instance_exists(sword)) {
+            if (instance_exists(melee_weapon)) {
                 // Find enemies hit by sword
                 var hit_list = ds_list_create();
                 var hit_count = instance_place_list(
-                    sword.x, 
-                    sword.y, 
+                    melee_weapon.x, 
+                    melee_weapon.y, 
                     obj_enemy, 
                     hit_list,
 					true
@@ -379,7 +373,7 @@ global.Modifiers.ThunderStrike = {
                         first_target,
                         3,
                         120,
-                        sword.attack * 0.75,
+                        melee_weapon.attack * 0.75,
                         0.6
                     );
                 }
@@ -506,7 +500,7 @@ global.Modifiers.MultiShot = {
     extra_projectiles: 1,
     
     action: function(_entity, _event) {
-        if (_event.attack_type != "ranged" && _event.attack_type != "cannon") return;
+        if (_event.attack_type != AttackType.RANGED && _event.attack_type != AttackType.CANNON) return;
         
         // Only add to bonus count, don't create projectiles
         _event.projectile_count_bonus += 1;
@@ -527,7 +521,7 @@ global.Modifiers.BurstFire = {
         var mod_template = global.Modifiers[$ mod_instance.template_key];
         
         // Only works on ranged
-        if (_event.attack_type != "ranged" && _event.attack_type != "cannon") return;
+        if (_event.attack_type != AttackType.RANGED && _event.attack_type != AttackType.CANNON) return;
         
         // Initialize burst state
         if (!variable_struct_exists(mod_instance, "burst_shots_remaining")) {

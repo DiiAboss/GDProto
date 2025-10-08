@@ -9,7 +9,7 @@ takeDamage(other, damage);
 
 // Build a normalized hit event
 var hit_event = {
-    attack_type: "ranged",
+    attack_type: AttackType.RANGED,
     attack_direction: point_direction(x, y, other.x, other.y),
     attack_position_x: x,
     attack_position_y: y,
