@@ -1,6 +1,4 @@
 
-
-
 mySpeed = 4;
 myDir = 0;
 aimDirection = 0;
@@ -43,9 +41,13 @@ charge_amount = 0;        // 0 to 1
 charge_rate = 0.02;       // How fast it charges per frame
 max_charge_time = 100;    // Frames to full charge
 is_charging = false;
-// ===========================================
-// PLAYER CREATE EVENT
-// ===========================================
+
+
+#region Combo and Attack System (Might need rework)
+
+
+button_combo_array = [];
+button_combo_timer = 30;
 
 // Attack Buffer System (using arrays instead of ds_list)
 attack_buffer = [];
@@ -124,7 +126,7 @@ combo_transitions = [
     // HEAVY_FINISHER state
     [-1, -1, ComboState.IDLE]  // Only dash can interrupt
 ];
-
+#endregion
 
 
 depth = -y;
@@ -141,7 +143,7 @@ movement = new PlayerMovement(self, 4);
 isDashing = false;
 
 currentSprite = spr_char_left;
-
+controllerType = CONTROL_TYPE.KBM;
 
 
 //orb = instance_create_depth(x, y, depth - 1, obj_player_orb);
@@ -152,7 +154,7 @@ currentSprite = spr_char_left;
 
 shotSpeed = 12;
 
-controllerType = CONTROL_TYPE.KBM;
+
 
 canDash = true;
 dashTimer = 0;
@@ -170,10 +172,13 @@ knockbackPower = 0;
 knockbackCooldown = 0;
 knockbackCooldownMax = 10; // Frames of immunity after being hit
 
+
+/// ----------- Needs to be contained---------------------------------------------
 cannonCooldown = 0;
 cannonCooldownMax = 30; // Half second between cannon uses
 isCannonBalling = false; // Track if we're in cannon ball state
 cannonDamage = 20; // Damage dealt when ramming enemies
+/// ----------- Needs to be contained--------------------------------------------
 
 
 
@@ -183,6 +188,7 @@ mod_triggers = {};      // Modifiers sorted by trigger for fast lookup
 melee_weapon = noone;
 
 
+#region Weapon Structure
 Weapon_ =
 {
 	Bow: {
@@ -512,51 +518,25 @@ Weapon_ =
         }
     },
 }
+#endregion
 
 
 
-Modifiers =
-{
-	KnockbackPotion:
-	{
-		name: "Knockback Potion",
-		description: "",
-		sprite: noone,
-		image: noone,
-		hp_mod: 0,
-		attack_mod: 0,
-		knockback_mod: 0,
-		speed_mod: 0, 
-	},
-	
-	DoubleShot:
-	{ 
-	counter: 3, 
-	action: function(_self)
-		{
-			with (_self)
-			{
-				
-			}
-		}
-	}
-}
-
-
-
-mods = [];
 
 
 
 weaponCurrent = Weapon_.Dagger;
 
-// In your Player CREATE event:
+
 mod_list = [];
 mod_cache = {
     stats: {},
     dirty: true,
     last_update: 0
 };
+
+
+
 
 // TEST: Add some modifiers for testing
 AddModifier(id, "TripleRhythmFire");  // Every 3rd attack spawns fireball

@@ -71,6 +71,9 @@ var _hasMoved = movement.Update(input);
 image_speed = _hasMoved ? 0.4 : 0.2;
 currentSprite = SpriteHandler.UpdateSpriteByAimDirection(currentSprite, mouseDirection);
 
+
+
+#region Charge Weapon Handling
 // ===================================
 // CHARGE WEAPON HANDLING
 // ===================================
@@ -96,7 +99,10 @@ if (variable_struct_exists(weaponCurrent, "charge_rate")) {
         charge_amount = max(charge_amount - 0.005, 0);
     }
 }
+#endregion
 
+
+#region Weapon Attacks
 // ===================================
 // WEAPON ATTACKS
 // ===================================
@@ -107,10 +113,9 @@ if (input.FirePress) {
 if (input.AltPress) {
     weaponCurrent.secondary_attack(self, mouseDirection, mouseDistance, weaponCurrent.projectile_struct);
 }
+#endregion
 
-// ===================================
-// WEAPON STEP UPDATE
-// ===================================
+
 // Update current weapon (cooldowns, timers, etc)
 if (variable_struct_exists(weaponCurrent, "step")) {
     weaponCurrent.step(self);
