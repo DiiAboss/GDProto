@@ -1,9 +1,9 @@
 {
   "$GMObject":"",
-  "%Name":"obj_camera",
+  "%Name":"obj_chest",
   "eventList":[],
   "managed":true,
-  "name":"obj_camera",
+  "name":"obj_chest",
   "overriddenProperties":[],
   "parent":{
     "name":"Objects",
@@ -27,7 +27,10 @@
   "resourceType":"GMObject",
   "resourceVersion":"2.0",
   "solid":false,
-  "spriteId":null,
+  "spriteId":{
+    "name":"spr_chest",
+    "path":"sprites/spr_chest/spr_chest.yy",
+  },
   "spriteMaskId":null,
   "visible":true,
 }

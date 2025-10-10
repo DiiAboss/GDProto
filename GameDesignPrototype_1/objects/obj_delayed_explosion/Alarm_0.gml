@@ -54,8 +54,8 @@ ds_list_destroy(hit_list);
 //}
 
 // Screen shake if you have it
-if (instance_exists(obj_camera)) {
-    obj_camera.shake = 10;
+if (instance_exists(obj_camera_controller)) {
+    obj_camera_controller.shake = 10;
 }
 
 // Cleanup

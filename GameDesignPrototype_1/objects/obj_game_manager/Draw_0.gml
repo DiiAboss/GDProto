@@ -1,3 +1,6 @@
+
+
+
 // Set drawing color to black
 draw_set_color(c_black);
 draw_set_alpha(1);
@@ -25,3 +28,6 @@ draw_rectangle(playRight, playTop, room_width + padding, playBottom, false);
 
 // Reset color
 draw_set_color(c_white);
+
+
+

@@ -50,6 +50,13 @@ enum ENEMY_STATE
 }
 
 
+enum PlayerClass {
+    RANGER,
+    MELEE
+}
+
+
+
 	// Directional MACROS
 	#macro NORTH 90
 	#macro WEST 180

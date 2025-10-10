@@ -46,3 +46,42 @@ var _mod = get_mod_by_id("attack_up");
 if (_mod != undefined) {
     array_push(obj_game_manager.playerModsArray, _mod);
 }
+
+
+
+var options = [
+    { name: "Fireball", desc: "Shoots a blazing orb at enemies.", sprite: modifier_bg },
+    { name: "Lightning", desc: "Strikes nearby foes.", sprite: modifier_bg },
+    { name: "Healing", desc: "Regain health over time.", sprite: modifier_bg }
+];
+
+// When player selects, we’ll print the choice for now
+function onSelection(index, option) {
+    show_debug_message("Player selected: " + option.name);
+}
+
+function open_test_popup() {
+    var options = [
+        { name: "Fireball", desc: "Shoots a blazing orb at enemies.", sprite: modifier_bg },
+        { name: "Lightning", desc: "Strikes nearby foes with shocking power.", sprite: modifier_bg },
+        { name: "Healing", desc: "Regains health over time.", sprite: modifier_bg }
+    ];
+
+    function onSelect(index, option) {
+        show_debug_message("Player selected: " + option.name);
+    }
+
+    global.selection_popup = new SelectionPopup(
+        display_get_gui_width()/2,
+        display_get_gui_height()/2,
+        options,
+        onSelect
+    );
+}
+
+global.selection_popup = new SelectionPopup(
+    display_get_gui_width() / 2,
+    display_get_gui_height() / 2,
+    options,
+    onSelection
+);

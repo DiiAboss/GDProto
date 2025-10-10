@@ -24,6 +24,39 @@ if (instance_exists(obj_exp))
 }
 
 
+// obj_game_controller : Step Event
+
+// debug open with P
+if (keyboard_check_pressed(ord("P"))) {
+    // create if not present or was cleared
+    if (!variable_global_exists("selection_popup") || global.selection_popup == undefined) {
+        var opts = [
+            { name: "Fireball",   desc: "Shoots a blazing orb.", sprite: modifier_bg },
+            { name: "Lightning",  desc: "Strikes nearby foes.", sprite: modifier_bg },
+            { name: "Healing",    desc: "Regains some HP.", sprite: modifier_bg }
+        ];
+
+        function _on_pick(index, option) {
+            show_debug_message("Picked: " + option.name);
+            // your pick logic (give item, apply mod, etc)
+        }
+
+        global.selection_popup = new SelectionPopup(display_get_gui_width()/2, display_get_gui_height()/2 - 40, opts, _on_pick);
+    }
+}
+
+
+var popup = global.selection_popup;
+
+if (popup != undefined) {
+    popup.step();
+
+    if (popup.finished) {
+        global.selection_popup = undefined;
+    }
+}
+
+
 /// @function gm_trigger_event(trigger, player, extra)
 /// @desc Calls all mod effects for a given trigger
 function gm_trigger_event(trigger, player, extra) {

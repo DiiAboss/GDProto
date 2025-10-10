@@ -32,7 +32,7 @@ if (abs(velocityX) > minSpeed || abs(velocityY) > minSpeed) {
 			}
         }
     } else {
-        x = nextX;
+        x = nextX  * global.gameSpeed;
     }
     
     // Vertical collision
@@ -46,7 +46,7 @@ if (abs(velocityX) > minSpeed || abs(velocityY) > minSpeed) {
 			}
         }
     } else {
-        y = nextY;
+        y = nextY  * global.gameSpeed;
     }
     
     // Apply friction (except for projectiles)
@@ -74,7 +74,7 @@ if (abs(velocityX) > minSpeed || abs(velocityY) > minSpeed) {
 
 // Update visual effects
 if (hitFlashTimer > 0) {
-    hitFlashTimer--;
+    hitFlashTimer -= global.gameSpeed;
 }
 
 // Special behavior for projectiles
@@ -84,3 +84,5 @@ if (isProjectile && weight == 0) {
         speed = 5; // Minimum projectile speed
     }
 }
+
+speed = mySpeed * global.gameSpeed;

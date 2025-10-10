@@ -2,7 +2,7 @@
 // Calculate current wobble angle
 var wobbleAngle = 0;
 if (isMoving) {
-    wobbleAngle = sin(wobbleTimer + wobbleOffset) * wobbleAmount;
+    wobbleAngle = sin(wobbleTimer + wobbleOffset) * wobbleAmount  * global.gameSpeed;
 }
 
 // Apply breathing scale

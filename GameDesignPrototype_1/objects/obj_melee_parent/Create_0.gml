@@ -13,6 +13,8 @@ isSwinging = false;
 swing_progress = 0;
 swing_direction = 0;
 
+currentAngleOffset = 180;
+
 // Combo tracking
 current_combo_hit = 0;
 
@@ -21,3 +23,4 @@ weapon_id = Weapon.None;
 
 // Hit tracking to prevent multi-hit
 hit_enemies = ds_list_create();
+dynamic_tracking = false; // Set to true for weapons that follow mouse

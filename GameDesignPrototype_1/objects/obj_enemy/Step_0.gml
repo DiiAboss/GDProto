@@ -45,7 +45,7 @@ if (abs(knockbackX) > knockbackThreshold || abs(knockbackY) > knockbackThreshold
             
             // Screen shake for hard impacts
             if (impactSpeed > 8) {
-                // with (obj_camera) { shake = impactSpeed * 0.3; }
+                // with (obj_camera_controller) { shake = impactSpeed * 0.3; }
             }
             
             // Impact effect at wall
@@ -69,7 +69,7 @@ if (abs(knockbackX) > knockbackThreshold || abs(knockbackY) > knockbackThreshold
             knockbackX = 0;
         }
     } else if (!place_meeting(nextX, y, obj_obstacle)) {
-        x = nextX;
+        x = nextX * global.gameSpeed;
     }
     
     // Vertical wall check (top/bottom walls)
@@ -92,7 +92,7 @@ if (abs(knockbackX) > knockbackThreshold || abs(knockbackY) > knockbackThreshold
             
             // Screen shake for hard impacts
             if (impactSpeed > 8) {
-                // with (obj_camera) { shake = impactSpeed * 0.3; }
+                // with (obj_camera_controller) { shake = impactSpeed * 0.3; }
 				if (hp <= 0)
 				{
 					knockbackFriction = 0.01;
@@ -119,7 +119,7 @@ if (abs(knockbackX) > knockbackThreshold || abs(knockbackY) > knockbackThreshold
             knockbackY = 0;
         }
     } else if (!place_meeting(x, nextY, obj_obstacle)) {
-        y = nextY;
+        y = nextY  * global.gameSpeed;
     }
     
     // Set bounce cooldown if we hit a wall
@@ -163,7 +163,7 @@ if !(marked_for_death)
 	// Movement toward player (when not in heavy knockback)
 	if (knockbackCooldown <= 0 && abs(knockbackX) < 1 && abs(knockbackY) < 1 && instance_exists(obj_player)) {
 	    var _dir = point_direction(x, y, obj_player.x, obj_player.y);
-	    var _spd = moveSpeed;
+	    var _spd = moveSpeed  * global.gameSpeed;
     
 	    var moveX = lengthdir_x(_spd, _dir);
 	    var moveY = lengthdir_y(_spd, _dir);
@@ -186,14 +186,14 @@ if !(marked_for_death)
 	lastY = y;
 
 	// Update breathing/pulse effect (always active)
-	breathTimer += breathSpeed;
+	breathTimer += breathSpeed  * global.gameSpeed;
 	var breathScale = baseScale + sin(breathTimer + breathOffset) * breathScaleAmount;
 
 	// Update walking wobble
 	if (isMoving) {
 	    wobbleTimer += wobbleSpeed;
 	    // Reset wobble smoothly when starting to move
-	    if (wobbleTimer > 2 * pi) wobbleTimer -= 2 * pi;
+	    if (wobbleTimer > 2 * pi) wobbleTimer -= 2 * pi  * global.gameSpeed;
 	} else {
 	    // Smoothly return to center when stopped
 	    wobbleTimer = lerp(wobbleTimer, 0, 0.1);
@@ -238,6 +238,7 @@ if (marked_for_death) {
         var orbCount = irandom_range(1, 3);
         for (var i = 0; i < orbCount; i++) {
             var _exp = instance_create_depth(x, y, depth -1, obj_exp);
+			var _coin = instance_create_depth(x, y, depth -1, obj_coin);
             _exp.direction = irandom(359);
             _exp.speed = 3;
         }

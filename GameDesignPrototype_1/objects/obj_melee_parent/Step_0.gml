@@ -2,10 +2,12 @@ if (!instance_exists(owner)) {
     instance_destroy();
     exit;
 }
-
-x = owner.x;
-y = owner.y;
-depth = owner.depth - 1;
+ // Calculate sword angle based on player's aim direction
+    var baseAngle = owner.mouseDirection;
+    image_angle = baseAngle + currentAngleOffset;
+	x = owner.x;
+	y = owner.y;
+	depth = owner.depth - 1;
 
 if (startSwing && !isSwinging) {
     isSwinging = true;
@@ -17,6 +19,13 @@ if (startSwing && !isSwinging) {
 
 if (isSwinging) {
     swing_progress += swing_speed;
+    
+    // Optional dynamic tracking
+    if (dynamic_tracking) {
+        var target_dir = point_direction(owner.x, owner.y, mouse_x, mouse_y);
+        var angle_diff = angle_difference(target_dir, swing_direction);
+        swing_direction += angle_diff * 0.2;
+    }
     
     // Position weapon
     var swing_offset = swing_arc * (swing_progress / 100 - 0.5);

@@ -114,7 +114,7 @@ function Input() constructor
 			|| (Down)
 			|| (Right)
 			{
-				if (ButtonHold > 0) { ButtonHold -= DelTime.Convert(1); } else { ButtonHold = 10; } 
+				if (ButtonHold > 0) { ButtonHold -= global.gameSpeed; } else { ButtonHold = 10; } 
 			}
 			else
 			{

@@ -80,7 +80,7 @@ if (hitPlayer != noone) {
             
             // Screen shake for hard impact
             if (playerSpeed > 15) {
-                // with (obj_camera) { shake = 5; }
+                // with (obj_camera_controller) { shake = 5; }
             }
             
             return; // Don't do normal collision damage

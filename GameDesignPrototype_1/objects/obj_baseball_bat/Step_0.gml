@@ -16,6 +16,7 @@ else {
 
 // Calculate sweet spot position during swing
 if (isSwinging) {
+	swing_direction = owner.mouseDirection;
     var sweet_spot_angle = swing_direction + (swing_arc * (swing_progress / 100 - 0.5));
     sweet_spot_x = owner.x + lengthdir_x(sweet_spot_distance, sweet_spot_angle);
     sweet_spot_y = owner.y + lengthdir_y(sweet_spot_distance, sweet_spot_angle);

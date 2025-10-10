@@ -1,10 +1,111 @@
 /// obj_player Step Event
 
+
+if (experience_points >= exp_to_next_level)
+{
+	var _temp_exp = exp_to_next_level - experience_points;
+	experience_points = 0;
+	player_level += 1;
+}
+
+if (keyboard_check_pressed(vk_escape))
+{
+	global.pause_game = true;
+}
+
+
+function levelUp()
+{
+	global.gameSpeed = 0;
+	
+	
+	
+	if (keyboard_check_pressed(vk_enter))
+	{
+		global.gameSpeed = 1;
+		global.pause_game = false;
+	}
+}
+
+if (global.pause_game)
+{
+	levelUp();
+}
+
+
+
+// obj_player Step Event - ADD this before your existing code
+
+#region Class-Specific Updates (NEW)
+switch (character_class) {
+    case CharacterClass.WARRIOR:
+        var health_percent = hp / hp_max;
+        if (health_percent < 0.5) {
+            rage_damage_bonus = (0.5 - health_percent) * 2;
+            // This will be applied after the game_manager stat calc
+        }
+        break;
+        
+    case CharacterClass.HOLY_MAGE:
+        if (mana < mana_max) {
+            mana += class_stats.mana_regen;
+            mana = min(mana, mana_max);
+        }
+        if (on_blessed_ground) {
+            hp += class_stats.blessed_heal / room_speed;
+            hp = min(hp, hp_max);
+        }
+        break;
+        
+    case CharacterClass.VAMPIRE:
+        if (blood_frenzy_timer > 0) {
+            blood_frenzy_timer--;
+            mySpeed = base_speed * class_stats.blood_frenzy_bonus;
+        } else {
+            mySpeed = base_speed;
+        }
+        
+        if (is_burning && burn_timer > 0) {
+            burn_timer--;
+            if (burn_timer % 30 == 0) {
+                hp -= 2;
+            }
+            mySpeed = base_speed * 1.5;
+            
+            var burn_radius = 50;
+            with (obj_enemy) {
+                if (point_distance(x, y, other.x, other.y) < burn_radius) {
+                    on_fire = true;
+                    fire_timer = 120;
+                }
+            }
+        }
+        break;
+}
+#endregion
+
+// [ALL YOUR EXISTING STEP CODE STAYS HERE]
+
+// Just modify the stat calculation part to include class bonuses:
+var stats = obj_game_manager.gm_calculate_player_stats(
+    base_attack, hp_max, base_knockback, base_speed
+);
+
+attack = stats[0];
+maxHp = stats[1];
+knockbackPower = stats[2];
+mySpeed = stats[3];
+
+// Apply class-specific modifiers AFTER game_manager calculation
+if (character_class == CharacterClass.WARRIOR && rage_damage_bonus > 0) {
+    attack *= (1 + rage_damage_bonus);
+}
+
 depth = -y;
 
 // Always recalc stats with passive mods
 var stats = obj_game_manager.gm_calculate_player_stats(
-    base_attack, base_maxHp, base_knockback, base_speed
+    base_attack, hp_max, base_knockback, base_speed
 );
 
 attack         = stats[0];
@@ -25,14 +126,14 @@ mouseDistance = distance_to_point(mouse_x, mouse_y);
 // In weapon switching code:
 if (keyboard_check_pressed(ord("1"))) {
     if (instance_exists(melee_weapon)) instance_destroy(melee_weapon);
-    weaponCurrent = Weapon_.Bow;
+    weaponCurrent = global.WeaponStruct.Bow;
     melee_weapon = noone; // Ranged weapon, no melee object
     show_debug_message("Switched to Bow");
 }
 
 if (keyboard_check_pressed(ord("2"))) {
     if (instance_exists(melee_weapon)) instance_destroy(melee_weapon);
-    weaponCurrent = Weapon_.Sword;
+    weaponCurrent = global.WeaponStruct.Sword;
     melee_weapon = instance_create_depth(x, y, depth-1, obj_sword);
     melee_weapon.owner = id;
     show_debug_message("Switched to Sword");
@@ -40,25 +141,25 @@ if (keyboard_check_pressed(ord("2"))) {
 
 if (keyboard_check_pressed(ord("5"))) {
     if (instance_exists(melee_weapon)) instance_destroy(melee_weapon);
-    weaponCurrent = Weapon_.Dagger;
+    weaponCurrent = global.WeaponStruct.Dagger;
     melee_weapon = instance_create_depth(x, y, depth-1, obj_dagger);
     melee_weapon.owner = id;
     show_debug_message("Switched to Dagger");
 }
 if (keyboard_check_pressed(ord("3"))) {
 	if (instance_exists(melee_weapon)) instance_destroy(melee_weapon);
-    weaponCurrent = Weapon_.Boomerang;
+    weaponCurrent = global.WeaponStruct.Boomerang;
     show_debug_message("Switched to Boomerang");
 }
 if (keyboard_check_pressed(ord("4"))) {
 	if (instance_exists(melee_weapon)) instance_destroy(melee_weapon);
-    weaponCurrent = Weapon_.ChargeCannon;
+    weaponCurrent = global.WeaponStruct.ChargeCannon;
     show_debug_message("Switched to Charge Cannon");
 }
 
 if (keyboard_check_pressed(ord("6"))) {
     if (instance_exists(melee_weapon)) instance_destroy(melee_weapon);
-    weaponCurrent = Weapon_.BaseballBat;
+    weaponCurrent = global.WeaponStruct.BaseballBat;
     melee_weapon = instance_create_depth(x, y, depth-1, obj_baseball_bat);
     melee_weapon.owner = id;
     show_debug_message("Switched to Baseball Bat");
@@ -185,4 +286,17 @@ if (keyboard_check_pressed(ord("Q"))) {
 if (keyboard_check_pressed(ord("0"))) {
     AddModifier(id, "MultiShot");
     show_debug_message("Added MultiShot modifier");
+}
+
+
+
+
+
+
+if (place_meeting(x, y, obj_coin))
+{
+	with (instance_place(x, y, obj_coin))
+{
+	instance_destroy();
+}
 }
