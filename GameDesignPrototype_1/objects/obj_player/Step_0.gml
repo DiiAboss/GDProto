@@ -1,5 +1,9 @@
 /// obj_player Step Event
 
+// Update camera
+camera.update();
+
+depth = -y;
 
 if (experience_points >= exp_to_next_level)
 {
@@ -83,8 +87,6 @@ switch (character_class) {
         break;
 }
 #endregion
-
-// [ALL YOUR EXISTING STEP CODE STAYS HERE]
 
 // Just modify the stat calculation part to include class bonuses:
 var stats = obj_game_manager.gm_calculate_player_stats(
@@ -288,7 +290,109 @@ if (keyboard_check_pressed(ord("0"))) {
     show_debug_message("Added MultiShot modifier");
 }
 
+// ===================================
+// CAMERA DEBUG CONTROLS
+// ===================================
+#region Camera Debug Keys
 
+// Screen Shake
+if (keyboard_check_pressed(vk_f1)) {
+    camera.add_shake(5);
+    show_debug_message("Light shake applied");
+}
+
+if (keyboard_check_pressed(vk_f2)) {
+    camera.add_shake(15);
+    show_debug_message("Heavy shake applied");
+}
+
+// Zoom Controls
+if (keyboard_check_pressed(vk_f3)) {
+    camera.set_zoom(1.5);
+    show_debug_message("Zoom: 1.5x (Boss Fight)");
+}
+
+if (keyboard_check_pressed(vk_f4)) {
+    camera.set_zoom(0.8);
+    show_debug_message("Zoom: 0.8x (Arena View)");
+}
+
+if (keyboard_check_pressed(vk_f5)) {
+    camera.set_zoom(1.0);
+    show_debug_message("Zoom: 1.0x (Normal)");
+}
+
+// Pan to Nearest Enemy
+if (keyboard_check_pressed(vk_f6)) {
+    var nearest = instance_nearest(x, y, obj_enemy);
+    if (instance_exists(nearest)) {
+        camera.pan_to(nearest.x, nearest.y, function() {
+            show_debug_message("Camera reached enemy!");
+        });
+        show_debug_message("Panning to enemy at " + string(nearest.x) + ", " + string(nearest.y));
+    } else {
+        show_debug_message("No enemy found to pan to");
+    }
+}
+
+// Lock Camera at Room Center
+if (keyboard_check_pressed(vk_f7)) {
+    camera.lock_at(room_width / 2, room_height / 2);
+    show_debug_message("Camera locked at room center");
+}
+
+// Unlock Camera (Return to Following Player)
+if (keyboard_check_pressed(vk_f8)) {
+    camera.unlock();
+    show_debug_message("Camera unlocked - following player");
+}
+
+// Toggle Bounds
+if (keyboard_check_pressed(vk_f9)) {
+    if (camera.use_bounds) {
+        camera.remove_bounds();
+        show_debug_message("Camera bounds removed - free camera");
+    } else {
+        camera.set_bounds(280, 88, 1064, 648);
+        show_debug_message("Camera bounds enabled");
+    }
+}
+
+// Adjust Follow Speed (hold SHIFT for slower)
+if (keyboard_check_pressed(vk_f10)) {
+    if (keyboard_check(vk_shift)) {
+        camera.follow_speed = max(0.05, camera.follow_speed - 0.05);
+        show_debug_message("Follow speed: " + string(camera.follow_speed) + " (slower)");
+    } else {
+        camera.follow_speed = min(1.0, camera.follow_speed + 0.05);
+        show_debug_message("Follow speed: " + string(camera.follow_speed) + " (faster)");
+    }
+}
+
+#endregion
+
+
+
+// Test score
+if (keyboard_check_pressed(ord("7"))) {
+    if (instance_exists(obj_ui_manager)) {
+        obj_ui_manager.ui.add_score(100);
+        show_debug_message("Added 100 score");
+    }
+}
+
+// Test badges
+if (keyboard_check_pressed(ord("8"))) {
+    if (instance_exists(obj_ui_manager)) {
+        obj_ui_manager.ui.show_badge(UI_BADGE_TYPE.DOUBLE_KILL);
+    }
+}
+
+if (keyboard_check_pressed(ord("9"))) {
+    if (instance_exists(obj_ui_manager)) {
+        obj_ui_manager.ui.show_badge(UI_BADGE_TYPE.TRIPLE_KILL);
+    }
+}
 
 
 

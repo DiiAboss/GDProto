@@ -11,7 +11,7 @@ playerModsArray = [];
 allMods = [];           // array for all mods loaded from JSON
 
 depth = -999;
-
+instance_create_depth(0, 0, -9999, obj_ui_manager);
 
 
 var file = "modifiers.json";

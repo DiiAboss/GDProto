@@ -145,3 +145,11 @@ gold = 0;
 player_level = 0;
 
 global.pause_game = false;
+
+// Camera system
+camera = new Camera(id);
+camera.set_bounds(280, 88, 1064, 648); // Your play area bounds
+
+// Mini HP bar
+hp_bar_visible_timer = 0;
+hp_bar_show_duration = 120; // 2 seconds at 60fps
