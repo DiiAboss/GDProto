@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"GameSpeedDelta",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"GameSpeedDelta",
+  "parent":{
+    "name":"Scripts",
+    "path":"folders/Scripts.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

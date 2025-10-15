@@ -4,7 +4,7 @@
 
 
 var _dist = distance_to_object(obj_player);
-var _speed = 3;
+var _speed = 3 * game_speed_delta();
 var _dir = point_direction(x, y, obj_player.x, obj_player.y);
 
 
@@ -33,9 +33,9 @@ switch (state)
 	case ENEMY_STATE.ATTACK:
 		if (shotTimer > 0)
 		{
-			image_xscale += 0.005;
-			image_yscale += 0.005;
-			shotTimer -= 1;
+			image_xscale += 0.005 * game_speed_delta();
+			image_yscale += 0.005 * game_speed_delta();
+			shotTimer -=  game_speed_delta();
 			//image_angle = _dir;
 			myDir = _dir;
 			img_index = 0;

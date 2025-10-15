@@ -1,87 +1,66 @@
-/// @description Insert description here
-// You can write your code in this editor
+/// @desc Game Manager Initialization
 
 global.gameSpeed = 1;
 
-
+// Player progression
 playerLevel = 1;
 playerExperience = 0;
+player_level = 1; // Keep for compatibility
 
+// Chest system
+chests_opened = 0;
+
+// Modifier system
 playerModsArray = [];
-allMods = [];           // array for all mods loaded from JSON
+allMods = [];
+
+// Totem system
+chaos_totem_active = false;
+chaos_spawn_timer = 0;
+chaos_spawn_interval = 180; // 3 seconds
+
+champion_totem_active = false;
+champion_spawn_timer = 0;
+champion_spawn_interval = 2700; // 45 seconds
+
+// Score tracking
+current_score = 0;
+
+// Popup references (initialized as undefined)
+global.selection_popup = undefined; // For level-ups
+global.chest_popup = undefined;     // For chests
 
 depth = -999;
+
+// Create UI manager
 instance_create_depth(0, 0, -9999, obj_ui_manager);
 
-
+// ==========================================
+// LOAD MODIFIERS FROM JSON
+// ==========================================
 var file = "modifiers.json";
 if (file_exists(file)) {
     var f = file_text_open_read(file);
     var json_str = "";
-
-    // read the file line by line
+    
     while (!file_text_eof(f)) {
-        json_str += file_text_readln(f); // read full line including whitespace
+        json_str += file_text_readln(f);
     }
     file_text_close(f);
-
-    // parse JSON
+    
     var mods_data = json_parse(json_str);
-
-    // store in allMods array
+    
     for (var i = 0; i < array_length(mods_data); i++) {
         array_push(allMods, mods_data[i]);
     }
-
-    // test
-    show_debug_message("First mod ID: " + string(allMods[0].id));
-
+    
+    show_debug_message("Loaded " + string(array_length(allMods)) + " modifiers");
 } else {
-    show_error("Could not find JSON file...", true);
+    show_error("Could not find modifiers.json", true);
 }
 
-
-
+// Test mod
 var _mod = get_mod_by_id("attack_up");
 if (_mod != undefined) {
-    array_push(obj_game_manager.playerModsArray, _mod);
+    array_push(playerModsArray, _mod);
 }
-
-
-
-var options = [
-    { name: "Fireball", desc: "Shoots a blazing orb at enemies.", sprite: modifier_bg },
-    { name: "Lightning", desc: "Strikes nearby foes.", sprite: modifier_bg },
-    { name: "Healing", desc: "Regain health over time.", sprite: modifier_bg }
-];
-
-// When player selects, we’ll print the choice for now
-function onSelection(index, option) {
-    show_debug_message("Player selected: " + option.name);
-}
-
-function open_test_popup() {
-    var options = [
-        { name: "Fireball", desc: "Shoots a blazing orb at enemies.", sprite: modifier_bg },
-        { name: "Lightning", desc: "Strikes nearby foes with shocking power.", sprite: modifier_bg },
-        { name: "Healing", desc: "Regains health over time.", sprite: modifier_bg }
-    ];
-
-    function onSelect(index, option) {
-        show_debug_message("Player selected: " + option.name);
-    }
-
-    global.selection_popup = new SelectionPopup(
-        display_get_gui_width()/2,
-        display_get_gui_height()/2,
-        options,
-        onSelect
-    );
-}
-
-global.selection_popup = new SelectionPopup(
-    display_get_gui_width() / 2,
-    display_get_gui_height() / 2,
-    options,
-    onSelection
-);

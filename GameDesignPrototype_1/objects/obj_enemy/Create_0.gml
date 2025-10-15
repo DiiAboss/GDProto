@@ -1,97 +1,78 @@
-mySprite = spr_enemy_1;
+/// @desc Enemy Create Event - Component-based
 
+mySprite = spr_enemy_1;
 size = sprite_get_height(mySprite);
 img_index = 0;
 
 marked_for_death = false;
 
-// Wall bounce properties
-bounceDampening	   = 1.1; // How much speed is retained after bounce (0.7 = 70%)
-minBounceSpeed	   = 0; // Minimum speed required to bounce (prevents tiny bounces)
-wallBounceCooldown = 0; // Prevents multiple bounces per frame
-lastBounceDir	   = 0; // Track last bounce for combos
+// ==========================================
+// COMPONENTS (matching player)
+// ==========================================
+damage_sys = new DamageComponent(100); // 100 base HP
+knockback = new KnockbackComponent(0.85, 0.1);
 
-// Separation/pushing variables (new)
-separationRadius = 24; // How close enemies can get to each other
-pushForce		 = 0.5; // How strongly enemies push each other
+// Legacy compatibility
+hp = damage_sys.hp;
+maxHp = damage_sys.max_hp;
 
-hp	  = 100;
-maxHp = 100;
-
-// Knockback variables
-knockbackX = 0;
-knockbackY = 0;
-knockbackFriction  = 0.85; // How quickly knockback slows down (0.8-0.95 range works well)
-knockbackThreshold = 0.1; // Minimum speed before knockback stops completely
-
-knockbackCooldown	 = 0;
-knockbackCooldownMax = 10; // Frames of immunity after being hit
-
-knockbackForce = 8;
-myDir = 0;
-levelDecayTimer = 0;
-hitFlashTimer = 0;
-damage = 0;
+// Movement
 moveSpeed = 2;
-lastKnockedBy = noone; // Track who knocked this enemy
-took_damage = 0;
+myDir = 0;
 
-// Chain knockback tracking
-isKnockingBack = false; // True when this enemy is being knocked back
-knockbackPower = 0; // Current knockback force (for passing to others)
-hasTransferredKnockback = false; // Prevents multiple transfers per knockback
-
-
-knockbackConfig = 
-{
-	knockbackX: 0,
-	knockbackY: 0,
-	knockbackFriction: 0.85,
-	knockbackThreshold: 0.1,
-	
-	knockbackCooldown: 0,
-	knockbackColldownMax: 0,
-	
-	knockbackForce: 8,
-}
-
-
-last_hit_by = noone;
-last_damage_taken = 0;
-hp = hp ?? 100;  // Default HP if not set
-
-
-// Breathing/Pulse effect (idle animation)
+// Visual effects
+hitFlashTimer = 0;
 breathTimer = 0;
-breathSpeed = 0.05; // Speed of breathing (lower = slower)
-breathScaleAmount = 0.05; // How much to scale (0.05 = 5% size change)
-baseScale = 1; // Original scale
-
-// Walking wobble effect
-wobbleTimer  = 0;
-wobbleSpeed  = 0.3; // Speed of wobble (higher = faster)
-wobbleAmount = 10; // Degrees of rotation wobble
-isMoving	 = false;
+breathSpeed = 0.05;
+breathScaleAmount = 0.05;
+baseScale = 1;
+wobbleTimer = 0;
+wobbleSpeed = 0.3;
+wobbleAmount = 10;
+isMoving = false;
 lastX = x;
 lastY = y;
+breathOffset = random(2 * pi);
+wobbleOffset = random(2 * pi);
 
+// Knockback tracking
+knockbackX = 0;
+knockbackY = 0;
+knockbackFriction = 0.85;
+knockbackThreshold = 0.1;
+knockbackCooldown = 0;
+knockbackCooldownMax = 10;
+knockbackForce = 8;
 
-// Wall impact properties
-minImpactSpeed  = 3; // Minimum speed to take damage
-impactDamageMultiplier = 0.1; // Damage = speed * this
-maxImpactDamage = 999; // Cap on wall damage
-wallHitCooldown = 0; // Prevents multiple wall damages per knockback
-hasHitWall	    = false; // Track if we've hit a wall this knockback
+// Wall impact
+minImpactSpeed = 3;
+impactDamageMultiplier = 0.1;
+maxImpactDamage = 999;
+wallHitCooldown = 0;
+hasHitWall = false;
 
-// Individual variation (so enemies don't all pulse in sync)
-breathOffset = random(2 * pi); // Random starting point in breath cycle
-wobbleOffset = random(2 * pi); // Random starting point in wobble
+// Wall bounce
+bounceDampening = 1.1;
+minBounceSpeed = 0;
+wallBounceCooldown = 0;
+lastBounceDir = 0;
 
+// Separation
+separationRadius = 24;
+pushForce = 0.5;
 
-/// @description Safe defaults so inherited enemies never crash
-canBeHit     = true;
-jumpStartY   = y;
-jumping      = false;
-jumpDir      = 0;
-jumpDistance = 0;
-jumpSpeed = 3;
+// Damage tracking
+damage = 1; // Damage enemy deals to player
+last_hit_by = noone;
+last_damage_taken = 0;
+took_damage = 0;
+
+// Chain knockback
+isKnockingBack = false;
+knockbackPower = 0;
+hasTransferredKnockback = false;
+
+// Decay
+levelDecayTimer = 0;
+
+depth = -y;

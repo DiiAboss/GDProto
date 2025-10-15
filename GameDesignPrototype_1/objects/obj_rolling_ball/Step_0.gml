@@ -14,12 +14,12 @@ if (place_meeting(x, nextY, obj_wall) or (place_meeting(x, nextY, obj_spikes))) 
 }
 
 // Apply movement
-x += lengthdir_x(currentSpeed, myDir);
-y += lengthdir_y(currentSpeed, myDir);
+x += lengthdir_x(currentSpeed, myDir) * game_speed_delta();
+y += lengthdir_y(currentSpeed, myDir) *  game_speed_delta();
 
 // === LEVEL DECAY SYSTEM ===
 // Increment decay timer when not hitting anything
-levelDecayTimer++;
+levelDecayTimer +=  game_speed_delta();
 
 // Check if we should decay a level
 if (level > 0 && levelDecayTimer > levelDecayDelay + levelDecayRate) {

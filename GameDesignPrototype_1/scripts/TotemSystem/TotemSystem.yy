@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"TotemSystem",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"TotemSystem",
+  "parent":{
+    "name":"Scripts",
+    "path":"folders/Scripts.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

@@ -23,37 +23,34 @@ function calculate_stats(self, base_attack, base_hp, base_knockback, base_spd) {
 }
 
 
-function takeDamage(_self, _damage, _damage_object = noone) {
-    // Invincibility check (player only)
-    if (variable_instance_exists(_self, "invincible") && _self.invincible) return false;
-    
-    _self.hp -= _damage;
-    
-    // Player-specific feedback
-    if (_self.object_index == obj_player) {
-        spawn_damage_number(_self.x, _self.y - 16, _damage, c_red, false);
-        _self.hp_bar_visible_timer = _self.hp_bar_show_duration;
+/// @function takeDamage(_self, _damage, _source)
+function takeDamage(_self, _damage, _source) {
+    with (_self) {
+        // Fast: check object type once
+        var is_player = (object_index == obj_player);
         
-        // Start i-frames
-        _self.invincible = true;
-        _self.invincible_timer = _self.invincible_duration;
-        
-        // Optional: Knockback from source
-        if (_damage_object != noone && instance_exists(_damage_object)) {
-            var _dir = point_direction(_damage_object.x, _damage_object.y, _self.x, _self.y);
-            _self.knockbackX = lengthdir_x(3, _dir);
-            _self.knockbackY = lengthdir_y(3, _dir);
+        // Players have invincibility
+        if (is_player && invincibility.active) {
+            return hp; // Still invincible
         }
         
-        // Death check
-        if (_self.hp <= 0) {
-            // Add death logic or state change
-            game_restart();
+        // Apply damage
+        damage_sys.TakeDamage(_damage, _source);
+        hp = damage_sys.hp;
+        
+        // Player-specific
+        if (is_player) {
+            invincibility.Activate();
+            timers.Set("hp_bar", 120);
         }
-    } else {
-        // Enemy feedback
-        spawn_damage_number(_self.x, _self.y - 16, _damage, c_orange, false);
+        
+        // Everyone can flash
+        hitFlashTimer = 10;
+        
+        // Track damage
+        last_hit_by = _source;
+        took_damage = _damage;
+        
+        return hp;
     }
-    
-    return true;
 }

@@ -57,6 +57,36 @@ enum PlayerClass {
 }
 
 
+enum ChestState {
+    IDLE = 0,
+    CHOICE_PROMPT = 1,
+    ACTIVATING = 2,
+    MOVING_CENTER = 3,
+    BURSTING = 4,
+    SHOWING_REWARDS = 5,
+    CLOSING = 6
+}
+
+enum ChestType {
+    MINI = 0,        // 1 random item
+    GOLD = 1,        // 3 random items, free
+    PREMIUM = 2      // Scaling cost, guaranteed rare, 3+ items
+}
+
+enum RewardType {
+    MODIFIER = 0,
+    WEAPON = 1,
+    ITEM = 2
+}
+
+enum TotemType {
+    CHAOS = 0,      // Spawns rolling balls
+    HORDE = 1,      // Increased enemy spawn rate
+    CHAMPION = 2,   // Spawns mini-bosses
+    GREED = 3,      // More gold drops, tougher enemies
+    FURY = 4        // Faster/stronger enemies, XP multiplier
+}
+
 
 	// Directional MACROS
 	#macro NORTH 90

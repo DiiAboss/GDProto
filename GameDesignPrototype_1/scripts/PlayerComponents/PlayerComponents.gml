@@ -15,77 +15,66 @@ function PlayerMovement(_self, _playerSpeed) constructor
 	isDashing        = false;
 	
 	///Update - Call in Step Event
-	static Update = function(_input, _speed = baseSpeed)
-	{
-		if !(_input)
-		{
-			show_debug_message("Input Script Not Found");
-		}
-		
-		var _self = callingObject;
-		var _currentSpeed = _speed;
-		
-		
-		// Movement
-		var _leftKey  = _input.Left;
-		var _rightKey = _input.Right;
-		var _downKey  = _input.Down;
-		var _upKey    = _input.Up;
-		
-		var _dashKey  = _input.Action;
-		var _hasMoved  = false;
-		
-		/// Check if we need to apply the diagonal mod to speed
-		if ((_leftKey || _rightKey) && (_upKey || _downKey))
-		{
-			var _diagonalAdjust = 0.71; // This is used to slow down the character during diagonal movements (actual is 717, but this prevents fragmenting)
-			
-			currentSpeed = _speed * _diagonalAdjust;
-		}
-		
-			// Dash handling
-			var _canExecuteDash = false;
-		
-			if (_dashKey) CheckCanExecuteDash();
-		
-			currentSpeed = ExecuteDash(baseSpeed, dashTimer);
-			dashTimer--;
-		
-			if ((dashTimer) <= 0)
-			{
-				canDash = true;
-			}
-		
-		
-		with (callingObject)
-		{
-			if (_leftKey && !place_meeting(x - other.currentSpeed, y, obj_wall))
-			{
-				x -= other.currentSpeed;
-				_hasMoved = true;
-			}
+	static Update = function(_input, _speed = baseSpeed) {
+    if (!_input) {
+        show_debug_message("Input Script Not Found");
+        return false;
+    }
+    
+    var _self = callingObject;
+    var _currentSpeed = _speed; // Already scaled by caller
+    
+    // Movement keys
+    var _leftKey = _input.Left;
+    var _rightKey = _input.Right;
+    var _downKey = _input.Down;
+    var _upKey = _input.Up;
+    var _dashKey = _input.Action;
+    var _hasMoved = false;
+    
+    // Diagonal adjustment
+    if ((_leftKey || _rightKey) && (_upKey || _downKey)) {
+        var _diagonalAdjust = 0.71;
+        currentSpeed = _currentSpeed * _diagonalAdjust;
+    } else {
+        currentSpeed = _currentSpeed;
+    }
+    
+    // Dash handling
+    if (_dashKey) CheckCanExecuteDash();
+    
+    currentSpeed = ExecuteDash(baseSpeed, dashTimer);
+    dashTimer = timer_tick(dashTimer); // CHANGED
+    
+    if (dashTimer <= 0) {
+        canDash = true;
+    }
+    
+    // Apply movement
+    with (callingObject) {
+        if (_leftKey && !place_meeting(x - other.currentSpeed, y, obj_wall)) {
+            x -= other.currentSpeed;
+            _hasMoved = true;
+        }
 
-			if (_rightKey && !place_meeting(x + other.currentSpeed, y, obj_wall))
-			{
-				x += other.currentSpeed;
-				_hasMoved = true;
-			}
+        if (_rightKey && !place_meeting(x + other.currentSpeed, y, obj_wall)) {
+            x += other.currentSpeed;
+            _hasMoved = true;
+        }
 
-			if (_downKey && !place_meeting(x, y + other.currentSpeed, obj_wall))
-			{
-				y += other.currentSpeed;
-				_hasMoved = true;
-			}
+        if (_downKey && !place_meeting(x, y + other.currentSpeed, obj_wall)) {
+            y += other.currentSpeed;
+            _hasMoved = true;
+        }
 
-			if (_upKey && !place_meeting(x, y - other.currentSpeed, obj_wall))
-			{
-				y -= other.currentSpeed;
-				_hasMoved = true;
-			}
-		}
-		
-		return _hasMoved;
-	}
+        if (_upKey && !place_meeting(x, y - other.currentSpeed, obj_wall)) {
+            y -= other.currentSpeed;
+            _hasMoved = true;
+        }
+    }
+    
+    return _hasMoved;
+}
 	
 
 	

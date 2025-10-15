@@ -88,7 +88,7 @@ function ApplyTimingBonus(_quality) {
 function UpdateTimingVisuals() {
     // Decay flash timer
     if (perfect_flash_timer > 0) {
-        perfect_flash_timer--;
+        perfect_flash_timer = timer_tick(perfect_flash_timer);
     }
     
     // Update timing circle based on weapon cooldown

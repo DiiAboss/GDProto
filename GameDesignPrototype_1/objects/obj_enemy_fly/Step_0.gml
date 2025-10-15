@@ -14,7 +14,7 @@ switch (state) {
     // --------------------------------------------------
     case ENEMY_STATE.IDLE:
         moveSpeed = 0;
-        jumpTimer--;
+        jumpTimer -= game_speed_delta();
 
         if (jumpTimer <= 0) {
             // Pick a new jump target
@@ -41,7 +41,7 @@ switch (state) {
         var total_dist = point_distance(jumpStartX, jumpStartY, jumpTargetX, jumpTargetY);
         if (total_dist == 0) total_dist = 1; // prevent div by 0
         // We move this many pixels per frame, so convert to 0–1 progress
-        jumpProgress += (jumpSpeed / total_dist);
+        jumpProgress += (jumpSpeed / total_dist) *  game_speed_delta();
 
         if (jumpProgress >= 1) {
             jumpProgress = 1;

@@ -1,0 +1,1 @@
+chest_type = ChestType.GOLD;

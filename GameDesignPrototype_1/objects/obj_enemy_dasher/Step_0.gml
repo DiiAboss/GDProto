@@ -8,7 +8,7 @@ switch (state) {
 
     // --- Idle / telegraph ---
     case "idle":
-        dashTimer -= 1;
+        dashTimer -=  game_speed_delta();
         if (dashTimer <= 0 && instance_exists(obj_player)) {
             
             // Lock target direction toward player
@@ -27,7 +27,7 @@ switch (state) {
 
     // --- Telegraph / charge prep ---
     case "telegraph":
-        dashTimer -= 1;
+        dashTimer -=  game_speed_delta();
         if (dashTimer <= 0) {
             showIndicator = false;
             state = "dashing";
@@ -38,8 +38,8 @@ switch (state) {
     // --- Dash ---
     case "dashing":
         var _dir = point_direction(x, y, dashTargetX, dashTargetY);
-        var moveX = lengthdir_x(dashSpeed, _dir);
-        var moveY = lengthdir_y(dashSpeed, _dir);
+        var moveX = lengthdir_x(dashSpeed, _dir) * game_speed_delta();
+        var moveY = lengthdir_y(dashSpeed, _dir) * game_speed_delta();
 
         // Move
         x += moveX;

@@ -133,6 +133,69 @@ function UIManager() constructor {
         // Bottom content
         draw_weapons();
         draw_modifiers();
+
+		var active_count = GetActiveTotemCount();
+		if (active_count == 0) exit;
+		
+		var hud_x = 20;
+		var hud_y = 100;
+		var icon_size = 32;
+		var spacing = 40;
+		
+		draw_set_font(fnt_default);
+		draw_set_halign(fa_left);
+		draw_set_valign(fa_top);
+		draw_set_color(c_white);
+		
+		draw_text(hud_x, hud_y, "Active Totems:");
+		
+		var index = 0;
+		
+		// Draw each active totem icon
+		if (global.TotemDefinitions.Chaos.active) {
+		    draw_set_color(c_red);
+		    draw_circle(hud_x + index * spacing, hud_y + 20, icon_size / 2, false);
+		    draw_set_color(c_white);
+		    draw_text(hud_x + index * spacing - 8, hud_y + 30, "C");
+		    index++;
+		}
+		
+		if (global.TotemDefinitions.Horde.active) {
+		    draw_set_color(c_orange);
+		    draw_circle(hud_x + index * spacing, hud_y + 20, icon_size / 2, false);
+		    draw_set_color(c_white);
+		    draw_text(hud_x + index * spacing - 8, hud_y + 30, "H");
+		    index++;
+		}
+		
+		if (global.TotemDefinitions.Champion.active) {
+		    draw_set_color(c_purple);
+		    draw_circle(hud_x + index * spacing, hud_y + 20, icon_size / 2, false);
+		    draw_set_color(c_white);
+		    draw_text(hud_x + index * spacing - 8, hud_y + 30, "C");
+		    index++;
+		}
+		
+		if (global.TotemDefinitions.Greed.active) {
+		    draw_set_color(c_yellow);
+		    draw_circle(hud_x + index * spacing, hud_y + 20, icon_size / 2, false);
+		    draw_set_color(c_white);
+		    draw_text(hud_x + index * spacing - 8, hud_y + 30, "G");
+		    index++;
+		}
+		
+		if (global.TotemDefinitions.Fury.active) {
+		    draw_set_color(c_fuchsia);
+		    draw_circle(hud_x + index * spacing, hud_y + 20, icon_size / 2, false);
+		    draw_set_color(c_white);
+		    draw_text(hud_x + index * spacing - 8, hud_y + 30, "F");
+		    index++;
+		}
+		
+		// Score multiplier
+		var multiplier = GetScoreMultiplier();
+		draw_set_color(c_yellow);
+		draw_text(hud_x, hud_y + 60, "Score Multiplier: " + string(multiplier) + "x");
     }
     
     /// @method draw_black_bars()

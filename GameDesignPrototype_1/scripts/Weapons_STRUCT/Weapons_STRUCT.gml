@@ -72,8 +72,8 @@ global.WeaponStruct =
         secondary_attack: function(_self, _direction, _range, _projectile_struct) {},
         
         step: function(_self) {
-            if (attack_cooldown > 0) attack_cooldown--;
-            if (combo_timer > 0) combo_timer--;
+            if (attack_cooldown > 0) attack_cooldown = timer_tick(attack_cooldown);
+            if (combo_timer > 0) combo_timer = timer_tick(combo_timer);
         }
     },
     
