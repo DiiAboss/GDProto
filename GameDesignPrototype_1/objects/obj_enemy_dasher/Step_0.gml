@@ -1,0 +1,75 @@
+/// @description
+
+event_inherited();
+
+if (marked_for_death) exit;
+	
+switch (state) {
+
+    // --- Idle / telegraph ---
+    case "idle":
+        dashTimer -= 1;
+        if (dashTimer <= 0 && instance_exists(obj_player)) {
+            
+            // Lock target direction toward player
+            var dir = point_direction(x, y, obj_player.x, obj_player.y);
+            dashTargetX = x + lengthdir_x(dashDistance, dir);
+            dashTargetY = y + lengthdir_y(dashDistance, dir);
+
+            // Show attack indicator
+            showIndicator = true;
+            indicatorDir = dir;
+
+            state = "telegraph";
+            dashTimer = 10; // show indicator for 10 frames
+        }
+    break;
+
+    // --- Telegraph / charge prep ---
+    case "telegraph":
+        dashTimer -= 1;
+        if (dashTimer <= 0) {
+            showIndicator = false;
+            state = "dashing";
+            canBeHit = false; // maybe invulnerable mid-dash
+        }
+    break;
+
+    // --- Dash ---
+    case "dashing":
+        var _dir = point_direction(x, y, dashTargetX, dashTargetY);
+        var moveX = lengthdir_x(dashSpeed, _dir);
+        var moveY = lengthdir_y(dashSpeed, _dir);
+
+        // Move
+        x += moveX;
+        y += moveY;
+
+        // Check if reached target (or overshot)
+        if (point_distance(x, y, dashTargetX, dashTargetY) < dashSpeed) {
+            x = dashTargetX;
+            y = dashTargetY;
+            state = "idle";
+            dashTimer = irandom_range(30, dashCooldown);
+            canBeHit = true;
+        }
+
+        // --- Collision with player or enemies ---
+        var hit = instance_place(x, y, obj_player);
+        if (hit != noone) {
+            var kbDir = point_direction(x, y, hit.x, hit.y);
+            hit.knockbackX = lengthdir_x(dashSpeed * 2, kbDir);
+            hit.knockbackY = lengthdir_y(dashSpeed * 2, kbDir);
+            takeDamage(hit, 10); // or whatever
+        }
+
+        // Check for other enemies with knockback
+        with (obj_enemy) {
+            if (id != other.id && point_distance(x, y, other.x, other.y) < sprite_width) {
+                var kbDir = point_direction(other.x, other.y, x, y);
+                knockbackX = lengthdir_x(6, kbDir);
+                knockbackY = lengthdir_y(6, kbDir);
+            }
+        }
+    break;
+}

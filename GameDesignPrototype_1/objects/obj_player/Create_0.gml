@@ -121,6 +121,16 @@ isCannonBalling = false;
 cannonDamage = 20;
 #endregion
 
+
+
+// Damage system
+invincible = false;
+invincible_timer = 0;
+invincible_duration = 60; // 1 second at 60fps
+invincible_flash_speed = 4; // Flash effect speed
+
+
+
 #region Modifier System
 mod_list = [];
 mod_cache = {
@@ -153,3 +163,26 @@ camera.set_bounds(280, 88, 1064, 648); // Your play area bounds
 // Mini HP bar
 hp_bar_visible_timer = 0;
 hp_bar_show_duration = 120; // 2 seconds at 60fps
+
+
+#region Combat Timing System
+// Timing windows (as percentage of weapon cooldown)
+perfect_window_start = 0.70;  // Perfect window starts at 70% through cooldown
+perfect_window_end = 0.90;    // Perfect window ends at 90%
+good_window_start = 0.50;     // Good window starts at 50%
+
+// Current timing state
+last_timing_quality = "ready"; // "perfect", "good", "early", "ready"
+timing_bonus_multiplier = 1.0;
+
+// Visual feedback
+perfect_flash_timer = 0;
+timing_circle_scale = 0;
+timing_circle_alpha = 0;
+
+// Stats tracking
+perfect_hits_count = 0;
+good_hits_count = 0;
+early_hits_count = 0;
+#endregion
+

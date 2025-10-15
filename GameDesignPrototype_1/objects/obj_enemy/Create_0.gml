@@ -86,3 +86,12 @@ hasHitWall	    = false; // Track if we've hit a wall this knockback
 // Individual variation (so enemies don't all pulse in sync)
 breathOffset = random(2 * pi); // Random starting point in breath cycle
 wobbleOffset = random(2 * pi); // Random starting point in wobble
+
+
+/// @description Safe defaults so inherited enemies never crash
+canBeHit     = true;
+jumpStartY   = y;
+jumping      = false;
+jumpDir      = 0;
+jumpDistance = 0;
+jumpSpeed = 3;

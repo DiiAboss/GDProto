@@ -14,7 +14,7 @@ function GetCharacterStats(_class) {
             stats = {
                 name: "Barbarian",
                 hp_max: 150,
-                move_speed: 3.5,  // Changed from speed_base
+                move_speed: 2,  // Changed from speed_base
                 attack_base: 15,
                 magic_power: 0.5,
                 weapon_slots: 2,
@@ -28,7 +28,7 @@ function GetCharacterStats(_class) {
             stats = {
                 name: "Holy Mage", 
                 hp_max: 80,
-                move_speed: 4,
+                move_speed: 2,
                 attack_base: 8,
                 magic_power: 2.0,
                 weapon_slots: 2,
@@ -42,7 +42,7 @@ function GetCharacterStats(_class) {
             stats = {
                 name: "Western Vampire",
                 hp_max: 100,
-                move_speed: 4.5,
+                move_speed: 3,
                 attack_base: 12,
                 magic_power: 1.2,
                 weapon_slots: 2,

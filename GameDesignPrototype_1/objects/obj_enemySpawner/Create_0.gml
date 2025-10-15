@@ -9,7 +9,9 @@ nextY = 0;
 enum ENEMY_TYPE
 {
 	CIRCLE = 0,
-	TRIANGLE = 1
+	TRIANGLE = 1,
+	JUMPER = 2,
+	DASHER = 3,
 }
 
 nextType =  0;

@@ -46,7 +46,8 @@ enum ENEMY_STATE
 	IDLE = 0,
 	FOLLOW = 1,
 	ATTACK = 2,
-	HIT = 3
+	HIT = 3,
+	JUMPING = 4, 
 }
 
 

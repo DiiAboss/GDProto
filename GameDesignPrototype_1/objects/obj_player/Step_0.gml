@@ -12,6 +12,12 @@ if (experience_points >= exp_to_next_level)
 	player_level += 1;
 }
 
+
+// Decrease HP bar timer
+if (hp_bar_visible_timer > 0) {
+    hp_bar_visible_timer--;
+}
+
 if (keyboard_check_pressed(vk_escape))
 {
 	global.pause_game = true;
@@ -87,6 +93,122 @@ switch (character_class) {
         break;
 }
 #endregion
+
+
+// Invincibility frames
+if (invincible_timer > 0) {
+    invincible_timer--;
+    if (invincible_timer <= 0) invincible = false;
+}
+
+
+
+
+#region Damage Detection (Centralized)
+if (!invincible) {
+    // Check enemy contact damage
+    var enemy = instance_place(x, y, obj_enemy);
+    if (enemy != noone && !enemy.marked_for_death) {
+        // Only take damage if not being knocked back heavily
+        if (abs(knockbackX) <= 1 && abs(knockbackY) <= 1) {
+            takeDamage(id, enemy.damage, enemy);
+            
+            // Knockback from enemy
+            var kbDir = point_direction(enemy.x, enemy.y, x, y);
+            knockbackX = lengthdir_x(enemy.knockbackForce, kbDir);
+            knockbackY = lengthdir_y(enemy.knockbackForce, kbDir);
+            
+            // Small enemy bounce
+            enemy.knockbackX = lengthdir_x(2, kbDir + 180);
+            enemy.knockbackY = lengthdir_y(2, kbDir + 180);
+            enemy.hitFlashTimer = 5;
+        }
+    }
+    
+    // Check enemy projectiles
+    var projectile = instance_place(x, y, obj_enemy_attack_orb);
+    if (projectile != noone) {
+        takeDamage(id, 10, projectile); // 10 damage from projectiles
+        instance_destroy(projectile);
+    }
+    
+    // Check spikes (velocity-based damage)
+    var spike = instance_place(x, y, obj_spikes);
+    if (spike != noone) {
+        // Check spike's hit list
+        var canHit = true;
+        for (var i = 0; i < ds_list_size(spike.hitList); i++) {
+            if (spike.hitList[| i][0] == id) {
+                canHit = false;
+                break;
+            }
+        }
+        
+        if (canHit) {
+            var impactSpeed = point_distance(0, 0, knockbackX, knockbackY);
+            var damage = spike.baseDamage + (impactSpeed * spike.velocityDamageMultiplier);
+            damage = min(damage, spike.maxDamage);
+            damage = round(damage);
+            
+            takeDamage(id, damage, spike);
+            
+            // Stop knockback and bounce
+            knockbackX = 0;
+            knockbackY = 0;
+            var bounceDir = point_direction(spike.x, spike.y, x, y);
+            x += lengthdir_x(5, bounceDir);
+            y += lengthdir_y(5, bounceDir);
+            
+            // Add to spike's hit list
+            ds_list_add(spike.hitList, [id, spike.hitCooldown * 2]);
+            spike.bloodTimer = 20;
+            spike.shake = 3;
+        }
+    }
+    
+    // Check rolling ball
+    var ball = instance_place(x, y, obj_rolling_ball);
+    if (ball != noone) {
+        // Check ball's hit list
+        var canHit = true;
+        for (var i = 0; i < ds_list_size(ball.hitList); i++) {
+            if (ball.hitList[| i][0] == id) {
+                canHit = false;
+                break;
+            }
+        }
+        
+        if (canHit) {
+            takeDamage(id, ball.damage, ball);
+            
+            // Knockback from ball
+            var kbDir = point_direction(ball.x, ball.y, x, y);
+            knockbackX = lengthdir_x(ball.knockbackForce, kbDir);
+            knockbackY = lengthdir_y(ball.knockbackForce, kbDir);
+            
+            // Ball bounces off
+            ball.myDir = point_direction(x, y, ball.x, ball.y);
+            ball.levelDecayTimer = 0;
+            
+            // Add to ball's hit list
+            ds_list_add(ball.hitList, [id, ball.hitCooldown]);
+            ball.hitFlashTimer = 5;
+        }
+    }
+}
+#endregion
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Just modify the stat calculation part to include class bonuses:
 var stats = obj_game_manager.gm_calculate_player_stats(
@@ -205,12 +327,37 @@ if (variable_struct_exists(weaponCurrent, "charge_rate")) {
 #endregion
 
 
+
 #region Weapon Attacks
 // ===================================
 // WEAPON ATTACKS
 // ===================================
 if (input.FirePress) {
-    weaponCurrent.primary_attack(self, mouseDirection, mouseDistance, weaponCurrent.projectile_struct);
+    // Evaluate timing BEFORE attack
+    var timing_quality = EvaluateAttackTiming();
+    var timing_mult = ApplyTimingBonus(timing_quality);
+    
+    // Execute weapon attack
+    var attack_result = weaponCurrent.primary_attack(self, mouseDirection, mouseDistance, weaponCurrent.projectile_struct);
+    
+    // Apply timing bonus to the attack result
+    if (attack_result != noone) {
+        // For melee weapons - boost weapon damage
+        if (weaponCurrent.type == WeaponType.Melee && instance_exists(attack_result)) {
+            attack_result.attack *= timing_mult;
+            
+            // Visual feedback on weapon
+            if (timing_quality == "perfect") {
+                attack_result.is_perfect_attack = true;
+            }
+        }
+        // For ranged weapons - boost projectile damage
+        else if (weaponCurrent.type == WeaponType.Range && instance_exists(attack_result)) {
+            if (variable_instance_exists(attack_result, "damage")) {
+                attack_result.damage *= timing_mult;
+            }
+        }
+    }
 }
 
 if (input.AltPress) {
@@ -218,11 +365,18 @@ if (input.AltPress) {
 }
 #endregion
 
-
 // Update current weapon (cooldowns, timers, etc)
 if (variable_struct_exists(weaponCurrent, "step")) {
     weaponCurrent.step(self);
 }
+
+// Update timing visuals
+UpdateTimingVisuals();
+
+
+
+
+
 
 // ===================================
 // KNOCKBACK PHYSICS

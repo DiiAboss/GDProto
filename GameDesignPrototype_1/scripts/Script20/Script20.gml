@@ -6,8 +6,8 @@ function draw_player_hp_bar(_x, _y, _current_hp, _max_hp, _show_always = false) 
     
     // Bar dimensions
     var bar_width = 32;
-    var bar_height = 6;
-    var bar_offset_y = -20; // Above player
+    var bar_height = 3;
+    var bar_offset_y = 20; // Above player
     
     // Position
     var bar_x = _x - bar_width / 2;

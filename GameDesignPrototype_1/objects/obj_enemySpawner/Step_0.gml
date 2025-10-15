@@ -15,7 +15,7 @@ else
 	}
 	else
 	{
-		nextType = irandom(1);
+		nextType = irandom(3);
 		var _enemy = obj_enemy;
 		
 		switch(nextType)
@@ -26,6 +26,13 @@ else
 			
 			case ENEMY_TYPE.TRIANGLE:
 			_enemy = obj_enemy_triangle;
+			break;
+			
+						case ENEMY_TYPE.JUMPER:
+			_enemy = obj_enemy_fly;
+			break;
+						case ENEMY_TYPE.DASHER:
+			_enemy = obj_enemy_dasher;
 			break;
 		}
 		
