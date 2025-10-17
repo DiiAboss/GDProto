@@ -60,6 +60,47 @@ if (instance_exists(owner)) {
             comboTimer = comboWindow;
         }
     }
+	
+	
+	// Check if weapon has synergy projectile spawning
+	if (variable_instance_exists(id, "synergy_data") && 
+	    synergy_data.projectile_behavior != SynergyProjectileBehavior.NONE) {
+	    
+	    var should_spawn = false;
+	    
+	    // Determine if we should spawn projectile this frame
+	    switch (synergy_data.projectile_behavior) {
+	        case SynergyProjectileBehavior.ON_SWING:
+	            // Spawn once when swing starts
+	            if (startSwing && !variable_instance_exists(id, "spawned_projectiles_this_swing")) {
+	                should_spawn = true;
+	                spawned_projectiles_this_swing = true;
+	            }
+	            // Reset flag when swing ends
+	            if (swingProgress >= 360) {
+	                spawned_projectiles_this_swing = false;
+	            }
+	            break;
+	            
+	        case SynergyProjectileBehavior.ON_HIT:
+	            // Spawn when weapon hits enemy (handled in collision)
+	            break;
+	            
+	        case SynergyProjectileBehavior.ON_COMBO_FINISH:
+	            // Only spawn on final combo hit
+	            if (current_combo_hit == owner.weaponCurrent.max_combo - 1 && startSwing) {
+	                should_spawn = true;
+	            }
+	            break;
+	    }
+	    
+	    // Actually spawn projectiles
+	    if (should_spawn) {
+	        SpawnSynergyProjectiles(synergy_data, owner);
+	    }
+	}
+	
+	
     
     // Calculate weapon angle based on player's aim direction
     var baseAngle = owner.mouseDirection;
@@ -85,7 +126,14 @@ if (instance_exists(owner)) {
             // Add to hit list to prevent multiple hits
             ds_list_add(hitList, hit);
             hit.lastKnockedBy = owner;
-            
+			
+            // After dealing damage, check for ON_HIT projectile behavior
+			if (variable_instance_exists(id, "synergy_data") && 
+			    synergy_data.projectile_behavior == SynergyProjectileBehavior.ON_HIT) {
+			    
+			    SpawnSynergyProjectiles(synergy_data, owner);
+			}
+			
             // Increment combo if within window
             if (comboTimer > 0) {
                 comboCount++;
@@ -173,4 +221,34 @@ if (instance_exists(owner)) {
 } else {
     // Owner doesn't exist, destroy weapon
     instance_destroy();
+}
+
+/// @desc Spawn projectiles based on synergy config
+function SpawnSynergyProjectiles(_synergy, _owner) {
+    var count = _synergy.projectile_count ?? 1;
+    var spread = _synergy.projectile_spread ?? 0;
+    var base_dir = point_direction(_owner.x, _owner.y, mouse_x, mouse_y);
+    
+    // Calculate starting angle for spread
+    var start_angle = base_dir - (spread * (count - 1)) / 2;
+    
+    for (var i = 0; i < count; i++) {
+        var proj_dir = start_angle + (spread * i);
+        
+        var proj = instance_create_depth(
+            _owner.x, 
+            _owner.y, 
+            _owner.depth - 1, 
+            _synergy.projectile
+        );
+        
+        proj.direction = proj_dir;
+        proj.image_angle = proj_dir;
+        proj.speed = 8;
+        proj.owner = _owner;
+        
+        if (variable_instance_exists(proj, "damage")) {
+            proj.damage = _owner.attack * 0.7; // 70% of base attack
+        }
+    }
 }

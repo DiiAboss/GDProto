@@ -2,6 +2,8 @@
 
 global.gameSpeed = 1;
 
+enemy_controller = instance_create_depth(x, y, depth, obj_enemy_controller);
+
 // Player progression
 playerLevel = 1;
 playerExperience = 0;
@@ -25,7 +27,9 @@ champion_spawn_interval = 2700; // 45 seconds
 
 // Score tracking
 current_score = 0;
-
+// Initialize weapon synergy system
+global.WeaponSynergies = {};
+InitWeaponSynergySystem();
 // Popup references (initialized as undefined)
 global.selection_popup = undefined; // For level-ups
 global.chest_popup = undefined;     // For chests

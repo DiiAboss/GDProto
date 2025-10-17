@@ -233,6 +233,7 @@ global.WeaponStruct =
 	
     Boomerang: {
         name: "Boomerang",
+		id: Weapon.Boomerang,
         type: WeaponType.Range,
         projectile_struct: global.Projectile_.Boomerang,  // Add this
         cooldown: 0,
@@ -265,6 +266,7 @@ global.WeaponStruct =
 	
 	ChargeCannon: {
         name: "Charge Cannon",
+		id: Weapon.ChargeCannon,
         description: "Hold right-click to charge, left-click to fire",
         type: WeaponType.Range,
         projectile_struct: global.Projectile_.Cannonball,

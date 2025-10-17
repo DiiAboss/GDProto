@@ -98,6 +98,61 @@ enum TotemType {
 }
 
 
+// Weapon categories for synergy system
+enum WeaponCategory {
+    SWORD,
+    BAT,
+    DAGGER,
+    GRENADE,
+    BOW,
+    CANNON,
+    BOOMERANG
+}
+
+// Character archetypes for synergy system
+enum CharacterArchetype {
+    WARRIOR,
+    MAGE,
+    BASEBALL_PLAYER,
+    VAMPIRE,
+    ROGUE
+}
+
+// Synergy types - what actually happens
+enum SynergyType {
+    NONE,
+    
+    // Mage synergies
+    SPELL_BASEBALL,         // Mage + Bat: Spawns magic baseballs on swing
+    ARCANE_BLADE,           // Mage + Sword: Reduced stats but shoots magic on slash
+    HOLY_GRENADE,           // Mage + Grenade: Holy water explosion
+    
+    // Baseball player synergies
+    HOMERUN_MASTER,         // Baseball + Bat: Massive homerun chance increase
+    FASTBALL_THROW,         // Baseball + Grenade: Throws like fastball, faster
+    
+    // Warrior synergies
+    BRUTAL_SWING,           // Warrior + Bat: Extra damage, slower
+    RAGE_BLADE,             // Warrior + Sword: Rage boost on hit
+    
+    // Vampire synergies
+    BLOOD_BAT,              // Vampire + Bat: Lifesteal on hit
+    CRIMSON_BLADE,          // Vampire + Sword: Blood trail projectiles
+    
+    // Can add more as needed
+}
+
+// Projectile spawning behavior for synergies
+enum SynergyProjectileBehavior {
+    NONE,
+    ON_SWING,               // Spawn projectile during each swing
+    ON_HIT,                 // Spawn projectile when weapon hits enemy
+    ON_COMBO_FINISH,        // Spawn on final combo hit only
+    REPLACE_ATTACK,         // Don't swing, just shoot projectile
+    THROW_STYLE             // Change grenade throw behavior
+}
+
+
 	// Directional MACROS
 	#macro NORTH 90
 	#macro WEST 180

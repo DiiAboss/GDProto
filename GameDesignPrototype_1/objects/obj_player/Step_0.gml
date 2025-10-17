@@ -395,37 +395,80 @@ function CheckDamage() {
     }
 }
 
+// ==========================================
+// REPLACE HandleWeaponSwitching() in obj_player Step
+// ==========================================
+
 /// @func HandleWeaponSwitching()
 function HandleWeaponSwitching() {
+    var weapon_changed = false;
+    var new_weapon = noone;
+    
     if (keyboard_check_pressed(ord("1"))) {
         if (instance_exists(melee_weapon)) instance_destroy(melee_weapon);
-        weaponCurrent = global.WeaponStruct.Bow;
+        new_weapon = global.WeaponStruct.Bow;
         melee_weapon = noone;
+        weapon_changed = true;
     }
     else if (keyboard_check_pressed(ord("2"))) {
         if (instance_exists(melee_weapon)) instance_destroy(melee_weapon);
-        weaponCurrent = global.WeaponStruct.Sword;
+        new_weapon = global.WeaponStruct.Sword;
         melee_weapon = instance_create_depth(x, y, depth-1, obj_sword);
         melee_weapon.owner = id;
+        weapon_changed = true;
     }
     else if (keyboard_check_pressed(ord("3"))) {
         if (instance_exists(melee_weapon)) instance_destroy(melee_weapon);
-        weaponCurrent = global.WeaponStruct.Boomerang;
+        new_weapon = global.WeaponStruct.Boomerang;
+        weapon_changed = true;
     }
     else if (keyboard_check_pressed(ord("4"))) {
         if (instance_exists(melee_weapon)) instance_destroy(melee_weapon);
-        weaponCurrent = global.WeaponStruct.ChargeCannon;
+        new_weapon = global.WeaponStruct.ChargeCannon;
+        weapon_changed = true;
     }
     else if (keyboard_check_pressed(ord("5"))) {
         if (instance_exists(melee_weapon)) instance_destroy(melee_weapon);
-        weaponCurrent = global.WeaponStruct.Dagger;
+        new_weapon = global.WeaponStruct.Dagger;
         melee_weapon = instance_create_depth(x, y, depth-1, obj_dagger);
         melee_weapon.owner = id;
+        weapon_changed = true;
     }
     else if (keyboard_check_pressed(ord("6"))) {
         if (instance_exists(melee_weapon)) instance_destroy(melee_weapon);
-        weaponCurrent = global.WeaponStruct.BaseballBat;
+        new_weapon = global.WeaponStruct.BaseballBat;
         melee_weapon = instance_create_depth(x, y, depth-1, obj_baseball_bat);
         melee_weapon.owner = id;
+        weapon_changed = true;
+    }
+    
+    // ===== APPLY SYNERGY WHEN WEAPON CHANGES =====
+    if (weapon_changed && new_weapon != noone) {
+        // Get synergy data BEFORE assigning (use new_weapon.id)
+        var synergy = GetWeaponSynergy(character_class, new_weapon.id);
+        
+        // Now assign weapon
+        weaponCurrent = new_weapon;
+        
+        // Store synergy in weapon struct
+        weaponCurrent.active_synergy = synergy;
+        
+        // Apply stat multipliers to combo attacks
+        if (variable_struct_exists(weaponCurrent, "combo_attacks")) {
+            for (var i = 0; i < array_length(weaponCurrent.combo_attacks); i++) {
+                weaponCurrent.combo_attacks[i].damage_mult *= synergy.damage_mult;
+                weaponCurrent.combo_attacks[i].knockback_mult *= synergy.knockback_mult;
+            }
+        }
+        
+        // If melee weapon instance exists, pass synergy data to it
+        if (instance_exists(melee_weapon)) {
+            melee_weapon.synergy_data = synergy;
+        }
+        
+        // Debug
+        if (synergy.type != SynergyType.NONE) {
+            show_debug_message("Synergy Active: " + string(synergy.type));
+        }
     }
 }

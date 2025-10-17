@@ -127,3 +127,8 @@ projectile_count_bonus = 0;
 is_carrying = false;
 carried_object = noone;
 carry_speed_multiplier = 0.8; // Slower when carrying
+
+
+var test_synergy = GetWeaponSynergy(CharacterClass.HOLY_MAGE, Weapon.BaseballBat);
+show_debug_message("Test synergy type: " + string(test_synergy.type));
+show_debug_message("Damage mult: " + string(test_synergy.damage_mult));

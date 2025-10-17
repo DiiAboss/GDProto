@@ -34,7 +34,7 @@ comboTimer = 0;
 comboWindow = 30; // Steps to chain attacks
 
 // Visual properties
-swordLength = 4; // Distance from player center
+swordLength = 12; // Distance from player center
 swordSprite = sprite_index;
 
 // Hit tracking
