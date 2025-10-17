@@ -35,8 +35,8 @@
   "resourceVersion":"2.0",
   "solid":false,
   "spriteId":{
-    "name":"spr_bat",
-    "path":"sprites/spr_bat/spr_bat.yy",
+    "name":"spr_way_better_bat",
+    "path":"sprites/spr_way_better_bat/spr_way_better_bat.yy",
   },
   "spriteMaskId":null,
   "visible":true,

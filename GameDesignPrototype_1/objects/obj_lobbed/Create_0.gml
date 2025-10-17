@@ -11,7 +11,7 @@ startTime = current_time; // Track when the bullet was fired
 xStart = x;
 yStart = y;
 progress = 0; // Start at the beginning of the arc
-speed = 0.02; // Speed of the bullet along the arc, adjust as needed
+speed = 4; // Speed of the bullet along the arc, adjust as needed
 oval_width = 320; // Half the total width of the oval
 oval_height = 160; // Half the total height of the oval
 radDirection = degtorad(direction);
@@ -29,3 +29,5 @@ shadowSprite = spr_orb;
 // In the Create Event or where you initialize variables
 maxJumpHeight = 200; // Adjust this value as needed
 shadowSize = 1;
+
+rot = 0;

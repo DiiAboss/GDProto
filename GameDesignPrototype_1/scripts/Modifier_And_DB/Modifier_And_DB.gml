@@ -29,8 +29,15 @@ function CreateBonusProjectiles(_entity, _event) {
     with (_entity) {
         // Get projectile type
         var proj_type = obj_arrow;
+        var is_lobbed = false;
+        
         if (_event.projectile != noone && instance_exists(_event.projectile)) {
             proj_type = _event.projectile.object_index;
+            
+            // Check if it's a lobbed projectile
+            if (variable_instance_exists(_event.projectile, "lobbed")) {
+                is_lobbed = _event.projectile.lobbed;
+            }
         }
         
         // Calculate spread
@@ -40,21 +47,49 @@ function CreateBonusProjectiles(_entity, _event) {
         // Create projectiles in a spread
         for (var i = 0; i < bonus_count; i++) {
             var angle_offset = -total_spread/2 + (i * spread_angle) + spread_angle/2;
+            var proj_direction = _event.attack_direction + angle_offset;
             
-            var proj = instance_create_depth(
-                _event.attack_position_x,
-                _event.attack_position_y,
-                depth - 1,
-                proj_type
-            );
-            
-            proj.direction = _event.attack_direction + angle_offset;
-            proj.speed = 8;
-            proj.damage = (_event.damage ?? attack) * 0.8; // Slightly reduced
-            proj.owner = id;
-            proj.image_angle = proj.direction;
-            proj.image_xscale = 0.9;
-            proj.image_yscale = 0.9;
+            // LOBBED PROJECTILES
+            if (is_lobbed) {
+                var lobbed_proj = instance_create_depth(
+                    x,
+                    y,
+                    depth - 1,
+                    proj_type
+                );
+                
+                if (lobbed_proj != noone && instance_exists(lobbed_proj)) {
+                    // Initialize lobbed projectile with spread direction
+                    lobbed_proj.xStart = x;
+                    lobbed_proj.yStart = y;
+                    lobbed_proj.targetDistance = distance_to_point(mouse_x, mouse_y);
+                    lobbed_proj.lob_direction = proj_direction; // SPREAD DIRECTION
+                    lobbed_proj.direction = proj_direction;
+                    lobbed_proj.owner = id;
+                    lobbed_proj.damage = (_event.damage ?? attack) * 0.8;
+                    
+                    // Mark as lobbed
+                    lobbed_proj.lobbed = true;
+                    lobbed_proj.lobStep = 0;
+                }
+            }
+            // REGULAR PROJECTILES
+            else {
+                var proj = instance_create_depth(
+                    _event.attack_position_x,
+                    _event.attack_position_y,
+                    depth - 1,
+                    proj_type
+                );
+                
+                proj.direction = proj_direction;
+                proj.speed = 8;
+                proj.damage = (_event.damage ?? attack) * 0.8;
+                proj.owner = id;
+                proj.image_angle = proj.direction;
+                proj.image_xscale = 0.9;
+                proj.image_yscale = 0.9;
+            }
         }
     }
 }
@@ -343,28 +378,39 @@ function CreateKillEvent(_entity, _enemy_x, _enemy_y, _damage) {
 
 
 
-/// @function scr_chain_lightning(source, start_target, max_jumps, range, base_damage, falloff)
 /// @param source          // the caster or origin of lightning
 /// @param start_target    // the first enemy hit
 /// @param max_jumps       // how many total jumps (including first target)
 /// @param range           // distance range for next jump
 /// @param base_damage     // initial damage amount
 /// @param falloff         // percent damage retained per jump (e.g. 0.75 = -25% each)
-
 function scr_chain_lightning(source, start_target, max_jumps, range, base_damage, falloff) {
     var curr_target = start_target;
     var curr_damage = base_damage;
     var jumps = 0;
     var hit_list = [curr_target];
-
-    with (curr_target) hp -= curr_damage;
-
+    
+    // FIXED: Use component system instead of direct hp modification
+    with (curr_target) {
+        if (!marked_for_death) {
+            if (variable_instance_exists(id, "damage_sys")) {
+                damage_sys.TakeDamage(curr_damage, source);
+                hp = damage_sys.hp; // Sync
+            } else {
+                hp -= curr_damage; // Fallback
+            }
+            hitFlashTimer = 10;
+            image_blend = c_yellow;
+        }
+    }
+    
     while (jumps < max_jumps - 1) {
         var next_target = noone;
         var nearest_dist = range;
-
+        
         with (obj_enemy) {
-            if (!array_contains(hit_list, id)) {
+            // FIXED: Skip dead enemies
+            if (!array_contains(hit_list, id) && !marked_for_death) {
                 var d = point_distance(curr_target.x, curr_target.y, x, y);
                 if (d < nearest_dist) {
                     nearest_dist = d;
@@ -372,24 +418,38 @@ function scr_chain_lightning(source, start_target, max_jumps, range, base_damage
                 }
             }
         }
-
+        
         if (next_target == noone) break;
-
+        
         curr_damage *= falloff;
-        with (next_target) hp -= curr_damage;
-
+        
+        // FIXED: Use component system
+        with (next_target) {
+            if (!marked_for_death) {
+                if (variable_instance_exists(id, "damage_sys")) {
+                    damage_sys.TakeDamage(curr_damage, source);
+                    hp = damage_sys.hp; // Sync
+                } else {
+                    hp -= curr_damage; // Fallback
+                }
+                hitFlashTimer = 10;
+                image_blend = c_yellow;
+            }
+        }
+        
         array_push(hit_list, next_target);
-
-        // 🔥 spawn a visual effect object
+        
+        //  spawn a visual effect object
         var l = instance_create_layer(curr_target.x, curr_target.y, "Effects", obj_lightning);
-        l.x2 = next_target.x;
-        l.y2 = next_target.y;
-
+        if (instance_exists(l)) {
+            l.x2 = next_target.x;
+            l.y2 = next_target.y;
+        }
+        
         curr_target = next_target;
         jumps++;
     }
 }
-
 
 
 

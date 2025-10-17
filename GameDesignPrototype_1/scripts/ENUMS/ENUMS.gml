@@ -12,6 +12,8 @@ enum Weapon {
     Boomerang = 3,
     ChargeCannon = 4,
 	BaseballBat = 5,
+	Holy_Water = 6,
+	ThrowableItem = 7,
 }
 
 enum AttackType {
@@ -30,6 +32,14 @@ enum ComboState {
     HEAVY_1 = 4,
     HEAVY_FINISHER = 5
 }
+
+
+// Position states (YOUR SYSTEM)
+enum SwingPosition {
+    Down = 0,
+    Up = 1
+}
+
 
 
 enum CONTROL_TYPE

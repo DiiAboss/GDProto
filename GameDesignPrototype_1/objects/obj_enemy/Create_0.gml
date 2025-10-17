@@ -76,3 +76,12 @@ hasTransferredKnockback = false;
 levelDecayTimer = 0;
 
 depth = -y;
+
+is_burning = false;
+burn_timer = 0;
+burn_damage_per_tick = 2;
+burn_tick_counter = 0;
+
+// NEW: Holy water chain reaction tracking
+holy_water_splash_direction = 0;
+killed_by_holy_water = false;

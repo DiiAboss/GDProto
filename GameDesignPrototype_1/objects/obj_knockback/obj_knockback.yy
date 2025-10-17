@@ -35,5 +35,5 @@
     "path":"sprites/spr_knockback_hit_large/spr_knockback_hit_large.yy",
   },
   "spriteMaskId":null,
-  "visible":true,
+  "visible":false,
 }

@@ -1,3 +1,5 @@
-/// @description
-/// obj_melee_parent Cleanup Event
-ds_list_destroy(hit_enemies);
+/// @description Clean Up
+ds_list_destroy(hitList);
+if (instance_exists(owner)) {
+    owner.melee_weapon = noone;
+}

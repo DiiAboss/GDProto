@@ -1,26 +1,47 @@
-// Owner reference
-owner = noone;
+/// @description Melee Parent - Create Event
 
-// Combat stats
+owner = noone;
+active = true;
+baseRange = 32;
+
+// Swing properties (YOUR ORIGINAL SYSTEM)
+swinging = false;
+isSwinging = false; // Alias for compatibility
+startSwing = false;
+swingSpeed = 8; // How fast the sword swings
+swingProgress = 0; // 0 to 1, tracks swing completion
+
+
+// Current position state (starts at down position)
+currentPosition = SwingPosition.Down;
+targetPosition = SwingPosition.Up;
+
+// Position offsets from player direction
+baseAngleOffset = 100;
+angleOffsetMod = 1;
+angleOffset = baseAngleOffset * angleOffsetMod;
+downAngleOffset = angleOffset;
+upAngleOffset = -angleOffset;
+currentAngleOffset = downAngleOffset; // Start at down position
+
+// Combat properties
 attack = 10;
 knockbackForce = 64;
-swing_arc = 90;
-swing_speed = 15;
-
-// Swing state
-startSwing = false;
-isSwinging = false;
-swing_progress = 0;
-swing_direction = 0;
-
-currentAngleOffset = 180;
 
 // Combo tracking
-current_combo_hit = 0;
+comboCount = 0;
+comboTimer = 0;
+comboWindow = 30; // Steps to chain attacks
 
-// Weapon type identifier
+// Visual properties
+swordLength = 4; // Distance from player center
+swordSprite = sprite_index;
+
+// Hit tracking
+hasHitThisSwing = false;
+hitList = ds_list_create();
+hit_enemies = hitList; // Alias for compatibility
+
+// Weapon type
 weapon_id = Weapon.None;
-
-// Hit tracking to prevent multi-hit
-hit_enemies = ds_list_create();
-dynamic_tracking = false; // Set to true for weapons that follow mouse
+current_combo_hit = 0;

@@ -50,7 +50,7 @@ global.WeaponStruct =
             
             if (instance_exists(_self.melee_weapon)) {
                 _self.melee_weapon.attack = melee_attack;
-                _self.melee_weapon.knockbackForce = 64 * attack_data.knockback_mult;
+                _self.melee_weapon.knockbackForce = 24 * attack_data.knockback_mult;
                 _self.melee_weapon.startSwing = true;
                 _self.melee_weapon.current_combo_hit = combo_count;
             }
@@ -111,7 +111,7 @@ global.WeaponStruct =
             
             if (instance_exists(_self.melee_weapon)) {
                 _self.melee_weapon.attack = melee_attack;
-                _self.melee_weapon.knockbackForce = 50 * attack_data.knockback_mult;
+                _self.melee_weapon.knockbackForce = 16 * attack_data.knockback_mult;
                 _self.melee_weapon.startSwing = true;
                 _self.melee_weapon.current_combo_hit = combo_count;
             }
@@ -152,6 +152,28 @@ global.WeaponStruct =
             if (combo_timer > 0) combo_timer--;
         }
     },
+	HolyWater: {
+        name: "Holy_Water",
+        id: Weapon.Holy_Water,
+        type: WeaponType.Range,
+        projectile_struct: global.Projectile_.Holy_Water,
+        
+        primary_attack: function(_self, _direction, _range, _projectile_struct) {
+            var _attack = Lob_Projectile(_self, _direction, _range, projectile_struct.object);
+            //return _attack;
+            
+            var attack_event = CreateAttackEvent(_self, AttackType.RANGED, _direction, _attack);
+            TriggerModifiers(_self, MOD_TRIGGER.ON_ATTACK, attack_event);
+            
+            return _attack;
+        },
+        
+        secondary_attack: function(_self, _direction, _range, _projectile_struct) {
+            var _attack = Lob_Projectile(_self, _direction, _range, projectile_struct.object);
+            return _attack;
+        }
+    },
+    
 	BaseballBat: {
     name: "Baseball Bat",
     id: Weapon.BaseballBat,
@@ -180,7 +202,7 @@ global.WeaponStruct =
         
         if (instance_exists(_self.melee_weapon)) {
             _self.melee_weapon.attack = melee_attack;
-            _self.melee_weapon.knockbackForce = 80 * attack_data.knockback_mult; // Higher base knockback
+            _self.melee_weapon.knockbackForce = 32 * attack_data.knockback_mult; // Higher base knockback
             _self.melee_weapon.startSwing = true;
             _self.melee_weapon.current_combo_hit = combo_count;
         }
@@ -327,5 +349,140 @@ global.WeaponStruct =
             }
         }
     },
+	ThrowableItem: {
+    name: "Throwable Item",
+    id: Weapon.ThrowableItem,
+    type: WeaponType.Range,
+    projectile_struct: noone, // Will be set dynamically based on carried object
+    charge_rate: 0.01, // Charge speed (adjust to taste)
+    max_charge_speed: 15, // Maximum projectile speed when fully charged
+    min_charge_speed: 4,  // Minimum projectile speed
+    max_charge_damage_mult: 3.0, // 3x damage at full charge
+    min_charge_damage_mult: 0.5, // 0.5x damage at no charge
+    
+    primary_attack: function(_self, _direction, _range, _projectile_struct) {
+        // Only attack if carrying something
+        if (!_self.is_carrying || !instance_exists(_self.carried_object)) {
+            return noone;
+        }
+        
+        var obj = _self.carried_object;
+        var charge = _self.charge_amount; // 0.0 to 1.0
+        
+        // Calculate charge-based stats
+        var throw_speed = lerp(min_charge_speed, max_charge_speed, charge);
+        var damage_mult = lerp(min_charge_damage_mult, max_charge_damage_mult, charge);
+        
+        // Release the carried object
+        _self.is_carrying = false;
+        obj.is_being_carried = false;
+        obj.carrier = noone;
+        
+        // Convert to projectile
+        obj.is_projectile = true;
+        obj.projectile_speed = throw_speed;
+        obj.damage = _self.attack * damage_mult;
+        obj.moveX = lengthdir_x(throw_speed, _direction);
+        obj.moveY = lengthdir_y(throw_speed, _direction);
+        obj.image_angle = _direction;
+        obj.thrown_direction = _direction;
+        obj.is_charged_throw = (charge > 0.7); // Consider "charged" if 70%+
+        
+        // Destroy on impact
+        obj.destroy_on_impact = true;
+        
+        // Visual feedback
+        if (obj.is_charged_throw) {
+            obj.trail_color = c_yellow;
+            obj.has_trail = true;
+        }
+        
+        // Call custom throw event
+        if (variable_instance_exists(obj, "OnChargedThrow")) {
+            obj.OnChargedThrow(_self, _direction, charge);
+        }
+        
+        // Reset player state
+        _self.carried_object = noone;
+        _self.stats.temp_speed_mult = 1.0;
+        _self.charge_amount = 0;
+        
+        // Switch back to previous weapon (or unarmed)
+        if (instance_exists(_self.previous_weapon_instance)) {
+            _self.weaponCurrent = _self.previous_weapon_instance;
+        } else {
+            _self.weaponCurrent = global.WeaponStruct.Bow; // Default fallback
+        }
+        
+        return obj;
+    },
+    
+    secondary_attack: function(_self, _direction, _range, _projectile_struct) {
+    // Gentle lob - doesn't destroy object
+    if (!_self.is_carrying || !instance_exists(_self.carried_object)) {
+        return noone;
+    }
+    
+    var obj = _self.carried_object;
+    
+    // Calculate target position for shadow tracking
+    var target_dist = min(_range, 200);
+    obj.targetX = obj.x + lengthdir_x(target_dist, _direction);
+    obj.targetY = obj.y + lengthdir_y(target_dist, _direction);
+    
+    // Release
+    _self.is_carrying = false;
+    obj.is_being_carried = false;
+    obj.carrier = noone;
+    
+    // Gentle lob setup
+    obj.is_projectile = true;
+    obj.is_lob_shot = true;
+    obj.projectile_speed = 6;
+    obj.damage = _self.attack * 0.3;
+    obj.lob_direction = _direction;
+    obj.targetDistance = target_dist;
+    obj.destroy_on_impact = false;
+    
+    // Arc physics
+    obj.xStart = obj.x;
+    obj.yStart = obj.y;
+    obj.lobHeight = 32;
+    obj.lobProgress = 0;
+    obj.lobStep = 0; // Reset progress
+    
+    // Set movement
+    var lob_speed = 4;
+    obj.moveX = lengthdir_x(lob_speed, _direction);
+    obj.moveY = lengthdir_y(lob_speed, _direction);
+    
+    if (variable_instance_exists(obj, "OnLobThrow")) {
+        obj.OnLobThrow(_self, _direction);
+    }
+    
+    // Reset player
+    _self.carried_object = noone;
+    _self.stats.temp_speed_mult = 1.0;
+    _self.charge_amount = 0;
+    
+    if (instance_exists(_self.previous_weapon_instance)) {
+        _self.weaponCurrent = _self.previous_weapon_instance;
+    } else {
+        _self.weaponCurrent = global.WeaponStruct.Bow;
+    }
+    
+    return obj;
+},
+    
+    step: function(_self) {
+        // Visual charge indicator
+        if (_self.is_charging && _self.is_carrying) {
+            // You could spawn charge particles here
+            if (_self.charge_amount > 0.9) {
+                // Full charge visual effect
+            }
+        }
+    }
+}
 }
 #endregion

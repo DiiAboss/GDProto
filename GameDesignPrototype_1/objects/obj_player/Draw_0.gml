@@ -1,5 +1,6 @@
 /// @desc Player Draw Event
-
+// Draw shadow using your custom function
+draw_sprite_shadow(self, spr_shadow, image_index, x, y+8, 0, 1, 0.2);
 spriteHandler.DrawSprite(self, currentSprite);
 
 // HP bar
@@ -48,3 +49,4 @@ if (keyboard_check(vk_tab)) {
     draw_text(x - 60, debug_y, info.name + " - " + info.special);
     draw_text(x - 60, debug_y - 12, "HP: " + string(floor(hp)) + "/" + string(maxHp));
 }
+

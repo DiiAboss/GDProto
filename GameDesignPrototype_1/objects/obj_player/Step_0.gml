@@ -85,6 +85,12 @@ input.Update(self);
 mouseDirection = input.Direction;
 mouseDistance = distance_to_point(mouse_x, mouse_y);
 
+
+// ==========================================
+// CARRYING SYSTEM
+// ==========================================
+HandleCarrying();
+
 // ==========================================
 // WEAPON SWITCHING
 // ==========================================
@@ -148,6 +154,125 @@ if (variable_struct_exists(weaponCurrent, "step")) {
 
 UpdateTimingVisuals();
 
+
+
+
+/// @func HandleCarrying()
+function HandleCarrying() {
+    // THROW CARRIED OBJECT
+    if (is_carrying && instance_exists(carried_object)) {
+        if (input.FirePress) { // Left click to throw
+            ThrowCarriedObject();
+            return;
+        }
+        
+        // Apply carry speed penalty
+        stats.temp_speed_mult = carry_speed_multiplier;
+    } else {
+        // Not carrying - check for pickup
+        if (keyboard_check_pressed(ord("E"))) {
+            AttemptPickup();
+        }
+    }
+}
+
+/// @func AttemptPickup()
+function AttemptPickup() {
+    var nearest = instance_nearest(x, y, obj_can_carry);
+    
+    if (instance_exists(nearest)) {
+        var dist = point_distance(x, y, nearest.x, nearest.y);
+        
+        if (dist < nearest.interaction_range && nearest.can_be_carried && !nearest.is_being_carried && !nearest.is_projectile) {
+            // Pick up object
+            is_carrying = true;
+            carried_object = nearest;
+            
+            nearest.is_being_carried = true;
+            nearest.carrier = id;
+            nearest.moveX = 0;
+            nearest.moveY = 0;
+            
+            // **SWITCH TO THROWABLE WEAPON**
+            previous_weapon_instance = weaponCurrent; // Store current weapon
+            weaponCurrent = global.WeaponStruct.ThrowableItem;
+            charge_amount = 0;
+            
+            if (variable_instance_exists(nearest, "OnPickedUp")) {
+                nearest.OnPickedUp(id);
+            }
+            
+            show_debug_message("Picked up: " + object_get_name(nearest.object_index));
+        }
+    }
+}
+
+/// @func ThrowCarriedObject()
+function ThrowCarriedObject() {
+    if (!instance_exists(carried_object)) {
+        is_carrying = false;
+        carried_object = noone;
+        return;
+    }
+    
+    var obj = carried_object;
+    
+    // Release object
+    is_carrying = false;
+    obj.is_being_carried = false;
+    obj.carrier = noone;
+    
+    // Launch toward mouse
+    if (obj.can_be_thrown) {
+        var throw_dir = point_direction(x, y, mouse_x, mouse_y);
+        var throw_strength = obj.throw_force / obj.weight; // Heavier = shorter throw
+        
+        obj.moveX = lengthdir_x(throw_strength, throw_dir);
+        obj.moveY = lengthdir_y(throw_strength, throw_dir);
+        
+        // Call throw event (for custom behavior)
+        if (variable_instance_exists(obj, "OnThrown")) {
+            obj.OnThrown(id, throw_dir);
+        }
+    }
+    
+    carried_object = noone;
+    stats.temp_speed_mult = 1.0; // Restore speed
+    weaponCurrent = previous_weapon_instance;
+    show_debug_message("Threw object!");
+}
+
+/// @func DropCarriedObject()
+function DropCarriedObject() {
+    if (!instance_exists(carried_object)) {
+        is_carrying = false;
+        carried_object = noone;
+        return;
+    }
+    
+    var obj = carried_object;
+    
+    // Gently drop (no velocity)
+    is_carrying = false;
+    obj.is_being_carried = false;
+    obj.carrier = noone;
+    obj.moveX = 0;
+    obj.moveY = 0;
+    
+    // Call drop event
+    if (variable_instance_exists(obj, "OnDropped")) {
+        obj.OnDropped(id);
+    }
+    weaponCurrent = previous_weapon_instance;
+    carried_object = noone;
+    stats.temp_speed_mult = 1.0;
+}
+
+// In HandleCarrying():
+if (is_carrying && keyboard_check_pressed(ord("Q"))) {
+    DropCarriedObject();
+}
+
 // ==========================================
 // DEBUG COMMANDS
 // ==========================================
@@ -155,7 +280,7 @@ UpdateTimingVisuals();
 if (keyboard_check_pressed(ord("M"))) AddModifier(id, "TripleRhythmFire");
 if (keyboard_check_pressed(ord("Q"))) {
     var _near = instance_nearest(x, y, obj_enemy);
-    if (instance_exists(_near)) scr_chain_lightning(self, _near, 10, 256, 100, 10);
+    if (instance_exists(_near)) scr_chain_lightning(self, _near, 10, 256, 10, 10);
 }
 if (keyboard_check_pressed(ord("0"))) AddModifier(id, "MultiShot");
 

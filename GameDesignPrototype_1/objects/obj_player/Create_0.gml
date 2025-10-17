@@ -56,8 +56,10 @@ image_speed = 0.2;
 weapon_slots = class_stats.weapon_slots;
 weapons = array_create(weapon_slots, noone);
 current_weapon_index = 0;
-weaponCurrent = global.WeaponStruct.Sword;
+weaponCurrent = global.WeaponStruct.HolyWater;
 melee_weapon = noone;
+previous_weapon_instance = weaponCurrent;
+
 
 // Charge weapon
 charge_amount = 0;
@@ -106,7 +108,7 @@ early_hits_count = 0;
 // CAMERA SYSTEM
 // ==========================================
 camera = new Camera(id);
-camera.set_bounds(280, 88, 1064, 648);
+camera.remove_bounds();
 
 // ==========================================
 // MISC
@@ -117,3 +119,11 @@ global.pause_game = false;
 // Attack counter for modifier triggers
 attack_counter = 0;
 projectile_count_bonus = 0;
+
+
+// ==========================================
+// CARRYING SYSTEM
+// ==========================================
+is_carrying = false;
+carried_object = noone;
+carry_speed_multiplier = 0.8; // Slower when carrying

@@ -11,11 +11,37 @@ damage_sys.Update();
 // Sync legacy HP variable
 hp = damage_sys.hp;
 
-// Check if just died (FIRST TIME ONLY)
+// ==========================================
+// BURNING DAMAGE OVER TIME (BEFORE DEATH CHECK)
+// ==========================================
+if (is_burning && burn_timer > 0) {
+    burn_timer = timer_tick(burn_timer);
+    
+    burn_tick_counter += game_speed_delta();
+    if (burn_tick_counter >= 30) { // Every 0.5 seconds
+        burn_tick_counter = 0;
+        damage_sys.TakeDamage(burn_damage_per_tick, noone);
+    }
+    
+    if (burn_timer <= 0) {
+        is_burning = false;
+        burn_tick_counter = 0;
+        image_blend = c_white;
+    }
+}
+
+// ==========================================
+// DEATH DETECTION (ONLY ONCE)
+// ==========================================
 if (damage_sys.IsDead() && !marked_for_death) {
     marked_for_death = true;
     image_angle = choose(90, 270);
     knockbackFriction = 0.01; // Slow to a stop
+    
+    // CHECK IF KILLED BY HOLY WATER SPLASH
+    if (is_burning && variable_instance_exists(id, "holy_water_splash_direction")) {
+        killed_by_holy_water = true;
+    }
     
     // Trigger ON_KILL modifiers
     var killer = obj_player;
@@ -24,7 +50,7 @@ if (damage_sys.IsDead() && !marked_for_death) {
             enemy_x: x,
             enemy_y: y,
             damage: killer.attack,
-            kill_source: "direct",
+            kill_source: is_burning ? "holy_water" : "direct",
             enemy_type: object_index
         };
         TriggerModifiers(killer, MOD_TRIGGER.ON_KILL, kill_event);
@@ -32,11 +58,11 @@ if (damage_sys.IsDead() && !marked_for_death) {
 }
 
 // ==========================================
-// MARKED FOR DEATH - CONTINUE PHYSICS UNTIL STOPPED
+// MARKED FOR DEATH - PHYSICS UNTIL STOPPED
 // ==========================================
 if (marked_for_death) {
-    // Still apply knockback physics until stopped
-    if (abs(knockbackX) > knockbackThreshold || abs(knockbackY) > knockbackThreshold) {
+    // Continue physics until enemy stops
+    if (abs(knockbackX) > 0.5 || abs(knockbackY) > 0.5) {
         var kb_delta = game_speed_delta();
         var nextX = x + knockbackX * kb_delta;
         var nextY = y + knockbackY * kb_delta;
@@ -58,9 +84,22 @@ if (marked_for_death) {
         knockbackX *= power(knockbackFriction, kb_delta);
         knockbackY *= power(knockbackFriction, kb_delta);
     } else {
-        // Knockback stopped - NOW destroy and drop loot
+        // STOPPED - NOW DESTROY AND TRIGGER EFFECTS
         knockbackX = 0;
         knockbackY = 0;
+        
+        // FIREWORK EFFECT: Create new splash if killed by holy water
+        if (killed_by_holy_water && variable_instance_exists(id, "holy_water_splash_direction")) {
+            CreateHolyWaterSplash(
+                x, 
+                y, 
+                obj_player, 
+                holy_water_splash_direction // Chain in same direction
+            );
+            
+            // Visual feedback
+            CreateFireworkEffect(x, y);
+        }
         
         // Spawn drops
         var orbCount = irandom_range(1, 3);
@@ -71,10 +110,11 @@ if (marked_for_death) {
             _exp.speed = 3;
         }
         
+        // NOW DESTROY
         instance_destroy();
     }
     
-    // Update depth and EXIT - don't process living enemy logic
+    // Update depth and EXIT - don't process living logic
     depth = -y;
     exit;
 }

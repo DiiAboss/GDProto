@@ -1,25 +1,25 @@
-/// @description
-
+/// @description Baseball Bat - Create Event
 event_inherited();
 
-weapon_id = Weapon.BaseballBat;
-sprite_index = spr_bat;
-swing_arc = 100;
-swing_speed = 12;
+// Customize bat properties
+swordSprite = spr_way_better_bat;
+sprite_index = spr_way_better_bat;
+attack = 15;
+knockbackForce = 100; // Bats hit harder!
+swingSpeed = 10; // Slightly faster than sword
 
-// Sweet spot mechanics
-sweet_spot_distance = 48; // Distance from owner where sweet spot exists
-sweet_spot_radius = 32;    // How big the sweet spot is
-sweet_spot_active_start = 0.3; // Swing progress when sweet spot activates
-sweet_spot_active_end = 0.7;   // Swing progress when sweet spot deactivates
+// Baseball bat specific - Sweet Spot System
+sweet_spot_distance = 40; // Distance from player where sweet spot is
+sweet_spot_radius = 20; // Size of sweet spot collision area
+sweet_spot_active_start = 0.4; // When sweet spot becomes active (40% through swing)
+sweet_spot_active_end = 0.6; // When sweet spot ends (60% through swing)
 
-homerun_damage_mult = 3.0;     // Triple damage on sweet spot
-homerun_knockback_mult = 5.0;  // 5x knockback on sweet spot
-
-// Visual
+// Sweet spot tracking
 sweet_spot_x = x;
 sweet_spot_y = y;
 hit_sweet_spot = false;
-
 hit_sweet_spot_timer = 0;
-dynamic_tracking = true; // Enable mouse tracking for bat
+
+// Home run multipliers
+homerun_damage_mult = 3.0; // 3x damage on sweet spot
+homerun_knockback_mult = 5.0; // 5x knockback on sweet spot

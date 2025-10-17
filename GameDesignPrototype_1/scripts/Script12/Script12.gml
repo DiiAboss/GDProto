@@ -21,6 +21,11 @@ global.Projectile_ =
         name: "knife",
         description: "Thrown dagger",
         object: obj_knife  // or obj_projectile if you don't have obj_knife yet
+    },
+		Holy_Water: {
+        name: "Holy Water",
+        description: "Lobbed Bottle Of Holy Water",
+        object: obj_holy_water  // or obj_projectile if you don't have obj_holy_water yet
     }
 }
 
@@ -63,23 +68,21 @@ function Create_Projectile(_x, _y, _depth, _projectile_struct)
 	return _projectile;
 }
 
-function Lob_Projectile(_self, _direction, _distance, _projectile)
-{
-	#region Single Shot
-	var _totalAcc     = 1;//abs((Accuracy * _owner.maxAccuracy) - (Accuracy * _owner.accuracy));
-	var _acc		  = clamp(_totalAcc, 0, _totalAcc);
-			
-	var _dir		  =	_direction + irandom_range(-_acc, _acc);
-	var _bullet		  = instance_create_depth(_self.x, _self.y, _self.depth, _projectile);
-	_bullet.projectileType = PROJECTILE_TYPE.LOB;
-	_bullet.owner	  = _self;
-	_bullet.direction = _direction;
-	_bullet.speed     = 4;
-	_bullet.targetDistance = _distance;
-	_bullet.color     = c_white;
-	#endregion Single Shot
-	
-	return _bullet;
+/// @function Lob_Projectile(_self, _direction, _range, _projectile_object)
+function Lob_Projectile(_self, _direction, _range, _projectile_object) {
+    var proj = instance_create_depth(_self.x, _self.y, _self.depth - 1, _projectile_object);
+    
+    proj.direction = _direction;
+    proj.xStart = _self.x;
+    proj.yStart = _self.y;
+    proj.targetDistance = _range;
+    proj.owner = _self;
+    proj.damage = _self.attack;
+    
+    // NEW: Store the direction for lobShot to use
+    proj.lob_direction = _direction;
+    
+    return proj;
 }
 
 

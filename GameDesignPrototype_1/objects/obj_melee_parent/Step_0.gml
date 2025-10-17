@@ -1,67 +1,176 @@
-if (!instance_exists(owner)) {
-    instance_destroy();
-    exit;
-}
- // Calculate sword angle based on player's aim direction
-    var baseAngle = owner.mouseDirection;
-    image_angle = baseAngle + currentAngleOffset;
-	x = owner.x;
-	y = owner.y;
-	depth = owner.depth - 1;
+/// @description Melee Parent - Step Event
 
-if (startSwing && !isSwinging) {
-    isSwinging = true;
-    swing_progress = 0;
-    swing_direction = point_direction(owner.x, owner.y, mouse_x, mouse_y);
-    ds_list_clear(hit_enemies);
-    startSwing = false;
-}
-
-if (isSwinging) {
-    swing_progress += swing_speed;
+if (instance_exists(owner)) {
+    // Update weapon position to follow player
+    x = owner.x;
+    y = owner.y;
     
-    // Optional dynamic tracking
-    if (dynamic_tracking) {
-        var target_dir = point_direction(owner.x, owner.y, mouse_x, mouse_y);
-        var angle_diff = angle_difference(target_dir, swing_direction);
-        swing_direction += angle_diff * 0.2;
-    }
-    
-    // Position weapon
-    var swing_offset = swing_arc * (swing_progress / 100 - 0.5);
-    var current_angle = swing_direction + swing_offset;
-    
-    var dist = 32;
-    x = owner.x + lengthdir_x(dist, current_angle);
-    y = owner.y + lengthdir_y(dist, current_angle);
-    image_angle = current_angle;
-    
-    // Regular hit detection (child objects like baseball bat override this)
-    var hit_list = ds_list_create();
-    var hit_count = instance_place_list(x, y, obj_enemy, hit_list, false);
-    
-    for (var i = 0; i < hit_count; i++) {
-        var enemy = hit_list[| i];
-        
-        if (ds_list_find_index(hit_enemies, enemy) == -1) {
-            ds_list_add(hit_enemies, enemy);
-            
-            takeDamage(enemy, attack);
-            
-            var kb_dir = point_direction(owner.x, owner.y, enemy.x, enemy.y);
-            enemy.knockbackX = lengthdir_x(knockbackForce, kb_dir);
-            enemy.knockbackY = lengthdir_y(knockbackForce, kb_dir);
-            
-            var hit_event = CreateHitEvent(owner, enemy, attack, AttackType.MELEE);
-            hit_event.combo_hit = current_combo_hit;
-            TriggerModifiers(owner, MOD_TRIGGER.ON_HIT, hit_event);
+    // Handle combo timer
+    if (comboTimer > 0) {
+        comboTimer--;
+        if (comboTimer == 0) {
+            comboCount = 0;
         }
     }
     
-    ds_list_destroy(hit_list);
-    
-    if (swing_progress >= 100) {
-        isSwinging = false;
-        swing_progress = 0;
+    // Handle swing initiation
+    if (startSwing && !swinging) {
+        swinging = true;
+        isSwinging = true; // Set both for compatibility
+        swingProgress = 0;
+        startSwing = false;
+        hasHitThisSwing = false;
+        ds_list_clear(hitList);
+        
+        // Determine swing direction based on current position
+        if (currentPosition == SwingPosition.Down) {
+            targetPosition = SwingPosition.Up;
+        } else {
+            targetPosition = SwingPosition.Down;
+        }
     }
+    
+    // Handle swing animation
+    if (swinging) {
+        // Increment swing progress
+        var speedMod = 1;
+        swingProgress += (swingSpeed * speedMod) / 100;
+        
+        if (swingProgress <= 1) {
+            // Interpolate between positions
+            var startOffset = (currentPosition == SwingPosition.Down) ? angleOffset : -angleOffset;
+            var endOffset = (targetPosition == SwingPosition.Up) ? -angleOffset : angleOffset;
+            
+            // Smooth easing curve for more dynamic swing
+            var t = swingProgress;
+            t = 1 - power(1 - t, 3); // Use ease-out curve
+            
+            currentAngleOffset = lerp(startOffset, endOffset, t);
+        } else {
+            // Swing complete
+            swinging = false;
+            isSwinging = false;
+            swingProgress = 0;
+            
+            // Update current position to where we swung to
+            currentPosition = targetPosition;
+            currentAngleOffset = (currentPosition == SwingPosition.Down) ? angleOffset : -angleOffset;
+            
+            // Reset combo timer
+            comboTimer = comboWindow;
+        }
+    }
+    
+    // Calculate weapon angle based on player's aim direction
+    var baseAngle = owner.mouseDirection;
+    image_angle = baseAngle + currentAngleOffset;
+    
+    // Position weapon at correct distance from player
+    var actualDistance = swordLength;
+    // Pull weapon closer during mid-swing for arc effect
+    if (swinging && swingProgress > 0.3 && swingProgress < 0.7) {
+        actualDistance = swordLength;
+    }
+    
+    x = owner.x + lengthdir_x(actualDistance, image_angle);
+    y = owner.y + lengthdir_y(actualDistance, image_angle);
+    
+    // Collision detection during swing
+    if (swinging && swingProgress > 0.05 && swingProgress < 0.95) {
+        
+        // ===== HIT ENEMIES =====
+        var hit = instance_place(x, y, obj_enemy);
+        
+        if (hit != noone && ds_list_find_index(hitList, hit) == -1) {
+            // Add to hit list to prevent multiple hits
+            ds_list_add(hitList, hit);
+            hit.lastKnockedBy = owner;
+            
+            // Increment combo if within window
+            if (comboTimer > 0) {
+                comboCount++;
+            } else {
+                comboCount = 1;
+            }
+            
+            // Calculate damage with combo bonus
+            var baseDamage = attack;
+            var damage = baseDamage * (1 + comboCount * 0.25); // +25% per combo
+            
+            // Deal damage
+            takeDamage(hit, damage, owner);
+            
+            if (hit.hp <= 0) {
+                obj_game_manager.gm_trigger_event("on_kill", obj_player, self);
+            } else {
+                obj_game_manager.gm_trigger_event("on_attack", obj_player, self);
+            }
+            
+            // Apply knockback
+            if (hit.knockbackCooldown <= 0) {
+                var knockbackDir = point_direction(owner.x, owner.y, hit.x, hit.y);
+                var kbForce = knockbackForce;
+                
+                hit.knockbackX = lengthdir_x(kbForce, knockbackDir);
+                hit.knockbackY = lengthdir_y(kbForce, knockbackDir);
+                hit.knockbackCooldown = hit.knockbackCooldownMax;
+            }
+        }
+        
+        // ===== HIT CARRIABLE OBJECTS =====
+        hit = instance_place(x, y, obj_can_carry);
+        
+        if (hit != noone && !hit.is_being_carried && ds_list_find_index(hitList, hit) == -1) {
+            // Add to hit list
+            ds_list_add(hitList, hit);
+            
+            // Calculate knockback
+            var knockbackDir = point_direction(owner.x, owner.y, hit.x, hit.y);
+            
+            // Get resistance (with safety check)
+            var resistance = 1.0;
+            if (variable_instance_exists(hit, "hit_resistance")) {
+                resistance = hit.hit_resistance;
+            }
+            
+            var kbForce = (knockbackForce / resistance);
+            
+            // Apply knockback to object
+            if (variable_instance_exists(hit, "knockback")) {
+                hit.knockback.Apply(knockbackDir, kbForce);
+            }
+            
+            // Visual feedback
+            if (variable_instance_exists(hit, "hitFlashTimer")) {
+                hit.hitFlashTimer = 5;
+            }
+            if (variable_instance_exists(hit, "shake")) {
+                hit.shake = 3;
+            }
+            if (variable_instance_exists(hit, "hit_cooldown")) {
+                hit.hit_cooldown = hit.hit_cooldown_max;
+            }
+            if (variable_instance_exists(hit, "last_hit_by")) {
+                hit.last_hit_by = owner;
+            }
+            
+            // Particles
+            repeat(5) {
+                var p = instance_create_depth(hit.x, hit.y, hit.depth - 1, obj_particle);
+                p.direction = knockbackDir + random_range(-30, 30);
+                p.speed = random_range(2, 5);
+            }
+            // In melee parent, when hitting carriable:
+			show_debug_message("=== HIT CARRIABLE ===");
+			show_debug_message("Base knockbackForce: " + string(knockbackForce));
+			show_debug_message("Combo count: " + string(comboCount));
+			show_debug_message("Resistance: " + string(resistance));
+			show_debug_message("Final force: " + string(kbForce));
+			show_debug_message("Object weight: " + string(hit.weight));
+            show_debug_message("Hit carriable object: " + object_get_name(hit.object_index));
+        }
+    }
+} else {
+    // Owner doesn't exist, destroy weapon
+    instance_destroy();
 }

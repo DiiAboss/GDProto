@@ -3,8 +3,8 @@ camera = camera_create();
 view_camera[0] = camera;
 
 // Base settings
-base_width = 640;
-base_height = 360;
+base_width = room_width;
+base_height = room_height;
 current_width = base_width;
 current_height = base_height;
 zoom_speed = 0.05;

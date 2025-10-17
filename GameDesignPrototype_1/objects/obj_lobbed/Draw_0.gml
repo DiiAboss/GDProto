@@ -1,6 +1,6 @@
 /// @description
 
-draw_sprite_ext(sprite, img, x, y, image_xscale, image_yscale, direction, c_white, 1);
+draw_sprite_ext(sprite, img, x, y, image_xscale, image_yscale, direction + rot, c_white, 1);
 
 if (lobbed)
 {

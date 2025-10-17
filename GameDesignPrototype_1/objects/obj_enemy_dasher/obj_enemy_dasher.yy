@@ -35,8 +35,8 @@
   "resourceVersion":"2.0",
   "solid":false,
   "spriteId":{
-    "name":"spr_dasher",
-    "path":"sprites/spr_dasher/spr_dasher.yy",
+    "name":"spr_demon",
+    "path":"sprites/spr_demon/spr_demon.yy",
   },
   "spriteMaskId":null,
   "visible":true,

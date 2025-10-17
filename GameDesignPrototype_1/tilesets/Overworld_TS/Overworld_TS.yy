@@ -1,0 +1,48 @@
+{
+  "$GMTileSet":"v1",
+  "%Name":"Overworld_TS",
+  "autoTileSets":[
+    {"$GMAutoTileSet":"","%Name":"autotile_2","closed_edge":false,"name":"autotile_2","resourceType":"GMAutoTileSet","resourceVersion":"2.0","tiles":[405,1242,1240,1241,1162,1202,0,1280,1160,0,1200,1281,1161,1320,1321,1201,],},
+    {"$GMAutoTileSet":"","%Name":"autotile_3","closed_edge":false,"name":"autotile_3","resourceType":"GMAutoTileSet","resourceVersion":"2.0","tiles":[405,324,322,323,244,284,0,362,242,0,282,363,243,402,403,283,],},
+  ],
+  "macroPageTiles":{
+    "SerialiseHeight":35,
+    "SerialiseWidth":9,
+    "TileCompressedData":[
+      -35,0,1,724,-8,0,1,724,-8,0,1,724,-4,0,1,727,-3,0,1,724,-4,0,1,727,-3,0,1,724,-4,0,1,727,-3,0,1,724,
+      -4,0,1,727,-3,0,1,724,-4,0,1,727,-3,0,1,724,-4,0,1,727,-3,0,1,724,-4,0,1,727,-3,0,1,724,-4,0,1,727,-3,
+      0,1,724,-4,0,1,727,-3,0,1,724,-8,0,1,724,-8,0,1,724,-8,0,1,724,-8,0,1,724,-8,0,1,724,-8,0,1,724,-8,0,
+      1,724,-8,0,1,724,-8,0,1,724,-8,0,1,724,-8,0,1,724,-8,0,1,724,-8,0,1,724,-8,0,1,724,-8,0,1,724,-8,0,1,
+      724,-8,0,1,724,-8,0,1,724,-8,0,1,724,-8,0,1,724,
+    ],
+    "TileDataFormat":1,
+  },
+  "name":"Overworld_TS",
+  "out_columns":38,
+  "out_tilehborder":2,
+  "out_tilevborder":2,
+  "parent":{
+    "name":"Tile Sets",
+    "path":"folders/Tile Sets.yy",
+  },
+  "resourceType":"GMTileSet",
+  "resourceVersion":"2.0",
+  "spriteId":{
+    "name":"Overworld_Tileset",
+    "path":"sprites/Overworld_Tileset/Overworld_Tileset.yy",
+  },
+  "spriteNoExport":false,
+  "textureGroupId":{
+    "name":"Default",
+    "path":"texturegroups/Default",
+  },
+  "tileAnimationFrames":[],
+  "tileAnimationSpeed":15.0,
+  "tileHeight":16,
+  "tilehsep":0,
+  "tilevsep":0,
+  "tileWidth":16,
+  "tilexoff":0,
+  "tileyoff":0,
+  "tile_count":1440,
+}
