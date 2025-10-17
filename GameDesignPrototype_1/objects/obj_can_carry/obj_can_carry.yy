@@ -11,8 +11,8 @@
   "name":"obj_can_carry",
   "overriddenProperties":[],
   "parent":{
-    "name":"Controllers",
-    "path":"folders/Objects/In-Game/Controllers.yy",
+    "name":"PICKUP_OBJECTS",
+    "path":"folders/Objects/In-Game/PICKUP_OBJECTS.yy",
   },
   "parentObjectId":null,
   "persistent":false,

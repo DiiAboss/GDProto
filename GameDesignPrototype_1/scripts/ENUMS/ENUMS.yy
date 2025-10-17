@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"ENUMS",
   "parent":{
-    "name":"Scripts",
-    "path":"folders/Scripts.yy",
+    "name":"ENUMS_MACROS",
+    "path":"folders/Scripts/ENUMS_MACROS.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

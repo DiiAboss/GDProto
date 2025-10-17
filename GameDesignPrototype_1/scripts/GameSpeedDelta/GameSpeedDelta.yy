@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"GameSpeedDelta",
   "parent":{
-    "name":"Scripts",
-    "path":"folders/Scripts.yy",
+    "name":"CONTROL_SCRIPTS",
+    "path":"folders/Scripts/CONTROL_SCRIPTS.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

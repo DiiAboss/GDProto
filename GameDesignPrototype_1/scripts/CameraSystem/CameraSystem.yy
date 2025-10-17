@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"CameraSystem",
   "parent":{
-    "name":"Scripts",
-    "path":"folders/Scripts.yy",
+    "name":"CAMERA_SCRIPTS",
+    "path":"folders/Scripts/CAMERA_SCRIPTS.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

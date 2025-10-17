@@ -6,8 +6,8 @@
   "name":"obj_magic_baseball",
   "overriddenProperties":[],
   "parent":{
-    "name":"Player",
-    "path":"folders/Objects/In-Game/Player.yy",
+    "name":"PROJECTILE_OBJECTS",
+    "path":"folders/Objects/In-Game/PLAYER_AND_WEAPON_OBJECTS/WEAPON_OBJECTS/RANGE_WEAPON_OBJECTS/PROJECTILE_OBJECTS.yy",
   },
   "parentObjectId":{
     "name":"obj_projectile",

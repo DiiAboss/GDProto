@@ -1,12 +1,12 @@
 {
   "$GMScript":"v1",
-  "%Name":"Script15",
+  "%Name":"Player_Take_Damage",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"Script15",
+  "name":"Player_Take_Damage",
   "parent":{
-    "name":"Player",
-    "path":"folders/Objects/In-Game/Player.yy",
+    "name":"PLAYER_SCRIPTS",
+    "path":"folders/Scripts/PLAYER_SCRIPTS.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

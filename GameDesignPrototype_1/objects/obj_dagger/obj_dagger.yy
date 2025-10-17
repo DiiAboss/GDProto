@@ -8,8 +8,8 @@
   "name":"obj_dagger",
   "overriddenProperties":[],
   "parent":{
-    "name":"Objects",
-    "path":"folders/Objects.yy",
+    "name":"MELEE_WEAPON_OBJECTS",
+    "path":"folders/Objects/In-Game/PLAYER_AND_WEAPON_OBJECTS/WEAPON_OBJECTS/MELEE_WEAPON_OBJECTS.yy",
   },
   "parentObjectId":{
     "name":"obj_melee_parent",

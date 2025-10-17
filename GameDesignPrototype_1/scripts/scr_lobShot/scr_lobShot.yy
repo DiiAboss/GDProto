@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"scr_lobShot",
   "parent":{
-    "name":"Scripts",
-    "path":"folders/Scripts.yy",
+    "name":"WEAPONS_SCRIPTS",
+    "path":"folders/Scripts/WEAPONS_SCRIPTS.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

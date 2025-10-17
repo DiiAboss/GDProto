@@ -6,8 +6,8 @@
   "name":"obj_charcter_parent",
   "overriddenProperties":[],
   "parent":{
-    "name":"Player",
-    "path":"folders/Objects/In-Game/Player.yy",
+    "name":"CHARACTER_OBJECTS",
+    "path":"folders/Objects/In-Game/PLAYER_AND_WEAPON_OBJECTS/CHARACTER_OBJECTS.yy",
   },
   "parentObjectId":null,
   "persistent":false,

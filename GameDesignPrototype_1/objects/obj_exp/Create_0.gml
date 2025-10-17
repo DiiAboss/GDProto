@@ -11,4 +11,4 @@ trail_length = 3;
 
 settled = false;
 
-amount = 10;
+amount = 1;

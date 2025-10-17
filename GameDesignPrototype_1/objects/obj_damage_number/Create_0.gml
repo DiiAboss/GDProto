@@ -31,3 +31,5 @@ critScale = 1.5;
 critShake = 0;
 
 owner = noone;
+
+depth = -999;

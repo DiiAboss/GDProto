@@ -67,12 +67,33 @@ is_charging = false;
 isCannonBalling = false;
 
 // ==========================================
-// PROGRESSION SYSTEM
+// PROGRESSION SYSTEM - INITIALIZATION
 // ==========================================
 experience_points = 0;
-exp_to_next_level = 10;
+player_level = 1; // Start at level 1, not 0
 gold = 0;
-player_level = 0;
+
+// Leveling formula constants (tuned for 15-30 min arcade sessions)
+exp_base = 5;         // Base XP required for first level
+exp_exponent = 1.05;  // Gentle exponential growth for arcade play
+exp_linear = 3;       // Small linear component
+
+// Calculate initial XP requirement
+exp_to_next_level = calculate_exp_requirement(player_level);
+
+// ==========================================
+// LEVEL UP SYSTEM FUNCTIONS
+// ==========================================
+
+/// @function calculate_exp_requirement(level)
+/// @description Calculate XP needed for a specific level (Vampire Survivors formula)
+/// @param {real} _level The level to calculate for
+function calculate_exp_requirement(_level) {
+    // Vampire Survivors formula: BaseXP * (Level ^ Exponent) + (Level * Linear)
+    // This creates exponential growth that gets steeper over time
+    var required_exp = exp_base * power(_level, exp_exponent) + (_level * exp_linear);
+    return floor(required_exp);
+}
 
 // ==========================================
 // MODIFIER SYSTEM

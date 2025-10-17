@@ -6,8 +6,8 @@
   "name":"obj_knife",
   "overriddenProperties":[],
   "parent":{
-    "name":"Player",
-    "path":"folders/Objects/In-Game/Player.yy",
+    "name":"MELEE_WEAPON_OBJECTS",
+    "path":"folders/Objects/In-Game/PLAYER_AND_WEAPON_OBJECTS/WEAPON_OBJECTS/MELEE_WEAPON_OBJECTS.yy",
   },
   "parentObjectId":{
     "name":"obj_projectile",

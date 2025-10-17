@@ -28,14 +28,40 @@ hp = damage_sys.hp;
 invincible = invincibility.active;
 invincible_timer = invincibility.timer;
 
-// ==========================================
-// LEVEL UP CHECK
-// ==========================================
-if (experience_points >= exp_to_next_level) {
+while (experience_points >= exp_to_next_level) {
+    // Subtract the XP cost
     experience_points -= exp_to_next_level;
+    
+    // Level up
     player_level += 1;
+    
+    // Recalculate next level requirement
+    exp_to_next_level = calculate_exp_requirement(player_level);
+    
+    // Trigger level up event (add your own rewards here)
+    on_level_up();
 }
 
+/// @function on_level_up()
+/// @description Called when player levels up
+function on_level_up() {
+    // Play level up sound
+    // audio_play_sound(snd_levelup, 1, false);
+    
+    // Heal player slightly on level up
+    hp = min(hp + (maxHp * 0.2), maxHp); // Restore 20% HP
+    
+    // Add visual effect
+    // instance_create_depth(x, y, depth - 1, obj_levelup_effect);
+    
+    // Show level up UI / weapon selection
+    // This is where you'd trigger your upgrade selection screen
+    show_debug_message("Level Up! Now level " + string(player_level));
+    
+    // Optional: Grant stat increases
+    maxHp += 5; // Gain 5 max HP per level
+    hp += 5;    // Also heal the 5 HP gained
+}
 // ==========================================
 // PAUSE INPUT
 // ==========================================

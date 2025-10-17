@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"UI_MANAGER_CONSTRUCTOR",
   "parent":{
-    "name":"Scripts",
-    "path":"folders/Scripts.yy",
+    "name":"UI_SCRIPTS",
+    "path":"folders/Scripts/UI_SCRIPTS.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

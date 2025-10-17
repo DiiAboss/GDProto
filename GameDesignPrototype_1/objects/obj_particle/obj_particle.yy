@@ -10,8 +10,8 @@
   "name":"obj_particle",
   "overriddenProperties":[],
   "parent":{
-    "name":"Objects",
-    "path":"folders/Objects.yy",
+    "name":"FX_OBJECTS",
+    "path":"folders/Objects/In-Game/FX_OBJECTS.yy",
   },
   "parentObjectId":null,
   "persistent":false,

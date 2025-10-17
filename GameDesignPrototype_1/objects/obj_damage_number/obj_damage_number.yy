@@ -10,8 +10,8 @@
   "name":"obj_damage_number",
   "overriddenProperties":[],
   "parent":{
-    "name":"Objects",
-    "path":"folders/Objects.yy",
+    "name":"FX_OBJECTS",
+    "path":"folders/Objects/In-Game/FX_OBJECTS.yy",
   },
   "parentObjectId":null,
   "persistent":false,

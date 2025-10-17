@@ -10,8 +10,8 @@
   "name":"obj_exp",
   "overriddenProperties":[],
   "parent":{
-    "name":"Player",
-    "path":"folders/Objects/In-Game/Player.yy",
+    "name":"PICKUP_OBJECTS",
+    "path":"folders/Objects/In-Game/PICKUP_OBJECTS.yy",
   },
   "parentObjectId":null,
   "persistent":false,

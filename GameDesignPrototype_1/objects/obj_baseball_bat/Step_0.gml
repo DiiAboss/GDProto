@@ -69,7 +69,7 @@ if (swinging) { // Use 'swinging' not 'isSwinging'
             
             
             // Spawn "HOME RUN!" text effect
-            var homerun_text = instance_create_depth(sweet_spot_hit.x, sweet_spot_hit.y - 20, depth - 10, obj_damage_number);
+            var homerun_text = instance_create_depth(sweet_spot_hit.x, sweet_spot_hit.y - 20, -999, obj_damage_number);
             if (instance_exists(homerun_text)) {
                 homerun_text.damage_text = "HOME RUN!";
                 homerun_text.text_color = c_yellow;

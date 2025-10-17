@@ -11,8 +11,8 @@
   "name":"obj_chest",
   "overriddenProperties":[],
   "parent":{
-    "name":"Objects",
-    "path":"folders/Objects.yy",
+    "name":"ENIRONMENT_OBJECTS",
+    "path":"folders/Objects/In-Game/ENIRONMENT_OBJECTS.yy",
   },
   "parentObjectId":{
     "name":"obj_obstacle",

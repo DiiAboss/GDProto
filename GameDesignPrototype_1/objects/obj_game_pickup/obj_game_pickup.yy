@@ -6,8 +6,8 @@
   "name":"obj_game_pickup",
   "overriddenProperties":[],
   "parent":{
-    "name":"Objects",
-    "path":"folders/Objects.yy",
+    "name":"PICKUP_OBJECTS",
+    "path":"folders/Objects/In-Game/PICKUP_OBJECTS.yy",
   },
   "parentObjectId":null,
   "persistent":false,

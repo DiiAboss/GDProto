@@ -41,6 +41,7 @@ if (instance_exists(obj_coin))
                 if (_dist_to_player <= 4)
                 {
                     instance_destroy();
+					obj_player.gold += 1;
                 }
             }
             else

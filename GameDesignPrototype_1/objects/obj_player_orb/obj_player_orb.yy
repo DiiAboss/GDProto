@@ -11,7 +11,7 @@
   "overriddenProperties":[],
   "parent":{
     "name":"Obstacles",
-    "path":"folders/Objects/In-Game/Obstacles.yy",
+    "path":"folders/Objects/In-Game/ENIRONMENT_OBJECTS/Obstacles.yy",
   },
   "parentObjectId":null,
   "persistent":false,

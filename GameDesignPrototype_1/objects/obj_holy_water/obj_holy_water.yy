@@ -8,8 +8,8 @@
   "name":"obj_holy_water",
   "overriddenProperties":[],
   "parent":{
-    "name":"In-Game",
-    "path":"folders/Objects/In-Game.yy",
+    "name":"PROJECTILE_OBJECTS",
+    "path":"folders/Objects/In-Game/PLAYER_AND_WEAPON_OBJECTS/WEAPON_OBJECTS/RANGE_WEAPON_OBJECTS/PROJECTILE_OBJECTS.yy",
   },
   "parentObjectId":{
     "name":"obj_lobbed",
