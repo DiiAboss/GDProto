@@ -16,6 +16,8 @@ if (instance_exists(obj_player)) {
             show_menu = !show_menu;
             if (show_menu) {
                 selected_index = 0;
+				// Tell game manager we're opening
+    			obj_game_manager.OnChestOpening(id);
             }
         }
         
@@ -34,6 +36,7 @@ if (instance_exists(obj_player)) {
                 var success = ActivateTotem(totem_type, obj_player);
                 
                 if (success) {
+					obj_game_manager.OnChestClosing(id);
                     // Optional: close menu after purchase
                     // show_menu = false;
                 }
@@ -42,12 +45,14 @@ if (instance_exists(obj_player)) {
             // Close menu
             if (keyboard_check_pressed(vk_escape)) {
                 show_menu = false;
+				obj_game_manager.OnChestClosing(id);
             }
         }
     } else {
         // Too far, close menu
         if (show_menu) {
             show_menu = false;
+			obj_game_manager.OnChestClosing(id);
         }
     }
 }

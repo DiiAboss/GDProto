@@ -74,7 +74,8 @@ enum ChestState {
     MOVING_CENTER = 3,
     BURSTING = 4,
     SHOWING_REWARDS = 5,
-    CLOSING = 6
+    CLOSING = 6,
+	OPENING = 7,
 }
 
 enum ChestType {

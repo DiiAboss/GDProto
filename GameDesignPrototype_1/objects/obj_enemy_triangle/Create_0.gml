@@ -11,4 +11,5 @@ state = ENEMY_STATE.FOLLOW;
 myDir = 0;
 
 img_index = 0;
+baseSpeed = 3;
 

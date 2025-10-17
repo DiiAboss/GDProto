@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_ScoreManager",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_ScoreManager",
+  "parent":{
+    "name":"CONTROL_SCRIPTS",
+    "path":"folders/Scripts/CONTROL_SCRIPTS.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

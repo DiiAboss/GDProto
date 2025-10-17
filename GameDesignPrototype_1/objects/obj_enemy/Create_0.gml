@@ -20,6 +20,13 @@ maxHp = damage_sys.max_hp;
 moveSpeed = 2;
 myDir = 0;
 
+
+scored_this_death = false;    // Prevents double-scoring
+total_damage_taken = 0;       // Track actual damage for overkill
+
+// Score value (set based on enemy type)
+score_value = 10;             // Default, override in child enemies
+
 // Visual effects
 hitFlashTimer = 0;
 breathTimer = 0;

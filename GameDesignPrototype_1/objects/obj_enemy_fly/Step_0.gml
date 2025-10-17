@@ -87,3 +87,5 @@ else {
 
 image_xscale = lerp(image_xscale, xScaleTarget, squashSpeed);
 image_yscale = lerp(image_yscale, yScaleTarget, squashSpeed);
+
+depth = -y;

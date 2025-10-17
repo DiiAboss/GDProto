@@ -1,45 +1,25 @@
-// Configuration (set via creation code)
+// ==========================================
+// CREATE EVENT
+// ==========================================
+
+// Configuration
 chest_type = ChestType.MINI;
 interactable = true;
 interact_range = 64;
 
-// State machine
+// State
 state = ChestState.IDLE;
 
 // Visual
 base_scale = 1.0;
 current_scale = base_scale;
 target_scale = base_scale;
-pulse_scale = 1.0;
 image_alpha = 1.0;
-
-// Animation timers
-activation_timer = 0;
-activation_duration = 30; // Frames for slowdown
-move_timer = 0;
-burst_timer = 0;
-closing_timer = 0;
-
-// Movement
-target_x = x;
-target_y = y;
-
-// Pushback
-pushback_radius = 96;
-pushback_force = 12;
+glow_intensity = 0;
 
 // Rewards
 chest_rewards = [];
-
-
-// Transition variables (for smooth world-to-GUI movement)
-transition_start_x = 0;
-transition_start_y = 0;
-transition_progress = 0;
-glow_intensity = 0;
-
-// Choice prompt
-choice_prompt_active = false;
+stored_cost = 0;
 
 // Premium chest scaling
 if (chest_type == ChestType.PREMIUM) {
@@ -49,14 +29,11 @@ if (chest_type == ChestType.PREMIUM) {
     target_scale = base_scale;
 }
 
-/// @func ShowChoicePrompt
-function ShowChoicePrompt() {
-    choice_prompt_active = true;
-    // You can create a simple GUI prompt or use a simpler system
-    // For now, let's use keyboard: 1 = Open, 2 = Bomb
-}
+// ==========================================
+// FUNCTIONS
+// ==========================================
 
-/// @func BeginOpening
+/// @func BeginOpening()
 function BeginOpening() {
     var cost = 0;
     var can_afford = true;
@@ -68,7 +45,6 @@ function BeginOpening() {
         
         if (!can_afford) {
             show_debug_message("Not enough gold! Need: " + string(cost));
-            state = ChestState.IDLE;
             return;
         }
         
@@ -79,52 +55,49 @@ function BeginOpening() {
     chest_rewards = GenerateChestRewards(chest_type, obj_game_manager.chests_opened);
     stored_cost = cost;
     
-    // Start activation sequence
-    state = ChestState.ACTIVATING;
-    activation_timer = 0;
+    // Tell game manager we're opening
+    obj_game_manager.OnChestOpening(id);
+    
+    // Change state
+    state = ChestState.OPENING;
+    
+    // Visual effects
+    glow_intensity = 1;
+    
+    // Camera shake
+    if (instance_exists(obj_player)) {
+        obj_player.camera.add_shake(3);
+    }
+    
+    // Pushback enemies
+    PushbackEnemies(x, y, 96, 12);
+    DestroyAllProjectiles();
 }
 
-/// @func ConvertToBomb
-function ConvertToBomb() {
-    // Generate rewards to calculate bomb damage
-    var temp_rewards = GenerateChestRewards(chest_type, obj_game_manager.chests_opened);
-    var bomb_damage = CalculateBombDamage(temp_rewards);
+/// @func ShowRewards()
+function ShowRewards() {
+    state = ChestState.SHOWING_REWARDS;
     
-    // Create bomb
-    var bomb = instance_create_depth(x, y, depth, obj_chest_bomb);
-    bomb.sprite_index = sprite_index;
-    bomb.damage = bomb_damage;
-    
-    show_debug_message("Chest converted to bomb! Damage: " + string(bomb_damage));
-    
-    // Destroy self
-    instance_destroy();
-}
-
-function ShowRewardsPopup() {
+    // Create the popup
     function on_reward_select(index, reward) {
         ApplyReward(obj_player, reward);
         obj_game_manager.chests_opened++;
         
-        // Set flag for chest to close itself
+        // Tell the chest to close
         with (obj_chest) {
             if (state == ChestState.SHOWING_REWARDS) {
-                state = ChestState.CLOSING;
-                closing_timer = 0;
+                CloseChest();
             }
         }
     }
     
     function on_skip(refund_amount) {
         obj_player.gold += refund_amount;
-        show_debug_message("Skipped chest, received " + string(refund_amount) + " gold");
         obj_game_manager.chests_opened++;
         
-        // Set flag for chest to close itself
         with (obj_chest) {
             if (state == ChestState.SHOWING_REWARDS) {
-                state = ChestState.CLOSING;
-                closing_timer = 0;
+                CloseChest();
             }
         }
     }
@@ -134,9 +107,27 @@ function ShowRewardsPopup() {
         display_get_gui_height() / 2,
         chest_rewards,
         stored_cost,
-        on_reward_select,  // Correct callback - receives (index, reward)
-        on_skip            // Correct callback - receives (refund_amount)
+        on_reward_select,
+        on_skip
     );
 }
 
-opened = false;
+/// @func CloseChest()
+function CloseChest() {
+    state = ChestState.CLOSING;
+    
+    // Tell game manager we're closing
+    obj_game_manager.OnChestClosing(id);
+}
+
+/// @func ConvertToBomb()
+function ConvertToBomb() {
+    var temp_rewards = GenerateChestRewards(chest_type, obj_game_manager.chests_opened);
+    var bomb_damage = CalculateBombDamage(temp_rewards);
+    
+    var bomb = instance_create_depth(x, y, depth, obj_chest_bomb);
+    bomb.sprite_index = sprite_index;
+    bomb.damage = bomb_damage;
+    
+    instance_destroy();
+}

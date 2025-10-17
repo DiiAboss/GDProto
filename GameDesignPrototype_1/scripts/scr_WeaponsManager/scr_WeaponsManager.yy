@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_WeaponsManager",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_WeaponsManager",
+  "parent":{
+    "name":"PLAYER_SCRIPTS",
+    "path":"folders/Scripts/PLAYER_SCRIPTS.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

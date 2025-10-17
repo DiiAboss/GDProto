@@ -10,8 +10,8 @@ function PlayerMovement(_self, _playerSpeed) constructor
 	// Dash Functions
 	canDash			 = true;
 	dashTimer		 = 0;
-	maxDashTimer	 = 8;
-	dashSpeed		 = 6;
+	maxDashTimer	 = 6;
+	dashSpeed		 = 4;
 	isDashing        = false;
 	
 	///Update - Call in Step Event
@@ -43,7 +43,7 @@ function PlayerMovement(_self, _playerSpeed) constructor
     // Dash handling
     if (_dashKey) CheckCanExecuteDash();
     
-    currentSpeed = ExecuteDash(baseSpeed, dashTimer);
+    currentSpeed = ExecuteDash(_self, baseSpeed, dashTimer);
     dashTimer = timer_tick(dashTimer); // CHANGED
     
     if (dashTimer <= 0) {
@@ -88,13 +88,15 @@ function PlayerMovement(_self, _playerSpeed) constructor
 		return true;
 	}
 	
-	static ExecuteDash = function(_baseSpeed, _dashTimer)
+	static ExecuteDash = function(_self, _baseSpeed, _dashTimer)
 	{
-		var _currentSpeed = _baseSpeed;
+		
+		var _currentSpeed = _baseSpeed * global.gameSpeed;
 		
 		if (_dashTimer > 0) {
 			_currentSpeed *= dashSpeed;
-			
+			_self.invincibility.active = true;
+		_self.invincibility.timer = 2;
 			createAfterImage(callingObject, _dashTimer, 2, callingObject.mySprite, callingObject.image_index);
 		}
 		return _currentSpeed;

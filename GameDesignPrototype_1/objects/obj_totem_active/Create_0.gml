@@ -1,5 +1,6 @@
 /// @description
 /// @desc Active totem visual
+active = false;
 
 totem_type = TotemType.CHAOS; // Set when spawned
 totem_data = undefined;
@@ -26,5 +27,7 @@ totem_color = totem_colors[totem_type];
 
 depth = -y;
 
+image_speed = 1;
+
 // Sprite (use placeholder or create totem sprite)
-sprite_index = spr_chest; // Replace with spr_totem when created
+sprite_index = spr_totem; // Replace with spr_totem when created

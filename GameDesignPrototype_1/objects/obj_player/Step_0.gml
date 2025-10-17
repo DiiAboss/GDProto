@@ -1,12 +1,12 @@
 /// @desc Player Step Event - Component-based
 
-if (global.gameSpeed <= 0) {
-    if (keyboard_check_pressed(vk_escape)) {
-        global.gameSpeed = 1.0;
-        global.pause_game = false;
-    }
-    exit;
-}
+//if (global.gameSpeed <= 0) {
+    //if (keyboard_check_pressed(vk_escape)) {
+        //global.gameSpeed = 1.0;
+        //global.pause_game = false;
+    //}
+    //exit;
+//}
 
 // ==========================================
 // SYSTEM UPDATES
@@ -27,20 +27,29 @@ class_component.Update(); // CLASS SYSTEM UPDATE
 hp = damage_sys.hp;
 invincible = invincibility.active;
 invincible_timer = invincibility.timer;
-
+total_damage_taken = 0;
 while (experience_points >= exp_to_next_level) {
-    // Subtract the XP cost
     experience_points -= exp_to_next_level;
-    
-    // Level up
     player_level += 1;
-    
-    // Recalculate next level requirement
     exp_to_next_level = calculate_exp_requirement(player_level);
     
-    // Trigger level up event (add your own rewards here)
-    on_level_up();
+    // NEW: Trigger level up with popup
+    TriggerLevelUp();
 }
+
+/// @function TriggerLevelUp()
+function TriggerLevelUp() {
+    // Heal on level up
+    hp = min(hp + (maxHp * 0.2), maxHp);
+    
+    // Tell game manager to show popup
+    if (instance_exists(obj_game_manager)) {
+        obj_game_manager.ShowLevelUpPopup();
+    }
+    
+    show_debug_message("Level Up! Now level " + string(player_level));
+}
+
 
 /// @function on_level_up()
 /// @description Called when player levels up
@@ -422,79 +431,56 @@ function CheckDamage() {
 }
 
 // ==========================================
-// REPLACE HandleWeaponSwitching() in obj_player Step
+// WEAPON SWITCHING (Keyboard 1/2)
 // ==========================================
 
-/// @func HandleWeaponSwitching()
+/// @function HandleWeaponSwitching()
+/// @description Handle keyboard weapon switching (already in your player Step)
+/// This is what you already have - just making sure weapons array is used
 function HandleWeaponSwitching() {
-    var weapon_changed = false;
-    var new_weapon = noone;
-    
+    // Switch to slot 0
     if (keyboard_check_pressed(ord("1"))) {
-        if (instance_exists(melee_weapon)) instance_destroy(melee_weapon);
-        new_weapon = global.WeaponStruct.Bow;
-        melee_weapon = noone;
-        weapon_changed = true;
-    }
-    else if (keyboard_check_pressed(ord("2"))) {
-        if (instance_exists(melee_weapon)) instance_destroy(melee_weapon);
-        new_weapon = global.WeaponStruct.Sword;
-        melee_weapon = instance_create_depth(x, y, depth-1, obj_sword);
-        melee_weapon.owner = id;
-        weapon_changed = true;
-    }
-    else if (keyboard_check_pressed(ord("3"))) {
-        if (instance_exists(melee_weapon)) instance_destroy(melee_weapon);
-        new_weapon = global.WeaponStruct.Boomerang;
-        weapon_changed = true;
-    }
-    else if (keyboard_check_pressed(ord("4"))) {
-        if (instance_exists(melee_weapon)) instance_destroy(melee_weapon);
-        new_weapon = global.WeaponStruct.ChargeCannon;
-        weapon_changed = true;
-    }
-    else if (keyboard_check_pressed(ord("5"))) {
-        if (instance_exists(melee_weapon)) instance_destroy(melee_weapon);
-        new_weapon = global.WeaponStruct.Dagger;
-        melee_weapon = instance_create_depth(x, y, depth-1, obj_dagger);
-        melee_weapon.owner = id;
-        weapon_changed = true;
-    }
-    else if (keyboard_check_pressed(ord("6"))) {
-        if (instance_exists(melee_weapon)) instance_destroy(melee_weapon);
-        new_weapon = global.WeaponStruct.BaseballBat;
-        melee_weapon = instance_create_depth(x, y, depth-1, obj_baseball_bat);
-        melee_weapon.owner = id;
-        weapon_changed = true;
+        if (weapons[0] != noone) {
+            SwitchToWeaponSlot(0);
+        }
     }
     
-    // ===== APPLY SYNERGY WHEN WEAPON CHANGES =====
-    if (weapon_changed && new_weapon != noone) {
-        // Get synergy data BEFORE assigning (use new_weapon.id)
-        var synergy = GetWeaponSynergy(character_class, new_weapon.id);
-        
-        // Now assign weapon
-        weaponCurrent = new_weapon;
-        
-        // Store synergy in weapon struct
-        weaponCurrent.active_synergy = synergy;
-        
-        // Apply stat multipliers to combo attacks
-        if (variable_struct_exists(weaponCurrent, "combo_attacks")) {
-            for (var i = 0; i < array_length(weaponCurrent.combo_attacks); i++) {
-                weaponCurrent.combo_attacks[i].damage_mult *= synergy.damage_mult;
-                weaponCurrent.combo_attacks[i].knockback_mult *= synergy.knockback_mult;
-            }
+    // Switch to slot 1
+    if (keyboard_check_pressed(ord("2"))) {
+        if (weapon_slots > 1 && weapons[1] != noone) {
+            SwitchToWeaponSlot(1);
         }
-        
-        // If melee weapon instance exists, pass synergy data to it
-        if (instance_exists(melee_weapon)) {
-            melee_weapon.synergy_data = synergy;
+    }
+    
+    // Scroll wheel switching
+    if (mouse_wheel_up()) {
+        var next_slot = (current_weapon_index + 1) % weapon_slots;
+        if (weapons[next_slot] != noone) {
+            SwitchToWeaponSlot(next_slot);
         }
-        
-        // Debug
-        if (synergy.type != SynergyType.NONE) {
-            show_debug_message("Synergy Active: " + string(synergy.type));
+    }
+    
+    if (mouse_wheel_down()) {
+        var prev_slot = (current_weapon_index - 1);
+        if (prev_slot < 0) prev_slot = weapon_slots - 1;
+        if (weapons[prev_slot] != noone) {
+            SwitchToWeaponSlot(prev_slot);
         }
+    }
+}
+
+
+//// DEBUG: Give random weapon
+//if (keyboard_check_pressed(vk_f6)) {
+    //var test_weapon = choose(Weapon.Sword, Weapon.Bow, Weapon.BaseballBat);
+    //GiveWeapon(self, test_weapon);
+//}
+
+if (keyboard_check_pressed(vk_f6)) {
+    // Direct score add test
+    if (instance_exists(obj_game_manager)) {
+        obj_game_manager.score_manager.AddScore(100);
+        var current = obj_game_manager.score_manager.GetScore();
+        show_debug_message("Added 100 score. Total now: " + string(current));
     }
 }

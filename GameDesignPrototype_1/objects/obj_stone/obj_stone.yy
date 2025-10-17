@@ -8,12 +8,12 @@
   "name":"obj_stone",
   "overriddenProperties":[],
   "parent":{
-    "name":"Obstacles",
-    "path":"folders/Objects/In-Game/ENIRONMENT_OBJECTS/Obstacles.yy",
+    "name":"PICKUP_OBJECTS",
+    "path":"folders/Objects/In-Game/PICKUP_OBJECTS.yy",
   },
   "parentObjectId":{
-    "name":"obj_canhit",
-    "path":"objects/obj_canhit/obj_canhit.yy",
+    "name":"obj_can_carry",
+    "path":"objects/obj_can_carry/obj_can_carry.yy",
   },
   "persistent":false,
   "physicsAngularDamping":0.1,

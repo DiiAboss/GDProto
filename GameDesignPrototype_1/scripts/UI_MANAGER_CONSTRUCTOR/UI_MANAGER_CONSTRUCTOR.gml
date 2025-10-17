@@ -133,22 +133,25 @@ function UIManager() constructor {
     }
     
     /// @method draw()
-    static draw = function() {
-        if (!instance_exists(player)) return;
-        
-        draw_set_font(fnt_default);
-        
-        // Draw UI elements
-        draw_weapons();
-        draw_level_hp_xp();
-        draw_score();
-        draw_time_box();
-        draw_gold();
-        draw_modifiers_box();
-        draw_mouse_buttons();
-        draw_badges();
-        draw_totems();
-    }
+static draw = function() {
+    if (!instance_exists(player)) return;
+    
+    draw_set_font(fnt_default);
+    
+    // Draw UI elements
+    draw_weapons();
+    draw_level_hp_xp();
+    draw_score();
+    draw_time_box();
+    draw_style_stats();     // NEW
+    draw_combo_meter();     // NEW (optional)
+    draw_gold();
+    draw_modifiers_box();
+    draw_mouse_buttons();
+    draw_badges();
+    draw_totems();
+}
+
     
     /// @method draw_weapons()
     static draw_weapons = function() {
@@ -235,35 +238,131 @@ function UIManager() constructor {
     }
     
     /// @method draw_score()
-    static draw_score = function() {
-        draw_set_halign(fa_center);
-        draw_set_valign(fa_top);
-        draw_set_color(c_white);
-        
-        var score_text = "SCORE: " + string_format(floor(displayed_score), 6, 0);
-        score_text = string_replace_all(score_text, " ", "0");
-        
-        draw_set_font(fnt_large);
-        draw_text(center_x, score_y, score_text);
-        draw_set_font(fnt_default);
+static draw_score = function() {
+    // Get score from game manager
+    if (!instance_exists(obj_game_manager)) return;
+    
+    draw_set_halign(fa_center);
+    draw_set_valign(fa_top);
+    draw_set_color(c_white);
+    
+    // Get current score from manager
+    target_score = obj_game_manager.score_manager.GetScore();
+    
+    // Smooth counting animation
+    if (displayed_score != target_score) {
+        var diff = target_score - displayed_score;
+        if (abs(diff) < 10) {
+            displayed_score = target_score;
+        } else {
+            displayed_score += diff * score_lerp_speed;
+        }
     }
     
-    /// @method draw_time_box()
-    static draw_time_box = function() {
-        // Box outline
-        draw_set_color(c_white);
-        draw_rectangle(time_box_x, time_box_y, time_box_x + time_box_width, time_box_y + time_box_height, true);
-        
-        // Time Left text
-        draw_set_halign(fa_center);
-        draw_set_valign(fa_top);
-        draw_text(time_box_x + time_box_width / 2, time_box_y + 10, "Time Left");
-        
-        // SCORE text (large)
-        draw_set_font(fnt_large);
-        draw_text(time_box_x + time_box_width / 2, time_box_y + 35, "SCORE");
+    // Format score with leading zeros
+    var score_text = "SCORE: " + string_format(floor(displayed_score), 6, 0);
+    score_text = string_replace_all(score_text, " ", "0");
+    
+    draw_set_font(fnt_large);
+    draw_text(center_x, score_y, score_text);
+    
+    // Draw combo multiplier below score
+    var combo = obj_game_manager.score_manager.GetComboMultiplier();
+    if (combo > 1.0) {
         draw_set_font(fnt_default);
+        draw_set_color(c_yellow);
+        
+        var combo_text = "COMBO x" + string_format(combo, 1, 1);
+        draw_text(center_x, score_y + 35, combo_text);
+        
+        draw_set_color(c_white);
     }
+    
+    draw_set_font(fnt_default);
+}
+    
+    /// @method draw_time_box()
+static draw_time_box = function() {
+    // Get time from game manager
+    if (!instance_exists(obj_game_manager)) return;
+    
+    // Box outline
+    draw_set_color(c_white);
+    draw_rectangle(time_box_x, time_box_y, 
+                   time_box_x + time_box_width, 
+                   time_box_y + time_box_height, true);
+    
+    // Title
+    draw_set_halign(fa_center);
+    draw_set_valign(fa_top);
+    draw_set_font(fnt_default);
+    draw_text(time_box_x + time_box_width / 2, time_box_y + 10, "TIME SURVIVED");
+    
+    // Get formatted time from manager
+    var time_string = obj_game_manager.time_manager.GetFormattedTime();
+    
+    // Display time (large)
+    draw_set_font(fnt_large);
+    draw_text(time_box_x + time_box_width / 2, time_box_y + 35, time_string);
+    
+    draw_set_font(fnt_default);
+    draw_set_color(c_white);
+}
+	
+	/// @method draw_style_stats()
+static draw_style_stats = function() {
+    // Draw style kill stats in corner
+    if (!instance_exists(obj_game_manager)) return;
+    
+    var stats = obj_game_manager.score_manager.GetStyleStats();
+    
+    // Only show if player has style kills
+    if (stats.perfect_timing_kills == 0 && 
+        stats.chain_kills == 0 && 
+        stats.overkill_kills == 0) return;
+    
+    var stats_x = screen_width - 150;
+    var stats_y = 100;
+    
+    draw_set_halign(fa_left);
+    draw_set_valign(fa_top);
+    draw_set_font(fnt_default);
+    
+    // Title
+    draw_set_color(c_yellow);
+    draw_text(stats_x, stats_y, "STYLE KILLS");
+    stats_y += 20;
+    
+    // Perfect timing kills
+    if (stats.perfect_timing_kills > 0) {
+        draw_set_color(c_yellow);
+        draw_text(stats_x, stats_y, "Perfect: " + string(stats.perfect_timing_kills));
+        stats_y += 15;
+    }
+    
+    // Overkill kills
+    if (stats.overkill_kills > 0) {
+        draw_set_color(c_red);
+        draw_text(stats_x, stats_y, "Overkill: " + string(stats.overkill_kills));
+        stats_y += 15;
+    }
+    
+    // Chain kills
+    if (stats.chain_kills > 0) {
+        draw_set_color(c_aqua);
+        draw_text(stats_x, stats_y, "Chains: " + string(stats.chain_kills));
+        stats_y += 15;
+    }
+    
+    // Highest chain
+    if (stats.highest_chain > 1) {
+        draw_set_color(c_lime);
+        draw_text(stats_x, stats_y, "Best Chain: x" + string(stats.highest_chain));
+        stats_y += 15;
+    }
+    
+    draw_set_color(c_white);
+}
     
     /// @method draw_gold()
     static draw_gold = function() {
@@ -536,6 +635,53 @@ function UIManager() constructor {
             coin_reward: coin_reward
         });
     }
+	
+	/// @method draw_combo_meter()
+static draw_combo_meter = function() {
+    if (!instance_exists(obj_game_manager)) return;
+    
+    var combo = obj_game_manager.score_manager.GetComboMultiplier();
+    if (combo <= 1.0) return; // Don't show at 1x
+    
+    // Position (bottom center, above modifiers box)
+    var meter_x = screen_width / 2;
+    var meter_y = mod_box_y - 60;
+    var meter_width = 200;
+    var meter_height = 20;
+    
+    // Background
+    draw_set_alpha(0.5);
+    draw_set_color(c_black);
+    draw_rectangle(meter_x - meter_width/2, meter_y, 
+                   meter_x + meter_width/2, meter_y + meter_height, false);
+    draw_set_alpha(1);
+    
+    // Combo fill (1.0 to 5.0 range)
+    var combo_percent = (combo - 1.0) / 4.0; // 0 to 1
+    var fill_width = meter_width * combo_percent;
+    
+    // Color based on combo level
+    var fill_color = c_white;
+    if (combo >= 4.0) fill_color = c_red;
+    else if (combo >= 3.0) fill_color = c_orange;
+    else if (combo >= 2.0) fill_color = c_yellow;
+    else fill_color = c_lime;
+    
+    draw_set_color(fill_color);
+    draw_rectangle(meter_x - meter_width/2, meter_y, 
+                   meter_x - meter_width/2 + fill_width, meter_y + meter_height, false);
+    
+    // Border
+    draw_set_color(c_white);
+    draw_rectangle(meter_x - meter_width/2, meter_y, 
+                   meter_x + meter_width/2, meter_y + meter_height, true);
+    
+    // Combo text
+    draw_set_halign(fa_center);
+    draw_set_valign(fa_middle);
+    draw_set_font(fnt_default);
+    draw_text(meter_x, meter_y + meter_height/2, "x" + string_format(combo, 1, 1));
+}
 }
 
 #endregion

@@ -43,7 +43,7 @@ switch(menu_state) {
         
         if (keyboard_check_pressed(vk_enter) || keyboard_check_pressed(vk_space)) {
             global.selected_class = class_options[selected_class].type;
-            room_goto(DemoRoom);
+            room_goto(rm_demo_room);
         }
         
         if (keyboard_check_pressed(vk_escape)) {

@@ -37,7 +37,7 @@ is_projectile = false;
 is_lob_shot = false;
 is_charged_throw = false;
 projectile_speed = 0;
-damage = 10; // Base damage when thrown
+damage = 100; // Base damage when thrown
 destroy_on_impact = true;
 thrown_direction = 0;
 

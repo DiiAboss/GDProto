@@ -33,8 +33,10 @@ function takeDamage(_self, _damage, _source) {
         if (is_player && invincibility.active) {
             return hp; // Still invincible
         }
-        
+        	
+
         // Apply damage
+		_self.total_damage_taken += _damage;
         damage_sys.TakeDamage(_damage, _source);
         hp = damage_sys.hp;
         

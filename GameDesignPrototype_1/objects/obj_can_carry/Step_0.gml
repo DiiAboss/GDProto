@@ -76,7 +76,8 @@ else if (is_projectile) {
         // Check collision with enemies
         var enemy = instance_place(x, y, obj_enemy);
         if (enemy != noone && !enemy.marked_for_death) {
-            enemy.hp -= damage;
+            //enemy.hp  -= damage;
+			takeDamage(enemy, enemy.hp, self)
             
             var kb_dir = point_direction(xprevious, yprevious, x, y);
             enemy.knockbackX = lengthdir_x(damage * 0.5, kb_dir);

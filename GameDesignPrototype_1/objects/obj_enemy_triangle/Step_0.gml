@@ -26,7 +26,7 @@ switch (state)
 		else
 		{
 			
-			moveSpeed = 4;
+			moveSpeed = baseSpeed;
 		}
 	break;
 	
@@ -38,14 +38,14 @@ switch (state)
 			shotTimer -=  game_speed_delta();
 			//image_angle = _dir;
 			myDir = _dir;
-			img_index = 0;
+			image_index = 0;
 		}
 		else
 		{
-			img_index = 1;
+			image_index = 1;
 			image_xscale = 1;
 			image_yscale = 1;
-			var _bullet = instance_create_depth(x + lengthdir_x(16, myDir), y + lengthdir_y(16, myDir), depth - 1, obj_enemy_attack_orb);
+			var _bullet = instance_create_depth(x, y - 24, depth - 1, obj_enemy_attack_orb);
 			_bullet.direction = myDir;
 			_bullet.speed = 6;
 			_bullet.mySpeed = 6;

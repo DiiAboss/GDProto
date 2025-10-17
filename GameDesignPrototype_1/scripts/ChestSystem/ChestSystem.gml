@@ -7,7 +7,7 @@ function ChestReward(_type, _id) constructor {
     // Populated based on type
     name = "";
     desc = "";
-    sprite = modifier_bg; // Default
+    sprite = spr_mod_default; // Default
     rarity = 0; // 0=common, 1=uncommon, 2=rare, 3=legendary
     
     // Initialize based on type
@@ -17,7 +17,7 @@ function ChestReward(_type, _id) constructor {
             if (_mod != undefined) {
                 name = _mod.id;
                 desc = _mod.description ?? "A powerful modifier";
-                sprite = modifier_bg;
+                sprite = spr_mod_default;
             }
             break;
             
@@ -25,14 +25,14 @@ function ChestReward(_type, _id) constructor {
             // You'll expand this when you have weapon data
             name = "Weapon: " + string(_id);
             desc = "A legendary weapon";
-            sprite = modifier_bg;
+            sprite = spr_mod_default;
             break;
             
         case RewardType.ITEM:
             // You'll expand this when you have item data
             name = "Item: " + string(_id);
             desc = "A useful item";
-            sprite = modifier_bg;
+            sprite = spr_mod_default;
             break;
     }
 }
@@ -111,6 +111,17 @@ function GetRandomRewardID(_reward_type, _force_rare = false) {
     return "unknown";
 }
 
+// ==========================================
+// INTEGRATION WITH CHEST SYSTEM
+// ==========================================
+
+// ==========================================
+// INTEGRATION WITH CHEST SYSTEM
+// ==========================================
+
+/// @function ApplyReward_Updated(_player, _reward)
+/// @description Updated ApplyReward function for weapon handling
+/// REPLACE the one in ChestSystem.gml with this
 function ApplyReward(_player, _reward) {
     switch (_reward.type) {
         case RewardType.MODIFIER:
@@ -119,16 +130,17 @@ function ApplyReward(_player, _reward) {
             break;
             
         case RewardType.WEAPON:
-            // Your weapon give logic here
-            show_debug_message("Gave weapon: " + string(_reward.id));
+            // Use new weapon system
+            GiveWeapon(_player, _reward.id);
             break;
             
         case RewardType.ITEM:
-            // Your item give logic here
+            // Your item logic here
             show_debug_message("Gave item: " + _reward.id);
             break;
     }
 }
+
 
 
 function PushbackEnemies(_x, _y, _radius, _force) {

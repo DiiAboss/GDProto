@@ -56,7 +56,10 @@ image_speed = 0.2;
 weapon_slots = class_stats.weapon_slots;
 weapons = array_create(weapon_slots, noone);
 current_weapon_index = 0;
-weaponCurrent = global.WeaponStruct.HolyWater;
+
+// Give starting weapon
+weapons[0] = global.WeaponStruct.Sword; // Or whatever starting weapon
+weaponCurrent = weapons[0];
 melee_weapon = noone;
 previous_weapon_instance = weaponCurrent;
 

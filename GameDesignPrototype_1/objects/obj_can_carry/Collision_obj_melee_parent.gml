@@ -25,6 +25,7 @@ var kb_force = other.knockbackForce / hit_resistance;
 
 // Apply knockback
 knockback.Apply(kb_dir, kb_force);
+isProjectile = true;
 
 // Visual effects
 hitFlashTimer = 5;

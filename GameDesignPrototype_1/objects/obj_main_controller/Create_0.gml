@@ -1,6 +1,3 @@
-/// @description
-/// obj_menu_controller - Create Event
-// Menu state
 enum MENU_STATE {
     MAIN,
     SETTINGS,
@@ -44,3 +41,5 @@ global.screen_shake = true;
 logo_scale = 0;
 logo_bounce = 0;
 menu_alpha = 0;
+
+song = audio_play_sound(Sound1, 1, 1, 0.5);

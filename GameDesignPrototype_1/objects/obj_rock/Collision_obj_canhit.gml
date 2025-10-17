@@ -1,6 +1,0 @@
-/// @description
-
-hp -= 1;
-
-
-

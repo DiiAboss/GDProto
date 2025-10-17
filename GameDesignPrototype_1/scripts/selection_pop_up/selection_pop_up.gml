@@ -68,6 +68,7 @@ function SelectionPopup(_x, _y, _options, _onSelect) constructor {
                 var halfh = card_h * c.scale * 0.5;
                 if (mx > c.x - halfw && mx < c.x + halfw && my > c.y - halfh && my < c.y + halfh) {
                     hover = i;
+					selected = hover;
                     if (mouse_check_button_pressed(mb_left)) {
                         selected = i;
                         confirmed = true;
