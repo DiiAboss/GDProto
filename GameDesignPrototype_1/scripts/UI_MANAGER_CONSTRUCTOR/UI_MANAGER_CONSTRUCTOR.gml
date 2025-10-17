@@ -26,48 +26,67 @@ function UIManager() constructor {
     center_x = screen_width / 2;
     
     // UI SCALE - Adjust this value to resize entire UI
-    ui_scale = 1.3;
+    ui_scale = 1.0;
     
-    // Top bar - streamlined
-    top_bar_height = 80 * ui_scale;
-    top_margin = 25 * ui_scale;
+    // Top left corner - HP/XP/Level
+    top_left_x = 15 * ui_scale;
+    top_left_y = 15 * ui_scale;
     
-    // Score (top center)
-    score_y = top_margin;
+    // HP/Level/XP (top left corner)
+    level_x = top_left_x;
+    level_y = top_left_y;
+    level_width = 50 * ui_scale;
+    level_height = 35 * ui_scale;
     
-    // EXP bar (full width, below score)
-    exp_bar_y = top_margin + 35 * ui_scale;
-    exp_bar_margin = 20 * ui_scale; // Margin from screen edges
+    hp_x = level_x + level_width + 10 * ui_scale;
+    hp_y = level_y;
+    hp_width = 200 * ui_scale;
+    hp_height = 35 * ui_scale;
+    
+    exp_bar_x = level_x;
+    exp_bar_y = level_y + level_height + 8 * ui_scale;
+    exp_bar_width = level_width + hp_width + 10 * ui_scale;
     exp_bar_height = 24 * ui_scale;
     
-    // HP (top left)
-    hp_x = 25 * ui_scale;
-    hp_y = top_margin;
+    // Weapons (right side, above mouse buttons)
+    weapon_size = 60 * ui_scale;
+    weapon_vertical_spacing = 10 * ui_scale;
+    weapon_x = screen_width - weapon_size - 30 * ui_scale;
+    weapon_y = screen_height - 200 * ui_scale; // Adjust this to position above mouse buttons
     
-    // Bottom bar - weapons and mods only
-    bottom_bar_height = 110 * ui_scale;
-    bottom_margin = screen_height - (90 * ui_scale);
+    // Score (top center)
+    score_y = 20 * ui_scale;
     
-    // Weapons (bottom left, larger)
-    weapon_x = 30 * ui_scale;
-    weapon_y = bottom_margin;
-    weapon_size = 70 * ui_scale;
-    weapon_spacing = 85 * ui_scale;
+    // Time/Score box (top right)
+    time_box_width = 200 * ui_scale;
+    time_box_height = 80 * ui_scale;
+    time_box_x = screen_width - time_box_width - 20 * ui_scale;
+    time_box_y = 20 * ui_scale;
     
-    // Modifiers (bottom right, smaller, scrolling)
-    mod_start_x = screen_width - (30 * ui_scale);
-    mod_y = bottom_margin;
-    mod_size = 45 * ui_scale;
-    mod_spacing = 55 * ui_scale;
-    max_visible_mods = 10; // Show more, they're smaller
+    // Gold (bottom left)
+    gold_x = 30 * ui_scale;
+    gold_y = screen_height - 60 * ui_scale;
     
-    // Badge system (top-left list)
+    // Modifiers box (bottom center)
+    mod_box_width = 400 * ui_scale;
+    mod_box_height = 60 * ui_scale;
+    mod_box_x = (screen_width - mod_box_width) / 2;
+    mod_box_y = screen_height - mod_box_height - 20 * ui_scale;
+    max_visible_mods = 10;
+    
+    // Mouse buttons (bottom right)
+    mouse_button_size = 50 * ui_scale;
+    mouse_button_spacing = 15 * ui_scale;
+    mouse_button_x = screen_width - (mouse_button_size * 2) - mouse_button_spacing - 30 * ui_scale;
+    mouse_button_y = screen_height - mouse_button_size - 30 * ui_scale;
+    
+    // Badge system (below HP/XP area)
     badges = [];
     badge_start_x = 40 * ui_scale;
-    badge_start_y = top_bar_height + (30 * ui_scale);
+    badge_start_y = exp_bar_y + exp_bar_height + 40 * ui_scale;
     badge_spacing = 70 * ui_scale;
     badge_float_speed = 1.2 * ui_scale;
-    badge_fade_start_y = badge_start_y - (150 * ui_scale);
+    badge_fade_start_y = badge_start_y + (200 * ui_scale);
     
     // Score animation
     displayed_score = 0;
@@ -98,16 +117,16 @@ function UIManager() constructor {
         for (var i = array_length(badges) - 1; i >= 0; i--) {
             var badge = badges[i];
             
-            badge.y_offset -= badge_float_speed;
+            badge.y_offset += badge_float_speed;
             var current_y = badge_start_y + (i * badge_spacing) + badge.y_offset;
             
-            if (current_y < badge_fade_start_y) {
-                var fade_range = badge_fade_start_y - (badge_fade_start_y - (150 * ui_scale));
-                var fade_progress = (badge_fade_start_y - current_y) / fade_range;
+            if (current_y > badge_fade_start_y) {
+                var fade_range = 150 * ui_scale;
+                var fade_progress = (current_y - badge_fade_start_y) / fade_range;
                 badge.alpha = max(0, 1 - fade_progress);
             }
             
-            if (badge.alpha <= 0 || current_y < -50) {
+            if (badge.alpha <= 0 || current_y > screen_height) {
                 array_delete(badges, i, 1);
             }
         }
@@ -117,106 +136,102 @@ function UIManager() constructor {
     static draw = function() {
         if (!instance_exists(player)) return;
         
-        // Draw black bars
-        draw_black_bars();
-        
         draw_set_font(fnt_default);
         
-        // Top content
-        draw_score();
-        draw_hp();
-        draw_exp_bar();
-        
-        // Badges
-        draw_badges();
-        
-        // Bottom content
+        // Draw UI elements
         draw_weapons();
-        draw_modifiers();
-
-		var active_count = GetActiveTotemCount();
-		if (active_count == 0) exit;
-		
-		var hud_x = 20;
-		var hud_y = 100;
-		var icon_size = 32;
-		var spacing = 40;
-		
-		draw_set_font(fnt_default);
-		draw_set_halign(fa_left);
-		draw_set_valign(fa_top);
-		draw_set_color(c_white);
-		
-		draw_text(hud_x, hud_y, "Active Totems:");
-		
-		var index = 0;
-		
-		// Draw each active totem icon
-		if (global.TotemDefinitions.Chaos.active) {
-		    draw_set_color(c_red);
-		    draw_circle(hud_x + index * spacing, hud_y + 20, icon_size / 2, false);
-		    draw_set_color(c_white);
-		    draw_text(hud_x + index * spacing - 8, hud_y + 30, "C");
-		    index++;
-		}
-		
-		if (global.TotemDefinitions.Horde.active) {
-		    draw_set_color(c_orange);
-		    draw_circle(hud_x + index * spacing, hud_y + 20, icon_size / 2, false);
-		    draw_set_color(c_white);
-		    draw_text(hud_x + index * spacing - 8, hud_y + 30, "H");
-		    index++;
-		}
-		
-		if (global.TotemDefinitions.Champion.active) {
-		    draw_set_color(c_purple);
-		    draw_circle(hud_x + index * spacing, hud_y + 20, icon_size / 2, false);
-		    draw_set_color(c_white);
-		    draw_text(hud_x + index * spacing - 8, hud_y + 30, "C");
-		    index++;
-		}
-		
-		if (global.TotemDefinitions.Greed.active) {
-		    draw_set_color(c_yellow);
-		    draw_circle(hud_x + index * spacing, hud_y + 20, icon_size / 2, false);
-		    draw_set_color(c_white);
-		    draw_text(hud_x + index * spacing - 8, hud_y + 30, "G");
-		    index++;
-		}
-		
-		if (global.TotemDefinitions.Fury.active) {
-		    draw_set_color(c_fuchsia);
-		    draw_circle(hud_x + index * spacing, hud_y + 20, icon_size / 2, false);
-		    draw_set_color(c_white);
-		    draw_text(hud_x + index * spacing - 8, hud_y + 30, "F");
-		    index++;
-		}
-		
-		// Score multiplier
-		var multiplier = GetScoreMultiplier();
-		draw_set_color(c_yellow);
-		draw_text(hud_x, hud_y + 60, "Score Multiplier: " + string(multiplier) + "x");
+        draw_level_hp_xp();
+        draw_score();
+        draw_time_box();
+        draw_gold();
+        draw_modifiers_box();
+        draw_mouse_buttons();
+        draw_badges();
+        draw_totems();
     }
     
-    /// @method draw_black_bars()
-    static draw_black_bars = function() {
-        draw_set_color(c_black);
-        draw_set_alpha(0.7);
+    /// @method draw_weapons()
+    static draw_weapons = function() {
+        draw_set_halign(fa_center);
+        draw_set_valign(fa_middle);
         
-        // Top bar
-        draw_rectangle(0, 0, screen_width, top_bar_height, false);
-        
-        // Bottom bar
-        draw_rectangle(0, screen_height - bottom_bar_height, screen_width, screen_height, false);
+        // Draw 2 weapon slots stacked vertically
+        for (var i = 0; i < 2; i++) {
+            var draw_x = weapon_x;
+            var draw_y = weapon_y - (i * (weapon_size + weapon_vertical_spacing));
+            
+            // Slot background
+            var is_active = (i == player.current_weapon_index);
+            draw_set_color(c_white);
+            draw_set_alpha(1);
+            draw_circle(draw_x + weapon_size / 2, draw_y + weapon_size / 2, weapon_size / 2, true);
+            
+            // Active indicator
+            if (is_active) {
+                draw_set_color(c_black);
+                draw_circle(draw_x + weapon_size / 2, draw_y + weapon_size / 2, weapon_size / 2, false);
+            }
+            
+            // Weapon text
+            draw_set_color(is_active ? c_white : c_dkgray);
+            var weapon_name = "weapon";
+            if (i == 1) weapon_name = "weapon 2";
+            draw_text(draw_x + weapon_size / 2, draw_y + weapon_size / 2, weapon_name);
+        }
         
         draw_set_alpha(1);
-        
-        // Border lines
-        draw_set_color(c_dkgray);
-        draw_line_width(0, top_bar_height, screen_width, top_bar_height, 3 * ui_scale);
-        draw_line_width(0, screen_height - bottom_bar_height, screen_width, screen_height - bottom_bar_height, 3 * ui_scale);
-        
+    }
+    
+    /// @method draw_level_hp_xp()
+    static draw_level_hp_xp = function() {
+        // Level box
         draw_set_color(c_white);
+        draw_rectangle(level_x, level_y, level_x + level_width, level_y + level_height, true);
+        
+        draw_set_halign(fa_center);
+        draw_set_valign(fa_middle);
+        draw_set_color(c_white);
+        draw_text(level_x + level_width / 2, level_y + level_height / 2 - 8, string(player.player_level));
+        
+        draw_set_halign(fa_center);
+        draw_text(level_x + level_width / 2, level_y + level_height / 2 + 8, "LV");
+        
+        // HP box
+        draw_set_color(c_white);
+        draw_rectangle(hp_x, hp_y, hp_x + hp_width, hp_y + hp_height, true);
+        
+        draw_set_halign(fa_left);
+        draw_set_valign(fa_middle);
+        var hp_text = "HP/MaxHp";
+        if (instance_exists(player)) {
+            hp_text = string(floor(player.hp)) + "/" + string(player.maxHp);
+        }
+        draw_text(hp_x + 10, hp_y + hp_height / 2, hp_text);
+        
+        // XP bar
+        draw_set_color(c_white);
+        draw_rectangle(exp_bar_x, exp_bar_y, exp_bar_x + exp_bar_width, exp_bar_y + exp_bar_height, true);
+        
+        // XP fill
+        var exp_percent = 0;
+        if (player.exp_to_next_level > 0) {
+            exp_percent = player.experience_points / player.exp_to_next_level;
+        }
+        
+        draw_set_color(c_lime);
+        var fill_width = exp_bar_width * exp_percent;
+        draw_rectangle(exp_bar_x + 2, exp_bar_y + 2, exp_bar_x + fill_width - 2, exp_bar_y + exp_bar_height - 2, false);
+        
+        // XP label
+        draw_set_halign(fa_left);
+        draw_set_valign(fa_middle);
+        draw_set_color(c_white);
+        draw_text(exp_bar_x + 10, exp_bar_y + exp_bar_height / 2, "XP");
+        
+        // Experience Bar label
+        draw_set_halign(fa_center);
+        draw_set_color(c_black);
+        draw_text(exp_bar_x + exp_bar_width / 2, exp_bar_y + exp_bar_height / 2, "Experience Bar");
     }
     
     /// @method draw_score()
@@ -228,183 +243,70 @@ function UIManager() constructor {
         var score_text = "SCORE: " + string_format(floor(displayed_score), 6, 0);
         score_text = string_replace_all(score_text, " ", "0");
         
-        // Shadow
-        draw_set_alpha(0.3);
-        draw_text_transformed(center_x + 2, score_y + 2, score_text, ui_scale, ui_scale, 0);
-        draw_set_alpha(1);
-        
-        // Main text
         draw_set_font(fnt_large);
-        draw_text_transformed(center_x, score_y, score_text, ui_scale, ui_scale, 0);
+        draw_text(center_x, score_y, score_text);
         draw_set_font(fnt_default);
     }
     
-    /// @method draw_hp()
-    static draw_hp = function() {
-        draw_set_halign(fa_left);
-        draw_set_valign(fa_top);
-        
-        // Color based on HP percentage
-        var hp_percent = player.hp / player.maxHp;
-        var hp_color = c_white;
-        if (hp_percent < 0.3) {
-            hp_color = c_red;
-        } else if (hp_percent < 0.6) {
-            hp_color = c_orange;
-        }
-        
-        draw_set_color(hp_color);
-        var hp_text = "HP: " + string(floor(player.hp)) + "/" + string(player.maxHp);
-        draw_text_transformed(hp_x, hp_y, hp_text, ui_scale, ui_scale, 0);
-    }
-    
-    /// @method draw_exp_bar()
-    static draw_exp_bar = function() {
-        // Full width bar
-        var bar_x = exp_bar_margin;
-        var bar_width = screen_width - (exp_bar_margin * 2);
-        var bar_y = exp_bar_y;
-        
-        // Calculate EXP percentage
-        var exp_percent = 0;
-        if (player.exp_to_next_level > 0) {
-            exp_percent = (player.experience_points / player.exp_to_next_level) * 100;
-        }
-        
-        // Background
-        draw_set_color(c_black);
-        draw_set_alpha(0.7);
-        draw_rectangle(bar_x - 2, bar_y - 2, bar_x + bar_width + 2, bar_y + exp_bar_height + 2, false);
-        draw_set_alpha(1);
-        
-        // Empty bar
-        draw_set_color(c_dkgray);
-        draw_rectangle(bar_x, bar_y, bar_x + bar_width, bar_y + exp_bar_height, false);
-        
-        // Filled bar
-        var fill_width = (bar_width * exp_percent) / 100;
-        draw_set_color(c_orange);
-        draw_rectangle(bar_x, bar_y, bar_x + fill_width, bar_y + exp_bar_height, false);
-        
-        // Highlight
-        draw_set_color(c_yellow);
-        draw_set_alpha(0.5);
-        draw_rectangle(bar_x, bar_y, bar_x + fill_width, bar_y + exp_bar_height / 2, false);
-        draw_set_alpha(1);
-        
-        // Outline
+    /// @method draw_time_box()
+    static draw_time_box = function() {
+        // Box outline
         draw_set_color(c_white);
-        draw_rectangle(bar_x, bar_y, bar_x + bar_width, bar_y + exp_bar_height, true);
+        draw_rectangle(time_box_x, time_box_y, time_box_x + time_box_width, time_box_y + time_box_height, true);
         
-        // Level text CENTERED ON BAR in contrasting color
+        // Time Left text
         draw_set_halign(fa_center);
-        draw_set_valign(fa_middle);
+        draw_set_valign(fa_top);
+        draw_text(time_box_x + time_box_width / 2, time_box_y + 10, "Time Left");
         
-        // Draw level with outline for readability
-        var level_text = "LV " + string(player.player_level);
-        var text_x = bar_x + bar_width / 2;
-        var text_y = bar_y + exp_bar_height / 2;
-        
-        // Black outline
-        draw_set_color(c_black);
-        for (var ox = -1; ox <= 1; ox++) {
-            for (var oy = -1; oy <= 1; oy++) {
-                if (ox != 0 || oy != 0) {
-                    draw_text_transformed(text_x + ox, text_y + oy, level_text, ui_scale, ui_scale, 0);
-                }
-            }
-        }
-        
-        // Main text in contrasting color (cyan/white)
-        draw_set_color(c_aqua);
-        draw_text_transformed(text_x, text_y, level_text, ui_scale, ui_scale, 0);
+        // SCORE text (large)
+        draw_set_font(fnt_large);
+        draw_text(time_box_x + time_box_width / 2, time_box_y + 35, "SCORE");
+        draw_set_font(fnt_default);
     }
     
-    /// @method draw_weapons()
-    static draw_weapons = function() {
-        draw_set_halign(fa_center);
+    /// @method draw_gold()
+    static draw_gold = function() {
+        draw_set_halign(fa_left);
         draw_set_valign(fa_middle);
         
-        // Draw 3 weapon slots (larger)
-        for (var i = 0; i < 3; i++) {
-            var draw_x = weapon_x + (i * weapon_spacing);
-            var draw_y = weapon_y;
-            
-            // Slot background
-            var is_active = (i == player.current_weapon_index);
-            draw_set_color(is_active ? c_yellow : c_dkgray);
-            draw_set_alpha(0.5);
-            draw_rectangle(draw_x, draw_y, draw_x + weapon_size, draw_y + weapon_size, false);
-            draw_set_alpha(1);
-            
-            // Slot outline
-            draw_set_color(is_active ? c_white : c_gray);
-            draw_rectangle(draw_x, draw_y, draw_x + weapon_size, draw_y + weapon_size, true);
-            
-            // Active glow
-            if (is_active) {
-                draw_set_color(c_yellow);
-                draw_set_alpha(0.3);
-                draw_rectangle(draw_x - 4, draw_y - 4, draw_x + weapon_size + 4, draw_y + weapon_size + 4, false);
-                draw_set_alpha(1);
-            }
-            
-            // Weapon icon
-            draw_set_color(c_white);
-            var weapon_name = "?";
-            if (i < array_length(player.weapons) && player.weapons[i] != noone) {
-                weapon_name = string(i + 1);
-            }
-            
-            draw_text_transformed(draw_x + weapon_size / 2, draw_y + weapon_size / 2, weapon_name, ui_scale * 1.2, ui_scale * 1.2, 0);
-            
-            // Key number
-            draw_set_color(c_ltgray);
-            draw_text_transformed(draw_x + weapon_size / 2, draw_y + weapon_size + (12 * ui_scale), string(i + 1), ui_scale * 0.7, ui_scale * 0.7, 0);
-        }
+        // Circle background
+        draw_set_color(c_white);
+        draw_circle(gold_x + 25, gold_y, 30, true);
+        
+        // GOLD text
+        draw_set_color(c_white);
+        draw_text(gold_x + 60, gold_y, "GOLD");
     }
     
-    /// @method draw_modifiers()
-    static draw_modifiers = function() {
-        if (!variable_instance_exists(player, "mod_list")) return;
+    /// @method draw_modifiers_box()
+    static draw_modifiers_box = function() {
+        // Box outline
+        draw_set_color(c_white);
+        draw_rectangle(mod_box_x, mod_box_y, mod_box_x + mod_box_width, mod_box_y + mod_box_height, true);
         
-        var active_count = array_length(player.mod_list);
-        if (active_count == 0) return;
-        
+        // Modifiers label
         draw_set_halign(fa_center);
         draw_set_valign(fa_middle);
+        draw_text(mod_box_x + mod_box_width / 2, mod_box_y + mod_box_height / 2, "Modifiers");
+    }
+    
+    /// @method draw_mouse_buttons()
+    static draw_mouse_buttons = function() {
+        draw_set_halign(fa_center);
+        draw_set_valign(fa_top);
+        draw_set_color(c_white);
         
-        // Draw modifiers (smaller, unlimited)
-        var visible_count = min(active_count, max_visible_mods);
+        // RMB / LMB label
+        draw_text(mouse_button_x + mouse_button_size + mouse_button_spacing / 2, mouse_button_y - 25, "RMB / LMB");
         
-        for (var i = 0; i < visible_count; i++) {
-            var draw_x = mod_start_x - (i * mod_spacing);
-            var draw_y = mod_y + mod_size / 2;
-            
-            // Mod slot background
-            draw_set_color(c_dkgray);
-            draw_set_alpha(0.5);
-            draw_circle(draw_x - mod_size / 2, draw_y, mod_size / 2, false);
-            draw_set_alpha(1);
-            
-            // Mod icon outline
-            draw_set_color(c_orange);
-            draw_circle(draw_x - mod_size / 2, draw_y, mod_size / 2, true);
-            
-            // Mod icon
-            draw_set_color(c_white);
-            draw_text_transformed(draw_x - mod_size / 2, draw_y, "M", ui_scale * 0.7, ui_scale * 0.7, 0);
-        }
+        // Left button
+        draw_roundrect(mouse_button_x, mouse_button_y, 
+                      mouse_button_x + mouse_button_size, mouse_button_y + mouse_button_size, true);
         
-        // Show overflow indicator if more than max visible
-        if (active_count > max_visible_mods) {
-            var overflow_x = mod_start_x - (max_visible_mods * mod_spacing);
-            var overflow_y = mod_y + mod_size / 2;
-            
-            draw_set_halign(fa_center);
-            draw_set_color(c_yellow);
-            draw_text_transformed(overflow_x - mod_size, overflow_y, "+" + string(active_count - max_visible_mods), ui_scale * 0.6, ui_scale * 0.6, 0);
-        }
+        // Right button
+        draw_roundrect(mouse_button_x + mouse_button_size + mouse_button_spacing, mouse_button_y,
+                      mouse_button_x + (mouse_button_size * 2) + mouse_button_spacing, mouse_button_y + mouse_button_size, true);
     }
     
     /// @method draw_badges()
@@ -464,6 +366,72 @@ function UIManager() constructor {
         
         draw_set_alpha(1);
         draw_set_font(fnt_default);
+    }
+    
+    /// @method draw_totems()
+    static draw_totems = function() {
+        var active_count = GetActiveTotemCount();
+        if (active_count == 0) return;
+        
+        var hud_x = 20;
+        var hud_y = 100;
+        var icon_size = 32;
+        var spacing = 40;
+        
+        draw_set_font(fnt_default);
+        draw_set_halign(fa_left);
+        draw_set_valign(fa_top);
+        draw_set_color(c_white);
+        
+        draw_text(hud_x, hud_y, "Active Totems:");
+        
+        var index = 0;
+        
+        // Draw each active totem icon
+        if (global.TotemDefinitions.Chaos.active) {
+            draw_set_color(c_red);
+            draw_circle(hud_x + index * spacing, hud_y + 20, icon_size / 2, false);
+            draw_set_color(c_white);
+            draw_text(hud_x + index * spacing - 8, hud_y + 30, "C");
+            index++;
+        }
+        
+        if (global.TotemDefinitions.Horde.active) {
+            draw_set_color(c_orange);
+            draw_circle(hud_x + index * spacing, hud_y + 20, icon_size / 2, false);
+            draw_set_color(c_white);
+            draw_text(hud_x + index * spacing - 8, hud_y + 30, "H");
+            index++;
+        }
+        
+        if (global.TotemDefinitions.Champion.active) {
+            draw_set_color(c_purple);
+            draw_circle(hud_x + index * spacing, hud_y + 20, icon_size / 2, false);
+            draw_set_color(c_white);
+            draw_text(hud_x + index * spacing - 8, hud_y + 30, "C");
+            index++;
+        }
+        
+        if (global.TotemDefinitions.Greed.active) {
+            draw_set_color(c_yellow);
+            draw_circle(hud_x + index * spacing, hud_y + 20, icon_size / 2, false);
+            draw_set_color(c_white);
+            draw_text(hud_x + index * spacing - 8, hud_y + 30, "G");
+            index++;
+        }
+        
+        if (global.TotemDefinitions.Fury.active) {
+            draw_set_color(c_fuchsia);
+            draw_circle(hud_x + index * spacing, hud_y + 20, icon_size / 2, false);
+            draw_set_color(c_white);
+            draw_text(hud_x + index * spacing - 8, hud_y + 30, "F");
+            index++;
+        }
+        
+        // Score multiplier
+        var multiplier = GetScoreMultiplier();
+        draw_set_color(c_yellow);
+        draw_text(hud_x, hud_y + 60, "Score Multiplier: " + string(multiplier) + "x");
     }
     
     /// @method add_score(amount)
