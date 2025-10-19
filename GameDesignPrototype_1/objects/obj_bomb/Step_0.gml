@@ -11,10 +11,10 @@ if (is_armed) {
     // === PULSING ANIMATION ===
     if (timer > timer_critical_threshold) {
         // Normal/Warning phase
-        pulse_speed = lerp(0.05, 0.15, 1.0 - timer_progress);
+        pulse_speed = lerp(0.05, 0.05, 0.1 - timer_progress);
     } else {
         // Critical phase - FAST pulse
-        pulse_speed = 0.3;
+        pulse_speed = 0.25;
     }
     
     pulse_scale = 1.0 + sin(current_time * pulse_speed) * 0.15;
@@ -36,7 +36,7 @@ if (is_armed) {
     
     // === FLASHING ===
     if (timer <= timer_critical_threshold) {
-        flash_speed = 0.4;
+        flash_speed = 0.05;
     } else if (timer <= timer_warning_threshold) {
         flash_speed = 0.15;
     } else {

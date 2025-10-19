@@ -120,25 +120,25 @@ if (variable_global_exists("chest_popup") && global.chest_popup != undefined) {
 // TOTEM SYSTEMS
 // ==========================================
 // Chaos Totem - Spawn rolling balls
-if (chaos_totem_active) {
-    chaos_spawn_timer = timer_tick(chaos_spawn_timer);
-    
-    if (chaos_spawn_timer >= chaos_spawn_interval) {
-        
-        
-        if (instance_exists(obj_player)) {
-            var spawn_x = obj_player.x + irandom_range(-200, 200);
-            var spawn_y = obj_player.y + irandom_range(-200, 200);
-            
-            if (!place_meeting(spawn_x, spawn_y, obj_wall)) {
-                var ball = instance_create_depth(spawn_x, spawn_y, 0, obj_rolling_ball);
-                ball.myDir = irandom(359);
-                show_debug_message("Chaos Totem: Spawned rolling ball");
-            }
-			chaos_spawn_timer = 0;
-        }
-    }
-}
+//if (chaos_totem_active) {
+    //chaos_spawn_timer = timer_tick(chaos_spawn_timer);
+    //
+    //if (chaos_spawn_timer >= chaos_spawn_interval) {
+        //
+        //
+        //if (instance_exists(obj_player)) {
+            //var spawn_x = obj_player.x + irandom_range(-200, 200);
+            //var spawn_y = obj_player.y + irandom_range(-200, 200);
+            //
+            //if (!place_meeting(spawn_x, spawn_y, obj_wall)) {
+                //var ball = instance_create_depth(spawn_x, spawn_y, 0, obj_rolling_ball);
+                //ball.myDir = irandom(359);
+                //show_debug_message("Chaos Totem: Spawned rolling ball");
+            //}
+			//chaos_spawn_timer = 0;
+        //}
+    //}
+//}
 
 // Champion Totem - Spawn mini-boss
 if (champion_totem_active) {

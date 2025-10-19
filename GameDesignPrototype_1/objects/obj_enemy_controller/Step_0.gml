@@ -7,6 +7,117 @@
 // Early exit if paused
 if (global.gameSpeed <= 0) exit;
 
+
+// ==========================================
+// DIFFICULTY SCALING
+// ==========================================
+
+difficulty_timer++;
+
+// Level up enemies every 30 seconds
+if (difficulty_timer >= difficulty_interval) {
+    difficulty_timer = 0;
+    difficulty_level++;
+    
+    // Update multipliers
+    enemy_damage_mult = 1.0 + (damage_increase_per_level * (difficulty_level - 1));
+    enemy_speed_mult = 1.0 + (speed_increase_per_level * (difficulty_level - 1));
+    enemy_hp_mult = 1.0 + (hp_increase_per_level * (difficulty_level - 1));
+    
+    // Apply to ALL existing enemies
+    with (obj_enemy) {
+        // Boost damage (if they have an attack)
+        if (variable_instance_exists(self, "base_damage")) {
+            // Store original if not already stored
+            if (!variable_instance_exists(self, "original_damage")) {
+                original_damage = base_damage;
+            }
+            base_damage = original_damage * obj_enemy_controller.enemy_damage_mult;
+        }
+        
+        // Boost speed
+        if (!variable_instance_exists(self, "original_speed")) {
+            original_speed = moveSpeed;
+        }
+        moveSpeed = original_speed * obj_enemy_controller.enemy_speed_mult;
+        baseSpeed = moveSpeed;
+        
+        // Boost HP (current and max)
+        if (!variable_instance_exists(self, "original_max_hp")) {
+            original_max_hp = maxHp;
+        }
+        var hp_percent = hp / maxHp;
+        maxHp = ceil(original_max_hp * obj_enemy_controller.enemy_hp_mult);
+        hp = ceil(maxHp * hp_percent); // Maintain HP percentage
+        damage_sys.max_hp = maxHp;
+        damage_sys.hp = hp;
+    }
+    
+    // Visual feedback for difficulty increase
+    if (instance_exists(obj_player)) {
+        var popup = instance_create_depth(obj_player.x, obj_player.y - 80, -9999, obj_floating_text);
+        popup.text = "DIFFICULTY INCREASED!";
+        popup.color = c_red;
+        popup.lifetime = 120;
+        popup.rise_speed = 0.5;
+        popup.scale = 1.5;
+    }
+    
+    show_debug_message("=== DIFFICULTY LEVEL UP ===");
+    show_debug_message("Level: " + string(difficulty_level));
+    show_debug_message("Damage: " + string(enemy_damage_mult) + "x");
+    show_debug_message("Speed: " + string(enemy_speed_mult) + "x");
+    show_debug_message("HP: " + string(enemy_hp_mult) + "x");
+}
+
+// ==========================================
+// SUMMONER SPAWNING
+// ==========================================
+
+summoner_spawn_timer--;
+
+if (summoner_spawn_timer <= 0) {
+    var current_summoners = instance_number(obj_summoner_demon) + instance_number(obj_summoner_maggots);
+    
+    if (current_summoners < max_summoners && instance_exists(obj_player)) {
+        // Spawn summoner away from player
+        var spawn_distance = 400;
+        var spawn_dir = random(360);
+        var spawn_x = obj_player.x + lengthdir_x(spawn_distance, spawn_dir);
+        var spawn_y = obj_player.y + lengthdir_y(spawn_distance, spawn_dir);
+        
+        // Choose random summoner type
+        var summoner_type = choose(obj_summoner_demon, obj_summoner_maggots);
+        
+        // Check if position is valid
+        var tile_layer_id = layer_get_id("Tiles_2");
+        if (layer_exists(tile_layer_id)) {
+            var tilemap_id = layer_tilemap_get_id(tile_layer_id);
+            var spawn_tile = tilemap_get_at_pixel(tilemap_id, spawn_x, spawn_y);
+            
+            // Only spawn if safe
+            if (spawn_tile <= 446 && spawn_tile != 0 && !place_meeting(spawn_x, spawn_y, obj_obstacle)) {
+                instance_create_depth(spawn_x, spawn_y, 0, summoner_type);
+                
+                // Visual feedback
+                var popup = instance_create_depth(spawn_x, spawn_y - 40, -9999, obj_floating_text);
+                popup.text = "SUMMONER APPEARED!";
+                popup.color = c_purple;
+                popup.lifetime = 90;
+                popup.rise_speed = 1.0;
+                popup.scale = 1.2;
+                
+                show_debug_message("New summoner spawned at difficulty level " + string(difficulty_level));
+            }
+        }
+    }
+    
+    // Reset timer
+    summoner_spawn_timer = summoner_spawn_interval;
+}
+
+
+
 // ==========================================
 // CACHE SHARED VALUES (ONCE PER FRAME)
 // ==========================================
@@ -249,3 +360,4 @@ function CreateStylePopups(_enemy, _damage_dealt) {
         popup.scale = 1.1;
     }
 }
+

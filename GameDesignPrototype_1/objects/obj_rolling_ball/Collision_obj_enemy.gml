@@ -10,7 +10,7 @@ if (hitEnemy != noone) {
     
     if (canHit) {
         // Deal damage (scaled by level)
-        takeDamage(hitEnemy, damage);
+        takeDamage(hitEnemy, damage, self);
             
         // Apply knockback (scaled by level)
         var kbDir = point_direction(x, y, hitEnemy.x, hitEnemy.y);

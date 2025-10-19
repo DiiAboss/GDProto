@@ -2,24 +2,34 @@
 var nextX = x + lengthdir_x(currentSpeed, myDir);
 var nextY = y + lengthdir_y(currentSpeed, myDir);
 
-// Wall bouncing (DVD style)
+// Get tile layer
+var tile_layer_id = layer_get_id("Tiles_2");
+var tilemap_id = layer_tilemap_get_id(tile_layer_id);
+
+// Wall and tile bouncing (DVD style)
 var bounced = false;
-if (place_meeting(nextX, y, obj_wall) or (place_meeting(nextX, y, obj_spikes))) {
+
+// Check horizontal collision (walls + tiles)
+var tile_x = tilemap_get_at_pixel(tilemap_id, nextX, y);
+if (place_meeting(nextX, y, obj_wall) || place_meeting(nextX, y, obj_spikes) || (tile_x > 446 || tile_x <= 0)) {
     myDir = 180 - myDir;
     bounced = true;
 }
-if (place_meeting(x, nextY, obj_wall) or (place_meeting(x, nextY, obj_spikes))) {
+
+// Check vertical collision (walls + tiles)
+var tile_y = tilemap_get_at_pixel(tilemap_id, x, nextY);
+if (place_meeting(x, nextY, obj_wall) || place_meeting(x, nextY, obj_spikes) || (tile_y > 446 || tile_y <= 0)) {
     myDir = -myDir;
     bounced = true;
 }
 
 // Apply movement
 x += lengthdir_x(currentSpeed, myDir) * game_speed_delta();
-y += lengthdir_y(currentSpeed, myDir) *  game_speed_delta();
+y += lengthdir_y(currentSpeed, myDir) * game_speed_delta();
 
 // === LEVEL DECAY SYSTEM ===
 // Increment decay timer when not hitting anything
-levelDecayTimer +=  game_speed_delta();
+levelDecayTimer += game_speed_delta();
 
 // Check if we should decay a level
 if (level > 0 && levelDecayTimer > levelDecayDelay + levelDecayRate) {

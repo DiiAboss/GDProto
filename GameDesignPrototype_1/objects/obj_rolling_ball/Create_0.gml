@@ -36,3 +36,5 @@ hitCooldown = 10;
 
 // Corner hit (keeping from original)
 cornerHitTimer = 0;
+
+alarm[0] = 600;

@@ -1,6 +1,6 @@
 /// @description
 age++;
-
+depth++;
 // Float upward with deceleration
 currentSpeed += floatAccel;
 currentSpeed = max(currentSpeed, 0.5); // Minimum float speed

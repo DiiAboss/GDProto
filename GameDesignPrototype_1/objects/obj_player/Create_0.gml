@@ -62,7 +62,7 @@ weapons = array_create(weapon_slots, noone);
 current_weapon_index = 0;
 
 // Give starting weapon
-weapons[1] = global.WeaponStruct.ChainWhip; // Or whatever starting weapon
+weapons[1] = global.WeaponStruct.Sword; // Or whatever starting weapon
 weapons[0] = global.WeaponStruct.Bow; // Or whatever starting weapon
 weaponCurrent = weapons[0];
 melee_weapon = noone;
@@ -89,6 +89,7 @@ exp_linear = 3;       // Small linear component
 // Calculate initial XP requirement
 exp_to_next_level = calculate_exp_requirement(player_level);
 
+
 // ==========================================
 // LEVEL UP SYSTEM FUNCTIONS
 // ==========================================
@@ -114,10 +115,6 @@ mod_cache = {
 };
 mod_triggers = {};
 
-// Test modifiers
-AddModifier(id, "TripleRhythmFire");
-AddModifier(id, "SpreadFire");
-AddModifier(id, "DeathFireworks");
 
 
 // ==========================================

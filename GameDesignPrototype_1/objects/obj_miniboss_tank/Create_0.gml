@@ -68,3 +68,5 @@ chargeProgress = 0;
 // Boss-specific flags
 isBoss = true;
 miniboss_defeated = false;
+
+activated = false;

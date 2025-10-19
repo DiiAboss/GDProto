@@ -1,33 +1,15 @@
-/// @description
-/// @desc Active totem visual
-active = false;
+/// @description Totem in world - now handles purchase interaction
+totem_type = TotemType.CHAOS; // Set by spawner
+totem_data = undefined; // Will be set
 
-totem_type = TotemType.CHAOS; // Set when spawned
-totem_data = undefined;
+// Interaction
+can_interact = true;
+interaction_range = 64;
+show_prompt = false;
 
-// Visual effects
-glow_scale = 1.0;
+// Visual
 glow_timer = 0;
-pulse_speed = 0.03;
+pulse_scale = 1.0;
 
-// Particle effect
-particle_timer = 0;
-particle_interval = 20;
-
-// Color based on type
-totem_colors = [
-    c_red,      // Chaos
-    c_orange,   // Horde
-    c_purple,   // Champion
-    c_yellow,   // Greed
-    c_fuchsia   // Fury
-];
-
-totem_color = totem_colors[totem_type];
-
-depth = -y;
-
-image_speed = 1;
-
-// Sprite (use placeholder or create totem sprite)
-sprite_index = spr_totem; // Replace with spr_totem when created
+// Set data based on type
+totem_data = GetTotemByType(totem_type);

@@ -1,16 +1,15 @@
 /// @desc Totem system for battlefield modifiers
 
-function TotemData(_type, _name, _desc, _base_cost) constructor {
+function TotemData(_type, _name, _desc, _base_cost, _color) constructor {
     type = _type;
     name = _name;
     description = _desc;
     base_cost = _base_cost;
+    color = _color; // NEW
     active = false;
-    activation_time = 0; // When it was activated
+    activation_time = 0;
     
-    /// @func GetScaledCost(_player_level)
     static GetScaledCost = function(_player_level) {
-        // Cost scales with player level: base_cost * (1 + level * 0.15)
         return floor(base_cost * (1 + _player_level * 0.15));
     }
 }
@@ -20,36 +19,41 @@ global.TotemDefinitions = {
     Chaos: new TotemData(
         TotemType.CHAOS,
         "Chaos Totem",
-        "Spawns rolling balls periodically. More chaos, more fun!",
-        150
+        "Spawns rolling balls periodically.",
+        150,
+        c_red
     ),
     
     Horde: new TotemData(
         TotemType.HORDE,
         "Horde Totem",
-        "Increases enemy spawn rate by 50%. More enemies, more XP!",
-        200
+        "Increases enemy spawn rate by 50%.",
+        200,
+        c_orange
     ),
     
     Champion: new TotemData(
         TotemType.CHAMPION,
         "Champion Totem",
-        "Spawns a mini-boss every 45 seconds. High risk, high reward!",
-        400
+        "Spawns a mini-boss every 45 seconds.",
+        400,
+        c_purple
     ),
     
     Greed: new TotemData(
         TotemType.GREED,
         "Greed Totem",
         "Enemies drop 2x gold but have 50% more HP.",
-        250
+        250,
+        c_yellow
     ),
     
     Fury: new TotemData(
         TotemType.FURY,
         "Fury Totem",
-        "Enemies move 30% faster and hit harder. 1.5x XP multiplier!",
-        300
+        "Enemies move 30% faster. 1.5x XP multiplier!",
+        300,
+        c_fuchsia
     )
 };
 
@@ -99,7 +103,6 @@ function ActivateTotem(_type, _player) {
     );
     totem_obj.totem_type = _type;
     totem_obj.totem_data = totem_data;
-    
     // Apply immediate effects
     ApplyTotemEffect(_type);
     
@@ -111,41 +114,41 @@ function ActivateTotem(_type, _player) {
 function ApplyTotemEffect(_type) {
     switch (_type) {
         case TotemType.CHAOS:
-            // Start chaos ball spawning
-            with (obj_game_manager) {
-                chaos_totem_active = true;
-            }
+            // Effect handled in obj_totem_active Step event
+            show_debug_message("Chaos Totem activated - balls will spawn");
             break;
             
         case TotemType.HORDE:
-            // Increase spawn rate
             with (obj_enemySpawner) {
-                spawn_rate_multiplier = (spawn_rate_multiplier ?? 1.0) * 1.5;
+                spawner_timer = max(spawner_timer, 30); // Speed up spawning
+                spawn_rate_multiplier = 0.6; // 40% faster spawns
             }
             break;
             
         case TotemType.CHAMPION:
-            // Start champion spawning
             with (obj_game_manager) {
                 champion_totem_active = true;
-                champion_spawn_timer = 0;
+                champion_spawn_timer = 45 * 60; // 45 seconds
             }
             break;
             
         case TotemType.GREED:
-            // Modify enemy stats
             with (obj_enemy) {
-                maxHp *= 1.5;
-                hp *= 1.5;
-                gold_multiplier = 2.0;
+                if (!variable_instance_exists(self, "greed_applied")) {
+                    maxHp = ceil(maxHp * 1.5);
+                    hp = ceil(hp * 1.5);
+                    greed_applied = true;
+                }
             }
             break;
             
         case TotemType.FURY:
-            // Increase enemy speed and damage
             with (obj_enemy) {
-                moveSpeed *= 1.3;
-                damage_multiplier = 1.3;
+                if (!variable_instance_exists(self, "fury_applied")) {
+                    moveSpeed *= 1.3;
+                    baseSpeed *= 1.3;
+                    fury_applied = true;
+                }
             }
             break;
     }

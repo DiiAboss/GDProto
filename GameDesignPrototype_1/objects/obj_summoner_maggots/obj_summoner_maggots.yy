@@ -1,7 +1,9 @@
 {
   "$GMObject":"",
   "%Name":"obj_summoner_maggots",
-  "eventList":[],
+  "eventList":[
+    {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":0,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
+  ],
   "managed":true,
   "name":"obj_summoner_maggots",
   "overriddenProperties":[],
@@ -9,7 +11,10 @@
     "name":"Enemies",
     "path":"folders/Objects/In-Game/Enemies.yy",
   },
-  "parentObjectId":null,
+  "parentObjectId":{
+    "name":"obj_summoner_demon",
+    "path":"objects/obj_summoner_demon/obj_summoner_demon.yy",
+  },
   "persistent":false,
   "physicsAngularDamping":0.1,
   "physicsDensity":0.5,
@@ -27,7 +32,10 @@
   "resourceType":"GMObject",
   "resourceVersion":"2.0",
   "solid":false,
-  "spriteId":null,
+  "spriteId":{
+    "name":"spr_summing_cave_maggot",
+    "path":"sprites/spr_summing_cave_maggot/spr_summing_cave_maggot.yy",
+  },
   "spriteMaskId":null,
   "visible":true,
 }

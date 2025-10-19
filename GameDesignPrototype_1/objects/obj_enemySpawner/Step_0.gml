@@ -1,108 +1,119 @@
-/// @description Enemy Spawner with Safe Tile & Distance Checking
+/// @description Optimized Enemy Spawner - Spread Over Frames
+if (global.gameSpeed <= 0) exit;
+// Initialize in CREATE event if not already done
+if (!variable_instance_exists(id, "spawn_search_active")) {
+    spawn_search_active = false;
+    spawn_attempts_this_frame = 0;
+    spawn_total_attempts = 0;
+    tile_layer_id = layer_get_id("Tiles_2");
+    tilemap_id = layer_tilemap_get_id(tile_layer_id);
+}
 
 if (spawner_timer > 0) {
-    x_min = obj_player.x - 256;
-    y_min = obj_player.y - 256;
-    x_max = obj_player.x + 256;
-    y_max = obj_player.y + 256;
-    
     spawner_timer--;
     
-    // Find safe spawn position
-    var found_safe_spot = false;
-    var attempts = 0;
-    var max_attempts = 20; // Try 20 times to find a safe spot
+    // Only search if not already searching
+    if (!spawn_search_active) {
+        spawn_search_active = true;
+        spawn_total_attempts = 0;
+        summon_timer = 60;
+    }
+}
+
+
+
+// SPREAD SEARCH OVER FRAMES (only 3 attempts per frame)
+if (spawn_search_active) {
+    var attempts_per_frame = 3; // Low number = less lag
+    var max_total_attempts = 30;
     
-    var min_distance_from_player = 100; // Don't spawn too close to player
+    var min_distance_from_player = 100;
+    var spawn_radius = 256;
     
-    // Tilemap reference
-    var tile_layer_id = layer_get_id("Tiles_2");
-    var tilemap_id = layer_tilemap_get_id(tile_layer_id);
-    
-    while (!found_safe_spot && attempts < max_attempts) {
-        attempts++;
+    for (var i = 0; i < attempts_per_frame; i++) {
+        spawn_total_attempts++;
         
-        // Random position
+        // CLAMP TO ROOM BOUNDS (prevent outside room spawning)
+        var x_min = clamp(obj_player.x - spawn_radius, 0, room_width);
+        var y_min = clamp(obj_player.y - spawn_radius, 0, room_height);
+        var x_max = clamp(obj_player.x + spawn_radius, 0, room_width);
+        var y_max = clamp(obj_player.y + spawn_radius, 0, room_height);
+        
+        // Random position within clamped bounds
         var test_x = irandom_range(x_min, x_max);
         var test_y = irandom_range(y_min, y_max);
         
-        // Check distance from player
+        // Quick distance check first (cheapest)
         var dist_to_player = point_distance(test_x, test_y, obj_player.x, obj_player.y);
+        if (dist_to_player < min_distance_from_player) continue;
         
-        if (dist_to_player < min_distance_from_player) {
-            continue; // Too close, try again
-        }
-        
-        // Check if tile is safe (not pit, not 0)
+        // Tile check (moderate cost)
         var tile = tilemap_get_at_pixel(tilemap_id, test_x, test_y);
-        var is_safe_tile = (tile <= 446 && tile != 0);
+        if (tile > 446 || tile == 0) continue; // Not safe
         
-        if (!is_safe_tile) {
-            continue; // Pit detected, try again
-        }
+        // Wall check (most expensive, do last)
+        if (place_meeting(test_x, test_y, obj_obstacle)) continue;
         
-        // Check for wall collision
-        if (place_meeting(test_x, test_y, obj_obstacle)) {
-            continue; // Wall detected, try again
-        }
-        
-        // All checks passed!
-        found_safe_spot = true;
+        // SUCCESS - Found safe spot!
+        spawn_search_active = false;
         nextX = test_x;
         nextY = test_y;
+        return; // Exit early, spawn next frame
     }
     
-    // If no safe spot found after max attempts, spawn at player position + offset
-    if (!found_safe_spot) {
-        var safe_dir = random(360);
-        nextX = obj_player.x + lengthdir_x(min_distance_from_player, safe_dir);
-        nextY = obj_player.y + lengthdir_y(min_distance_from_player, safe_dir);
-        show_debug_message("WARNING: Could not find safe spawn spot, using fallback position");
-    }
-    
-    summon_timer = 60;
-}
-else {
-    if (summon_timer > 0) {
-        summon_timer--;
-    }
-    else {
-        nextType = irandom(4);
-        var _enemy = obj_enemy;
+    // Give up after max attempts
+    if (spawn_total_attempts >= max_total_attempts) {
+        spawn_search_active = false;
         
-        switch(nextType) {
-            case ENEMY_TYPE.CIRCLE:
-                _enemy = obj_enemy;
-                break;
+        // Fallback: Ring spawn around player
+        var safe_dir = random(360);
+        var safe_dist = min_distance_from_player + 20;
+        nextX = clamp(obj_player.x + lengthdir_x(safe_dist, safe_dir), 0, room_width);
+        nextY = clamp(obj_player.y + lengthdir_y(safe_dist, safe_dir), 0, room_height);
+        
+        show_debug_message("Spawner fallback used after " + string(spawn_total_attempts) + " attempts");
+    }
+}
+
+// SPAWN ENEMY
+if (!spawn_search_active && summon_timer > 0) {
+    summon_timer--;
+    
+    if (summon_timer <= 0) {
+        // Update spawn pool based on game time
+        if (instance_exists(obj_game_manager)) {
+            var game_time = obj_game_manager.time_manager.game_time_seconds;
             
-            case ENEMY_TYPE.TRIANGLE:
-                _enemy = obj_enemy_triangle;
-                break;
-            
-            case ENEMY_TYPE.JUMPER:
-                _enemy = obj_enemy_fly;
-                break;
-            
-            case ENEMY_TYPE.DASHER:
-                _enemy = obj_enemy_dasher;
-                break;
-            
-            case ENEMY_TYPE.BOMBER:
-                _enemy = obj_enemy_bomber;
-                break;
+            // Progressive enemy unlocks
+            if (game_time < 60) {
+                // 0-60 seconds: Basic enemies only
+                current_spawn_pool = [obj_enemy, obj_maggot]; // Weight basic enemy
+            }
+            else if (game_time < 90) {
+                // 60-90 seconds: Add triangles and flies
+                current_spawn_pool = [obj_enemy, obj_maggot, obj_enemy_triangle, obj_enemy_fly];
+            }
+            else if (game_time < 120) {
+                // 90-120 seconds: Add dashers
+                current_spawn_pool = [obj_enemy, obj_enemy_triangle, obj_enemy_fly, obj_enemy_dasher];
+            }
+            else {
+                // 120+ seconds: Everything including bombers
+                current_spawn_pool = [obj_enemy, obj_enemy_triangle, obj_enemy_fly, obj_enemy_dasher, obj_enemy_bomber];
+            }
         }
         
-        // Final safety check before spawning
-        var tile_layer_id = layer_get_id("Tiles_2");
-        var tilemap_id = layer_tilemap_get_id(tile_layer_id);
+        // Pick random enemy from current pool
+        var _enemy = current_spawn_pool[irandom(array_length(current_spawn_pool) - 1)];
+        
+        // Final safety check
         var spawn_tile = tilemap_get_at_pixel(tilemap_id, nextX, nextY);
         
-        // Only spawn if tile is safe
-        if (spawn_tile <= 446 && spawn_tile != 0 && !place_meeting(nextX, nextY, obj_obstacle)) {
+        if (spawn_tile <= 446 && spawn_tile > 0 && !place_meeting(nextX, nextY, obj_obstacle)) {
             var enemy = instance_create_depth(nextX, nextY, depth, _enemy);
-            show_debug_message("Spawned " + object_get_name(_enemy) + " at safe position");
-        } else {
-            show_debug_message("WARNING: Spawn position became unsafe, skipping spawn");
+            if (instance_exists(obj_enemy_controller)) {
+                obj_enemy_controller.ApplyDifficultyToEnemy(enemy);
+            }
         }
         
         spawner_timer = 300;

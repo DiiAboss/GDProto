@@ -79,6 +79,17 @@ if (is_armed && timer > 0) {
     draw_set_color(c_white);
     draw_set_halign(fa_left);
     draw_set_valign(fa_top);
+	
+	if (timer < timer_max * 0.5)
+{
+		var _percent = (1 - (timer / timer_max)) 
+	draw_set_color(c_red);
+	draw_set_alpha(0.1 * _percent);
+	draw_circle(x, y, explosion_radius, false);
+	draw_set_alpha(1);
+	draw_set_color(c_white);
+}
+
 }
 
 // Charge indicator (if being carried and charging) - from parent

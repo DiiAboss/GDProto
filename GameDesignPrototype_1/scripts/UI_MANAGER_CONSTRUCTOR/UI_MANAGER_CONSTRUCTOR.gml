@@ -32,6 +32,11 @@ function UIManager() constructor {
     top_left_x = 15 * ui_scale;
     top_left_y = 15 * ui_scale;
     
+	// Modifier icons (bottom center)
+	modifier_icon_size = 40 * ui_scale;
+	modifier_icon_spacing = 10 * ui_scale;
+	modifier_icon_y = screen_height - 50 * ui_scale;
+		
     // HP/Level/XP (top left corner)
     level_x = top_left_x;
     level_y = top_left_y;
@@ -146,7 +151,7 @@ static draw = function() {
     draw_style_stats();     // NEW
     draw_combo_meter();     // NEW (optional)
     draw_gold();
-    draw_modifiers_box();
+    draw_collected_modifiers();  // NEW
     draw_mouse_buttons();
     draw_badges();
     draw_totems();
@@ -237,6 +242,54 @@ static draw = function() {
         draw_text(exp_bar_x + exp_bar_width / 2, exp_bar_y + exp_bar_height / 2, "Experience Bar");
     }
     
+	
+/// @method draw_collected_modifiers()
+static draw_collected_modifiers = function() {
+    if (!instance_exists(player)) return;
+    if (array_length(player.mod_list) == 0) return;
+    
+    var total_width = (array_length(player.mod_list) * modifier_icon_size) + 
+                      ((array_length(player.mod_list) - 1) * modifier_icon_spacing);
+    var start_x = center_x - (total_width / 2);
+    
+    for (var i = 0; i < array_length(player.mod_list); i++) {
+        var _mod = player.mod_list[i];
+        
+        // Call the global function properly
+        var mod_sprite = -1;
+        if (instance_exists(obj_game_manager)) {
+            mod_sprite = obj_game_manager.GetModifierSprite(_mod.template_key);
+        }
+        
+        var draw_x = start_x + (i * (modifier_icon_size + modifier_icon_spacing)) + (modifier_icon_size / 2);
+        var draw_y = modifier_icon_y;
+        
+        // Draw the modifier sprite
+        if (sprite_exists(mod_sprite) && mod_sprite != -1) {
+            draw_sprite_ext(
+                mod_sprite,
+                0,
+                draw_x,
+                draw_y,
+                modifier_icon_size / sprite_get_width(mod_sprite),
+                modifier_icon_size / sprite_get_height(mod_sprite),
+                0,
+                c_white,
+                1
+            );
+        } else {
+            // Fallback circle if sprite missing
+            draw_set_color(c_dkgray);
+            draw_circle(draw_x, draw_y, modifier_icon_size / 2, false);
+            draw_set_color(c_white);
+            draw_circle(draw_x, draw_y, modifier_icon_size / 2, true);
+        }
+    }
+    
+    draw_set_color(c_white);
+}
+	
+	
     /// @method draw_score()
 static draw_score = function() {
     // Get score from game manager

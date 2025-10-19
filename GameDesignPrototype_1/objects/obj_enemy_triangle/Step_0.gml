@@ -1,7 +1,7 @@
 /// @description Insert description here
 // You can write your code in this editor
 
-
+if (global.gameSpeed <= 0) exit;
 
 var _dist = distance_to_object(obj_player);
 var _speed = 3 * game_speed_delta();
