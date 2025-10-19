@@ -1,12 +1,12 @@
 {
   "$GMScript":"v1",
-  "%Name":"Script12",
+  "%Name":"scr_PitAvoidance",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"Script12",
+  "name":"scr_PitAvoidance",
   "parent":{
-    "name":"Scripts",
-    "path":"folders/Scripts.yy",
+    "name":"Enemies",
+    "path":"folders/Objects/In-Game/Enemies.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

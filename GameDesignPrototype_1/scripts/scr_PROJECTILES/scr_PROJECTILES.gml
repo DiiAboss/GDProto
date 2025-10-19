@@ -26,7 +26,13 @@ global.Projectile_ =
         name: "Holy Water",
         description: "Lobbed Bottle Of Holy Water",
         object: obj_holy_water  // or obj_projectile if you don't have obj_holy_water yet
-    }
+    },
+	ChainKnife: {
+    name: "Chain Knife",
+    object: obj_chain_knife,
+    speed: 12,
+    damage: 10
+}
 }
 
 

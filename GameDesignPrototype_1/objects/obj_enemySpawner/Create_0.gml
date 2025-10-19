@@ -12,6 +12,7 @@ enum ENEMY_TYPE
 	TRIANGLE = 1,
 	JUMPER = 2,
 	DASHER = 3,
+	BOMBER = 4,
 }
 
 nextType =  0;

@@ -112,7 +112,7 @@ allMods = [];          // Keep original name for compatibility
 // Totem system
 chaos_totem_active = false;
 chaos_spawn_timer = 0;
-chaos_spawn_interval = 180;
+chaos_spawn_interval = 3000;
 
 champion_totem_active = false;
 champion_spawn_timer = 0;
@@ -370,9 +370,11 @@ function gm_calculate_player_stats(_atk, _hp, _kb, _spd) {
         if (variable_struct_exists(_mod, "attack_mult")) {
             atk_mult *= _mod.attack_mult;
         }
+		if (variable_struct_exists(_mod, "attack_add")) atk_mult += _mod.attack_add / _atk;
         if (variable_struct_exists(_mod, "hp_mult")) {
             hp_mult *= _mod.hp_mult;
         }
+		if (variable_struct_exists(_mod, "hp_add")) hp_mult += _mod.hp_add / _hp;
         if (variable_struct_exists(_mod, "speed_mult")) {
             spd_mult *= _mod.speed_mult;
         }

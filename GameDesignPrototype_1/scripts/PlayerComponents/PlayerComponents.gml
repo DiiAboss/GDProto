@@ -1,116 +1,172 @@
-function PlayerMovement(_self, _playerSpeed) constructor
-{
-	
-	callingObject    = _self;
-	
-	
-	baseSpeed	 = _playerSpeed;
-	currentSpeed = baseSpeed;
-		
-	// Dash Functions
-	canDash			 = true;
-	dashTimer		 = 0;
-	maxDashTimer	 = 6;
-	dashSpeed		 = 4;
-	isDashing        = false;
-	
-	///Update - Call in Step Event
-	static Update = function(_input, _speed = baseSpeed) {
-    if (!_input) {
-        show_debug_message("Input Script Not Found");
-        return false;
-    }
-    
-    var _self = callingObject;
-    var _currentSpeed = _speed; // Already scaled by caller
-    
-    // Movement keys
-    var _leftKey = _input.Left;
-    var _rightKey = _input.Right;
-    var _downKey = _input.Down;
-    var _upKey = _input.Up;
-    var _dashKey = _input.Action;
-    var _hasMoved = false;
-    
-    // Diagonal adjustment
-    if ((_leftKey || _rightKey) && (_upKey || _downKey)) {
-        var _diagonalAdjust = 0.71;
-        currentSpeed = _currentSpeed * _diagonalAdjust;
-    } else {
-        currentSpeed = _currentSpeed;
-    }
-    
-    // Dash handling
-    if (_dashKey) CheckCanExecuteDash();
-    
-    currentSpeed = ExecuteDash(_self, baseSpeed, dashTimer);
-    dashTimer = timer_tick(dashTimer); // CHANGED
-    
-    if (dashTimer <= 0) {
-        canDash = true;
-    }
-    
-    // Apply movement
-    with (callingObject) {
-        if (_leftKey && !place_meeting(x - other.currentSpeed, y, obj_wall)) {
-            x -= other.currentSpeed;
-            _hasMoved = true;
-        }
+/// @description PlayerMovement with Pit Detection (FIXED for > 446)
+/// Updated PlayerMovement constructor
 
-        if (_rightKey && !place_meeting(x + other.currentSpeed, y, obj_wall)) {
-            x += other.currentSpeed;
-            _hasMoved = true;
+function PlayerMovement(_self, _playerSpeed) constructor {
+    
+    callingObject = _self;
+    
+    baseSpeed = _playerSpeed;
+    currentSpeed = baseSpeed;
+    
+    // Dash Functions
+    canDash = true;
+    dashTimer = 0;
+    maxDashTimer = 6;
+    dashSpeed = 4;
+    isDashing = false;
+    
+    /// Update - Call in Step Event
+    static Update = function(_input, _speed = baseSpeed) {
+        if (!_input) {
+            show_debug_message("Input Script Not Found");
+            return false;
         }
-
-        if (_downKey && !place_meeting(x, y + other.currentSpeed, obj_wall)) {
-            y += other.currentSpeed;
-            _hasMoved = true;
+        
+        var _self = callingObject;
+        
+        // Check if falling - disable movement
+        if (_self.is_falling_in_pit) {
+            _self.ProcessPitFall();
+            return false;
         }
-
-        if (_upKey && !place_meeting(x, y - other.currentSpeed, obj_wall)) {
-            y -= other.currentSpeed;
-            _hasMoved = true;
+        
+        var _currentSpeed = _speed;
+        
+        // Movement keys
+        var _leftKey = _input.Left;
+        var _rightKey = _input.Right;
+        var _downKey = _input.Down;
+        var _upKey = _input.Up;
+        var _dashKey = _input.Action;
+        var _hasMoved = false;
+        
+        // Diagonal adjustment
+        if ((_leftKey || _rightKey) && (_upKey || _downKey)) {
+            var _diagonalAdjust = 0.71;
+            currentSpeed = _currentSpeed * _diagonalAdjust;
+        } else {
+            currentSpeed = _currentSpeed;
         }
+        
+        // Dash handling
+        if (_dashKey) CheckCanExecuteDash();
+        
+        currentSpeed = ExecuteDash(_self, baseSpeed, dashTimer);
+        dashTimer = timer_tick(dashTimer);
+        
+        if (dashTimer <= 0) {
+            canDash = true;
+        }
+        
+        // PIT AVOIDANCE - Only if NOT dashing
+        var can_move_into_pit = (dashTimer > 0); // Can dash into pits
+        
+        // Apply movement with pit checks
+        with (callingObject) {
+            var next_x = x;
+            var next_y = y;
+            
+            // Calculate next position
+            if (_leftKey) next_x -= other.currentSpeed;
+            if (_rightKey) next_x += other.currentSpeed;
+            if (_downKey) next_y += other.currentSpeed;
+            if (_upKey) next_y -= other.currentSpeed;
+            
+            // Check if next position is pit (tile > 446 = PIT)
+            var tile_ahead = tilemap_get_at_pixel(tilemap_id, next_x, next_y);
+            var is_pit_ahead = (tile_ahead > 446 || tile_ahead == 0);
+            var is_safe_tile = (tile_ahead <= 446 && tile_ahead != 0);
+            // Block movement if pit ahead (unless dashing)
+            if (is_pit_ahead && !can_move_into_pit) {
+                // Try individual axes (allows sliding along pit edge)
+                if (_leftKey) {
+                    var test_x = x - other.currentSpeed;
+                    var test_tile = tilemap_get_at_pixel(tilemap_id, test_x, y);
+					
+                    if (is_safe_tile && !place_meeting(test_x, y, obj_wall)) {
+                        x = test_x;
+                        _hasMoved = true;
+                    }
+                }
+                if (_rightKey) {
+                    var test_x = x + other.currentSpeed;
+                    var test_tile = tilemap_get_at_pixel(tilemap_id, test_x, y);
+                    if (is_safe_tile &&  !place_meeting(test_x, y, obj_wall)) {
+                        x = test_x;
+                        _hasMoved = true;
+                    }
+                }
+                if (_downKey) {
+                    var test_y = y + other.currentSpeed;
+                    var test_tile = tilemap_get_at_pixel(tilemap_id, x, test_y);
+                    if (is_safe_tile &&  !place_meeting(x, test_y, obj_wall)) {
+                        y = test_y;
+                        _hasMoved = true;
+                    }
+                }
+                if (_upKey) {
+                    var test_y = y - other.currentSpeed;
+                    var test_tile = tilemap_get_at_pixel(tilemap_id, x, test_y);
+                    if (is_safe_tile &&  !place_meeting(x, test_y, obj_wall)) {
+                        y = test_y;
+                        _hasMoved = true;
+                    }
+                }
+            } else {
+                // Normal movement (no pit or dashing)
+                if (_leftKey && !place_meeting(x - other.currentSpeed, y, obj_wall)) {
+                    x -= other.currentSpeed;
+                    _hasMoved = true;
+                }
+                if (_rightKey && !place_meeting(x + other.currentSpeed, y, obj_wall)) {
+                    x += other.currentSpeed;
+                    _hasMoved = true;
+                }
+                if (_downKey && !place_meeting(x, y + other.currentSpeed, obj_wall)) {
+                    y += other.currentSpeed;
+                    _hasMoved = true;
+                }
+                if (_upKey && !place_meeting(x, y - other.currentSpeed, obj_wall)) {
+                    y -= other.currentSpeed;
+                    _hasMoved = true;
+                }
+            }
+        }
+        
+        // Update last safe position and check for pit fall
+        _self.UpdateLastSafePosition();
+        _self.CheckPitFall();
+        
+        return _hasMoved;
     }
     
-    return _hasMoved;
+    static CheckCanExecuteDash = function() {
+        if !(canDash) return false;
+        dashTimer = maxDashTimer;
+        canDash = false;
+        
+        return true;
+    }
+    
+    static ExecuteDash = function(_self, _baseSpeed, _dashTimer) {
+        var _currentSpeed = _baseSpeed * global.gameSpeed;
+        
+        if (_dashTimer > 0) {
+            _currentSpeed *= dashSpeed;
+            _self.invincibility.active = true;
+            _self.invincibility.timer = 2;
+            createAfterImage(callingObject, _dashTimer, 2, callingObject.currentSprite, callingObject.image_index);
+        }
+        return _currentSpeed;
+    }
 }
-	
-
-	
-	
-	static CheckCanExecuteDash = function()
-	{
-		if !(canDash) return false;
-		dashTimer = maxDashTimer;
-		canDash   = false;
-		
-		return true;
-	}
-	
-	static ExecuteDash = function(_self, _baseSpeed, _dashTimer)
-	{
-		
-		var _currentSpeed = _baseSpeed * global.gameSpeed;
-		
-		if (_dashTimer > 0) {
-			_currentSpeed *= dashSpeed;
-			_self.invincibility.active = true;
-		_self.invincibility.timer = 2;
-			createAfterImage(callingObject, _dashTimer, 2, callingObject.mySprite, callingObject.image_index);
-		}
-		return _currentSpeed;
-	}
-}
-
-
 
 function createAfterImage(_self, _timer, _framesPerImage, _sprite, _image_index)
 {
 	if (_timer % _framesPerImage == 0)
 	{
 		var afterimage = instance_create_depth(_self.x, _self.y, _self.depth, obj_afterImage);
-		afterimage.mySprite = _self.mySprite;
+		afterimage.mySprite = _self.currentSprite;
 		afterimage.myImg = _self.image_index;
 		afterimage.image_xscale = _self.image_xscale;
 		afterimage.image_yscale = _self.image_yscale;
@@ -241,6 +297,7 @@ function SpriteHandler(_leftSprite, _rightSprite, _upSprite, _downSprite) constr
 			
 			// Down
 			case SOUTH: 
+				_sprite    = southSprite;
 			break;
 			
 			case NORTHEAST:  //topleft
@@ -262,6 +319,6 @@ function SpriteHandler(_leftSprite, _rightSprite, _upSprite, _downSprite) constr
 	
 	static DrawSprite = function(_self, _sprite)
 	{
-		draw_sprite_ext(_sprite, -1, _self.x, _self.y, 1, 1, 0, c_white, 1);
+		draw_sprite_ext(_sprite, _self.image_index, _self.x, _self.y, 1, 1, 0, c_white, 1);
 	}
 }

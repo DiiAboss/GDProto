@@ -95,9 +95,12 @@ function CreateBonusProjectiles(_entity, _event) {
 }
 
 
-
 function TriggerModifiers(_entity, _trigger, _event_data) {
     if (!variable_instance_exists(_entity, "mod_cache")) return;
+    
+    if (!variable_struct_exists(_event_data, "trigger")) {
+        _event_data.trigger = _trigger;
+    }
     
     // Get cached list of modifiers for this trigger
     var trigger_str = string(_trigger);
@@ -109,7 +112,7 @@ function TriggerModifiers(_entity, _trigger, _event_data) {
     for (var i = 0; i < array_length(trigger_mods); i++) {
         var mod_instance = trigger_mods[i];
         
-        if (!mod_instance.active) continue; // Skip inactive mods
+        if (!mod_instance.active) continue;
         
         var mod_template = global.Modifiers[$ mod_instance.template_key];
         
@@ -119,9 +122,12 @@ function TriggerModifiers(_entity, _trigger, _event_data) {
         mod_template.action(_entity, _event_data);
     }
     
-    // AFTER all modifiers run, create bonus projectiles
-    if (_trigger == MOD_TRIGGER.ON_ATTACK && _event_data.projectile_count_bonus > 0) {
-        CreateBonusProjectiles(_entity, _event_data);
+    // FIX: Check if field exists before using it
+    if (_trigger == MOD_TRIGGER.ON_ATTACK) {
+        if (variable_struct_exists(_event_data, "projectile_count_bonus") && 
+            _event_data.projectile_count_bonus > 0) {
+            CreateBonusProjectiles(_entity, _event_data);
+        }
     }
 }
 
@@ -333,48 +339,6 @@ function CreateEffect(_type, _config) {
 }
 
 
-function CreateAttackEvent(_entity, _attack_type, _direction, _projectile = noone) {
-    return {
-        trigger_type: MOD_TRIGGER.ON_ATTACK,
-        attack_type:	   _attack_type,
-        attack_direction:  _direction,
-        attack_position_x: _entity.x,
-        attack_position_y: _entity.y,
-        damage:		 	   _entity.attack,
-        projectile:		   _projectile,
-        weapon:			   _entity.weaponCurrent,
-        projectile_count_bonus: 0,
-        combo_hit: 0
-    };
-}
-
-function CreateHitEvent(_entity, _target, _damage, _attack_type = AttackType.MELEE) {
-    return {
-        trigger_type: MOD_TRIGGER.ON_HIT,
-        target: _target,
-        damage: _damage,
-        attack_position_x: _entity.x,
-        attack_position_y: _entity.y,
-        attack_type: _attack_type,
-        attack_direction: point_direction(_entity.x, _entity.y, _target.x, _target.y),
-        projectile: noone,
-        weapon: _entity.weaponCurrent,
-        projectile_count_bonus: 0
-    };
-}
-
-function CreateKillEvent(_entity, _enemy_x, _enemy_y, _damage) {
-    return {
-        trigger_type: MOD_TRIGGER.ON_KILL,
-        enemy_x: _enemy_x,
-        enemy_y: _enemy_y,
-        damage: _damage,
-        kill_source: "direct",
-        enemy_type: object_index,
-        attack_type: AttackType.UNKNOWN,
-        projectile_count_bonus: 0
-    };
-}
 
 
 

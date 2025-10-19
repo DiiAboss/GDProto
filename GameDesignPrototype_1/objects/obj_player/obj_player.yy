@@ -33,8 +33,8 @@
   "resourceVersion":"2.0",
   "solid":false,
   "spriteId":{
-    "name":"spr_char_left",
-    "path":"sprites/spr_char_left/spr_char_left.yy",
+    "name":"spr_vh_walk_south",
+    "path":"sprites/spr_vh_walk_south/spr_vh_walk_south.yy",
   },
   "spriteMaskId":{
     "name":"Sprite16",

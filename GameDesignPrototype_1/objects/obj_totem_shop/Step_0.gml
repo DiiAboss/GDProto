@@ -38,7 +38,7 @@ if (instance_exists(obj_player)) {
                 if (success) {
 					obj_game_manager.OnChestClosing(id);
                     // Optional: close menu after purchase
-                    // show_menu = false;
+                    show_menu = false;
                 }
             }
             
@@ -50,10 +50,10 @@ if (instance_exists(obj_player)) {
         }
     } else {
         // Too far, close menu
-        if (show_menu) {
+
             show_menu = false;
 			obj_game_manager.OnChestClosing(id);
-        }
+        
     }
 }
 

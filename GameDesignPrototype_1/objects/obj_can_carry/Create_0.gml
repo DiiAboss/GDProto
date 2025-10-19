@@ -25,7 +25,7 @@ can_be_thrown = true;
 // Interaction
 interaction_range = 32;
 interaction_key = ord("E");
-interaction_text = "[E] Pick Up";
+interaction_text = "[E]";
 
 // Weight (affects throw distance and player speed)
 weight = 1.0; // 1.0 = normal, 2.0 = heavy, 0.5 = light
@@ -85,3 +85,15 @@ hit_resistance = 1.0; // 1.0 = normal, 2.0 = heavy/less knockback, 0.5 = light/m
 // Visual feedback
 hitFlashTimer = 0;
 shake = 0;
+
+// Pit fall system
+is_falling = false;
+fall_timer = 0;
+fall_duration = 20;
+fall_entry_x = 0;
+fall_entry_y = 0;
+fall_start_depth = 0;
+
+tile_layer = "Tiles_2";
+tile_layer_id = layer_get_id(tile_layer);
+tilemap_id = layer_tilemap_get_id(tile_layer_id);

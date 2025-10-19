@@ -5,6 +5,18 @@ size = sprite_get_height(mySprite);
 img_index = 0;
 
 marked_for_death = false;
+// Pit fall state
+is_falling = false;
+fall_timer = 0;
+fall_duration = 60; // 1 second
+fall_entry_x = 0;
+fall_entry_y = 0;
+fall_start_depth = 0;
+
+// Tile layer reference
+tile_layer = "Tiles_2";
+tile_layer_id = layer_get_id(tile_layer);
+tilemap_id = layer_tilemap_get_id(tile_layer_id);
 
 // ==========================================
 // COMPONENTS (matching player)
@@ -57,7 +69,7 @@ impactDamageMultiplier = 0.1;
 maxImpactDamage = 999;
 wallHitCooldown = 0;
 hasHitWall = false;
-
+killed_by_modifier = undefined;  // Tracks if killed by modifier (prevents chain reactions)
 // Wall bounce
 bounceDampening = 1.1;
 minBounceSpeed = 0;
@@ -126,25 +138,50 @@ controller_step = function(_delta, _player_exists, _player_x, _player_y, _player
     }
     
     // ==========================================
-    // DEATH DETECTION
+    // DEATH DETECTION - FIXED
     // ==========================================
     if (damage_sys.IsDead() && !marked_for_death) {
         marked_for_death = true;
         image_angle = choose(90, 270);
         knockbackFriction = 0.01;
         
-        if (is_burning && variable_instance_exists(id, "holy_water_splash_direction")) {
-            killed_by_holy_water = true;
+        // ==========================================
+        // DETERMINE KILL SOURCE
+        // ==========================================
+        var kill_source = "direct"; // Default
+        
+        // Check if killed by a modifier (prevents chain reactions)
+        if (variable_instance_exists(id, "killed_by_modifier")) {
+            kill_source = killed_by_modifier;
+        }
+        // Check if killed by burning
+        else if (is_burning) {
+            if (variable_instance_exists(id, "holy_water_splash_direction")) {
+                kill_source = "holy_water";
+                killed_by_holy_water = true;
+            } else {
+                kill_source = "burning";
+            }
+        }
+        // Check if killed by wall impact
+        else if (variable_instance_exists(id, "last_hit_by") && last_hit_by == obj_wall) {
+            kill_source = "wall_impact";
         }
         
+        // ==========================================
+        // TRIGGER ON_KILL MODIFIERS - FIXED
+        // ==========================================
         if (_player_instance != noone && instance_exists(_player_instance)) {
-            var kill_event = {
-                enemy_x: x,
-                enemy_y: y,
-                damage: _player_instance.attack,
-                kill_source: is_burning ? "holy_water" : "direct",
-                enemy_type: object_index
-            };
+            // Use the proper event helper
+            var kill_event = CreateKillEvent(
+                _player_instance,  // entity/owner
+                x,                 // enemy_x
+                y,                 // enemy_y
+                total_damage_taken > 0 ? total_damage_taken : maxHp,  // damage
+                kill_source,       // kill_source
+                object_index       // enemy_type
+            );
+            
             TriggerModifiers(_player_instance, MOD_TRIGGER.ON_KILL, kill_event);
         }
         
@@ -230,20 +267,145 @@ controller_step = function(_delta, _player_exists, _player_x, _player_y, _player
         if (wallHitCooldown > 0) wallHitCooldown = 0;
     }
     
-    // ==========================================
-    // MOVEMENT
-    // ==========================================
-    if (knockbackCooldown <= 0 && abs(knockbackX) < 1 && abs(knockbackY) < 1 && _player_exists) {
-        var _dir = point_direction(x, y, _player_x, _player_y);
-        var _spd = scale_movement(moveSpeed);
+   //// @description Enemy Pit System - Only Fall When Knocked Back
+// ==========================================
+// MOVEMENT WITH PIT AVOIDANCE (Normal Movement Only)
+// ==========================================
+if (knockbackCooldown <= 0 && abs(knockbackX) < 1 && abs(knockbackY) < 1 && _player_exists) {
+    var _dir = point_direction(x, y, _player_x, _player_y);
+    var _spd = scale_movement(moveSpeed);
+    
+    var moveX = lengthdir_x(_spd, _dir);
+    var moveY = lengthdir_y(_spd, _dir);
+    
+    // Check ahead distance
+    var check_ahead = 12;
+    var next_check_x = x + lengthdir_x(check_ahead, _dir);
+    var next_check_y = y + lengthdir_y(check_ahead, _dir);
+    
+    // Check if pit ahead (tile > 446 OR tile == 0 = PIT)
+    var tile_ahead = tilemap_get_at_pixel(tilemap_id, next_check_x, next_check_y);
+    var is_pit_ahead = (tile_ahead > 446 || tile_ahead == 0);
+    
+    if (is_pit_ahead) {
+        // PIT DETECTED - Find alternative direction
+        var try_angles = [45, -45, 90, -90, 135, -135];
+        var found_safe_path = false;
         
-        var moveX = lengthdir_x(_spd, _dir);
-        var moveY = lengthdir_y(_spd, _dir);
+        for (var i = 0; i < array_length(try_angles); i++) {
+            var test_dir = _dir + try_angles[i];
+            var test_x = x + lengthdir_x(check_ahead, test_dir);
+            var test_y = y + lengthdir_y(check_ahead, test_dir);
+            
+            var test_tile = tilemap_get_at_pixel(tilemap_id, test_x, test_y);
+            
+            // Safe tile: NOT 0 AND <= 446
+            var is_safe = (test_tile != 0 && test_tile <= 446);
+            
+            if (is_safe && 
+                !place_meeting(x + lengthdir_x(_spd, test_dir), y, obj_obstacle) &&
+                !place_meeting(x, y + lengthdir_y(_spd, test_dir), obj_obstacle)) {
+                
+                moveX = lengthdir_x(_spd, test_dir);
+                moveY = lengthdir_y(_spd, test_dir);
+                found_safe_path = true;
+                break;
+            }
+        }
         
-        if (!place_meeting(x + moveX, y, obj_obstacle)) x += moveX;
-        if (!place_meeting(x, y + moveY, obj_obstacle)) y += moveY;
+        // No safe path - stop
+        if (!found_safe_path) {
+            moveX = 0;
+            moveY = 0;
+        }
     }
     
+    // Apply movement
+    if (!place_meeting(x + moveX, y, obj_obstacle)) x += moveX;
+    if (!place_meeting(x, y + moveY, obj_obstacle)) y += moveY;
+}
+
+// ==========================================
+// PIT FALL CHECK (Only During Knockback or Already Falling)
+// ==========================================
+if (!is_falling) {
+    // Only check for pit fall if being knocked back OR moving fast
+    var is_being_knocked = (abs(knockbackX) > knockbackThreshold || abs(knockbackY) > knockbackThreshold);
+    
+    if (is_being_knocked) {
+        // Check center point
+        var tile_check = tilemap_get_at_pixel(tilemap_id, x, y);
+        var center_is_pit = (tile_check > 446 || tile_check == 0);
+        
+        // Safety buffer
+        var buffer_radius = 6;
+        var unsafe_count = 0;
+        
+        // Check 4 points around enemy
+        var check_points = [
+            [x + buffer_radius, y],
+            [x - buffer_radius, y],
+            [x, y + buffer_radius],
+            [x, y - buffer_radius]
+        ];
+        
+        for (var i = 0; i < array_length(check_points); i++) {
+            var tile = tilemap_get_at_pixel(tilemap_id, check_points[i][0], check_points[i][1]);
+            var is_pit = (tile > 446 || tile == 0);
+            if (is_pit) unsafe_count++;
+        }
+        
+        // Fall if center is pit AND at least 2 buffer points are also pit
+        if (center_is_pit && unsafe_count >= 2) {
+            is_falling = true;
+            fall_timer = 0;
+            fall_entry_x = x;
+            fall_entry_y = y;
+            fall_start_depth = depth;
+            
+            // Stop knockback momentum
+            knockbackX = 0;
+            knockbackY = 0;
+            
+            show_debug_message("ENEMY KNOCKED INTO PIT! Center tile: " + string(tile_check) + " Unsafe: " + string(unsafe_count) + "/4");
+        }
+    }
+}
+
+// ==========================================
+// PROCESS FALLING ANIMATION
+// ==========================================
+if (is_falling) {
+    fall_timer++;
+    var fall_progress = fall_timer / fall_duration;
+    
+    // Shrink, spin, fade
+    image_xscale = lerp(1.0, 0.0, fall_progress);
+    image_yscale = lerp(1.0, 0.0, fall_progress);
+    image_angle += 15 * _delta;
+    image_alpha = lerp(1.0, 0.0, fall_progress);
+    
+    // Push behind tiles (200 = Tiles_2 depth)
+    depth = lerp(fall_start_depth, 300, fall_progress);
+    
+    // Complete fall
+    if (fall_timer >= fall_duration) {
+        // Drop XP at entry point
+        var orbCount = irandom_range(1, 3);
+        for (var i = 0; i < orbCount; i++) {
+            var _exp = instance_create_depth(fall_entry_x, fall_entry_y, -9999, obj_exp);
+            var _coin = instance_create_depth(fall_entry_x, fall_entry_y, -9999, obj_coin);
+            _exp.direction = irandom(359);
+            _exp.speed = 3;
+        }
+        
+        marked_for_death = true;
+        hp = 0;
+    }
+}
+
+
+	
     // ==========================================
     // VISUAL EFFECTS
     // ==========================================
@@ -272,6 +434,7 @@ controller_step = function(_delta, _player_exists, _player_x, _player_y, _player
     
     depth = -y;
 }
+
 
 /// @function controller_step_dead(_delta)
 controller_step_dead = function(_delta) {

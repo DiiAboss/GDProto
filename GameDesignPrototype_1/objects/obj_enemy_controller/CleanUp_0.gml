@@ -5,3 +5,4 @@
 
 ds_list_destroy(enemy_list);
 ds_list_destroy(dead_list);
+ds_list_destroy(bomb_list);

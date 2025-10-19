@@ -1,23 +1,44 @@
-/// @desc Player Draw Event
-// Draw shadow using your custom function
-draw_sprite_shadow(self, spr_shadow, image_index, x, y+8, 0, 1, 0.2);
-spriteHandler.DrawSprite(self, currentSprite);
+// Draw shadow (hide during fall)
+if (!is_falling_in_pit) {
+    draw_sprite_shadow(self, spr_shadow, image_index, x, y+8, 0, 1, 0.2);
+}
+
+// Draw player sprite
+if (is_falling_in_pit) {
+    // FALLING ANIMATION - Manual draw with rotation and scale
+    draw_sprite_ext(
+        currentSprite,
+        image_index,
+        x,
+        y,
+        image_xscale, // Shrinking
+        image_yscale, // Shrinking
+        image_angle,  // Spinning
+        c_white,
+        image_alpha   // Fading
+    );
+} else {
+    // NORMAL DRAW
+    spriteHandler.DrawSprite(self, currentSprite);
+}
 
 // HP bar
 if (hp < maxHp || timers.IsActive("hp_bar")) {
     draw_player_hp_bar(x, y, hp, maxHp);
 }
 
-// Invincibility flash
-if (invincibility.ShouldFlash()) {
+// Invincibility flash (only when not falling)
+if (invincibility.ShouldFlash() && !is_falling_in_pit) {
     draw_sprite_ext(sprite_index, image_index, x, y, image_xscale, image_yscale, image_angle, c_red, 0.5);
 }
 
-// CLASS-SPECIFIC VISUALS
-class_component.Draw(x, y);
+// CLASS-SPECIFIC VISUALS (only when not falling)
+if (!is_falling_in_pit) {
+    class_component.Draw(x, y);
+}
 
-// Timing visuals (unchanged)
-if (timing_circle_alpha > 0.05) {
+// Timing visuals (only when not falling)
+if (timing_circle_alpha > 0.05 && !is_falling_in_pit) {
     var circle_color = GetTimingCircleColor();
     var circle_radius = 20 * timing_circle_scale;
     
@@ -28,7 +49,7 @@ if (timing_circle_alpha > 0.05) {
     draw_set_alpha(1);
 }
 
-if (perfect_flash_timer > 0) {
+if (perfect_flash_timer > 0 && !is_falling_in_pit) {
     var flash_alpha = perfect_flash_timer / 8;
     draw_set_alpha(flash_alpha);
     
@@ -49,4 +70,3 @@ if (keyboard_check(vk_tab)) {
     draw_text(x - 60, debug_y, info.name + " - " + info.special);
     draw_text(x - 60, debug_y - 12, "HP: " + string(floor(hp)) + "/" + string(maxHp));
 }
-

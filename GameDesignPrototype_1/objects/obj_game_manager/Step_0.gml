@@ -83,30 +83,6 @@ if (instance_exists(obj_coin))
 UpdateWeaponSwapPrompt();
 
 
-// Totem systems (your existing code)
-if (chaos_totem_active) {
-    chaos_spawn_timer += game_speed_delta();
-    if (chaos_spawn_timer >= chaos_spawn_interval) {
-        chaos_spawn_timer = 0;
-        // Spawn chaos ball
-        if (instance_exists(obj_player)) {
-            var ball = instance_create_depth(
-                obj_player.x + random_range(-200, 200),
-                obj_player.y + random_range(-200, 200),
-                0,
-                obj_rolling_ball
-            );
-        }
-    }
-}
-
-if (champion_totem_active) {
-    champion_spawn_timer += game_speed_delta();
-    if (champion_spawn_timer >= champion_spawn_interval) {
-        champion_spawn_timer = 0;
-        SpawnMiniBossWave();
-    }
-}	
 	// ==========================================
 // LEVEL UP POPUP (P key for testing)
 // ==========================================
@@ -147,8 +123,8 @@ if (variable_global_exists("chest_popup") && global.chest_popup != undefined) {
 if (chaos_totem_active) {
     chaos_spawn_timer = timer_tick(chaos_spawn_timer);
     
-    if (chaos_spawn_timer <= 0) {
-        chaos_spawn_timer = chaos_spawn_interval;
+    if (chaos_spawn_timer >= chaos_spawn_interval) {
+        
         
         if (instance_exists(obj_player)) {
             var spawn_x = obj_player.x + irandom_range(-200, 200);
@@ -159,6 +135,7 @@ if (chaos_totem_active) {
                 ball.myDir = irandom(359);
                 show_debug_message("Chaos Totem: Spawned rolling ball");
             }
+			chaos_spawn_timer = 0;
         }
     }
 }
@@ -398,10 +375,12 @@ function GetModifierSprite(_mod_key) {
 function GetModifierDescription(_mod_key) {
     var _mod = global.Modifiers[$ _mod_key];
     
-    // Try to build automatic description from modifier data
     var desc = "";
     
     switch (_mod_key) {
+        // ===============================
+        // ORIGINAL MODIFIERS
+        // ===============================
         case "TripleRhythmFire":
             desc = "Every 3rd attack shoots a fireball";
             break;
@@ -446,8 +425,91 @@ function GetModifierDescription(_mod_key) {
             desc = "Each shot fires 3 times\nin quick succession";
             break;
             
+        // ===============================
+        // NEW COMMON / STAT MODIFIERS
+        // ===============================
+        case "AttackUp":
+            desc = "x1.15 Attack Power";
+            break;
+            
+        case "DefenseUp":
+            desc = "x1.20 Damage Resistance";
+            break;
+            
+        case "SpeedUp":
+            desc = "x1.10 Movement Speed";
+            break;
+            
+        case "HealthUp":
+            desc = "x1.25 Max Health";
+            break;
+            
+        case "CriticalChance":
+            desc = "x1.10 Critical Hit Chance";
+            break;
+            
+        case "CriticalDamage":
+            desc = "x1.50 Critical Damage Multiplier";
+            break;
+            
+        case "KnockbackBoost":
+            desc = "x1.25 Knockback Force";
+            break;
+            
+        case "LifeSteal":
+            desc = "Gain 5% of damage dealt as HP";
+            break;
+            
+        case "Haste":
+            desc = "Attacks and abilities recharge\n20% faster";
+            break;
+            
+        case "Adrenaline":
+            desc = "Gain x1.25 speed below 0.30 MAX_HP";
+            break;
+            
+        case "Regeneration":
+            desc = "Regenerate x1.01 of max HP per second";
+            break;
+            
+        case "Barrier":
+            desc = "Gain a shield that blocks one hit\nevery 10 seconds";
+            break;
+            
+        case "Overdrive":
+            desc = "Increase attack speed by x1.30\nfor 3s after taking damage";
+            break;
+            
+        case "Evasion":
+            desc = "x1.10 chance to dodge attacks";
+            break;
+            
+        case "Momentum":
+            desc = "x1.02 damage for each enemy killed\n(stackable up to 10x)";
+            break;
+            
+        case "GoldRush":
+            desc = "Enemies drop x1.30 more coins";
+            break;
+            
+        case "Precision":
+            desc = "First hit on full HP enemy\nalways crits";
+            break;
+            
+        case "Fortified":
+            desc = "Gain x1.10 defense when stationary";
+            break;
+            
+        case "QuickStep":
+            desc = "Dodging increases speed by x1.50\nfor 1.5s";
+            break;
+            
+        case "Revenge":
+            desc = "After taking damage, next attack\ndeals x1.50 damage";
+            break;
+            
         default:
-            desc = "A powerful modifier";
+            desc = "Dev Forgot Description... (again)";
             break;
     }
     

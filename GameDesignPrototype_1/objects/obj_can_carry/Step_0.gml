@@ -1,4 +1,22 @@
 /// @description Handle carrying and projectile physics
+// At the VERY TOP of step event:
+if (is_falling) {
+    fall_timer++;
+    var fall_progress = fall_timer / fall_duration;
+    
+    image_xscale = lerp(1.0, 0.1, fall_progress);
+    image_yscale = lerp(1.0, 0.1, fall_progress);
+    image_angle += 12 * game_speed_delta();
+    image_alpha = lerp(1.0, 0.0, fall_progress);
+    depth = lerp(fall_start_depth, 300, fall_progress);
+    shadow_alpha = lerp(0.3, 0.0, fall_progress);
+    
+    if (fall_timer >= fall_duration) {
+        instance_destroy();
+    }
+    
+    exit; // Stop all other processing
+}
 
 if (is_being_carried && instance_exists(carrier)) {
     // Follow carrier
@@ -169,6 +187,50 @@ else {
     if (shake > 0) {
         shake *= 0.8;
         if (shake < 0.1) shake = 0;
+    }
+}
+
+if (!is_being_carried && !is_projectile) {
+    // Calculate current speed
+    var current_speed = point_distance(0, 0, moveX, moveY);
+    var fall_speed_threshold = 2.0; // Only fall if moving slower than this
+    
+    // Only check for pit if moving slowly (not flying fast)
+    var is_slow_enough = (current_speed < fall_speed_threshold);
+    var has_some_momentum = (current_speed > speed_threshold); // Still moving, but slow
+    
+    if (is_slow_enough && has_some_momentum) {
+        var tile_check = tilemap_get_at_pixel(tilemap_id, x, y);
+        var center_is_pit = (tile_check > 446 || tile_check == 0);
+        
+        if (center_is_pit) {
+            var buffer_radius = 4;
+            var unsafe_count = 0;
+            
+            var check_points = [
+                [x + buffer_radius, y],
+                [x - buffer_radius, y],
+                [x, y + buffer_radius],
+                [x, y - buffer_radius]
+            ];
+            
+            for (var i = 0; i < array_length(check_points); i++) {
+                var tile = tilemap_get_at_pixel(tilemap_id, check_points[i][0], check_points[i][1]);
+                if (tile > 446 || tile == 0) unsafe_count++;
+            }
+            
+            if (unsafe_count >= 2) {
+                is_falling = true;
+                fall_timer = 0;
+                fall_entry_x = x;
+                fall_entry_y = y;
+                fall_start_depth = depth;
+                moveX = 0;
+                moveY = 0;
+                
+                show_debug_message("Object falling at speed: " + string(current_speed));
+            }
+        }
     }
 }
 

@@ -1,44 +1,51 @@
+/// @desc obj_projectile Step Event - Fixed
+
 //direction = myDir;
-
-
-
 if (projectileType == PROJECTILE_TYPE.NORMAL)
 {
-	if (life > 0)
-	{
-		life -= 1;
-	}
-	else
-	{
-		instance_destroy();
-	}
-	
-	
-	if (active)
-	{
-		if (place_meeting(x,y,obj_enemy))
-		{
-			var enemy = instance_nearest(x,y,obj_enemy);
-			 // Apply knockback using custom knockback variables
-		    if (enemy.knockbackCooldown <= 0) {
-		        var knockbackDir = point_direction(x, y, enemy.x, enemy.y);
-		        var knockbackForce = 5; // Stronger knockback with combo
-	        
-		        // Set the enemy's knockback velocity
-		        enemy.knockbackX = lengthdir_x(knockbackForce, knockbackDir);
-		        enemy.knockbackY = lengthdir_y(knockbackForce, knockbackDir);
-	        
-		        // Set cooldown to prevent knockback stacking
-		        enemy.knockbackCooldown = enemy.knockbackCooldownMax;
-		    }
-			
-			active = false;
-		}
-	}
-	else
-	{
-		instance_destroy();
-	}		
+    if (life > 0)
+    {
+        life -= 1;
+    }
+    else
+    {
+        instance_destroy();
+    }
+    
+    
+    if (active)
+    {
+        if (place_meeting(x, y, obj_enemy))
+        {
+            var enemy = instance_nearest(x, y, obj_enemy);
+            
+            // Skip dead enemies
+            if (variable_instance_exists(enemy, "marked_for_death") && enemy.marked_for_death) {
+                active = false;
+                instance_destroy();
+                exit;
+            }
+            
+            // Apply knockback using custom knockback variables
+            if (enemy.knockbackCooldown <= 0) {
+                var knockbackDir = point_direction(x, y, enemy.x, enemy.y);
+                var knockbackForce = 5; // Stronger knockback with combo
+            
+                // Set the enemy's knockback velocity
+                enemy.knockbackX = lengthdir_x(knockbackForce, knockbackDir);
+                enemy.knockbackY = lengthdir_y(knockbackForce, knockbackDir);
+            
+                // Set cooldown to prevent knockback stacking
+                enemy.knockbackCooldown = enemy.knockbackCooldownMax;
+            }
+            
+            active = false;
+        }
+    }
+    else
+    {
+        instance_destroy();
+    }        
 } 
 
 if (projectileType == PROJECTILE_TYPE.LOB) {
@@ -65,15 +72,20 @@ if (projectileType == PROJECTILE_TYPE.LOB) {
     depth = -(bbox_bottom + 32 + (point_distance(x, y, x, yStart)));
 }
 
-
+// ==========================================
+// COLLISION DETECTION & DAMAGE
+// ==========================================
 if (place_meeting(x, y, obj_enemy)) {
     var enemy = instance_place(x, y, obj_enemy);
     
     if (enemy != noone) {
         // IMPORTANT: Skip if enemy is already dead
         if (variable_instance_exists(enemy, "marked_for_death") && enemy.marked_for_death) {
-            // Don't hit dead enemies
-            return;
+            // Don't hit dead enemies, but don't destroy projectile yet (might pierce)
+            if (!piercing) {
+                instance_destroy();
+            }
+            exit;
         }
         
         // Track who hit the enemy
@@ -81,42 +93,43 @@ if (place_meeting(x, y, obj_enemy)) {
         enemy.last_damage_taken = damage;
         
         // Deal damage
-        takeDamage(enemy, damage);
-		
-        // Trigger ON_HIT modifiers
+        takeDamage(enemy, damage, owner);
+        
+        // Mark if from corpse explosion (prevents chain reactions)
+        if (variable_instance_exists(id, "from_corpse_explosion") && from_corpse_explosion) {
+            enemy.killed_by_modifier = "corpse_explosion";
+        }
+        
+        // ==========================================
+        // TRIGGER ON_HIT MODIFIERS - Use Helper
+        // ==========================================
         var should_trigger = variable_instance_exists(id, "can_trigger_modifiers") ? can_trigger_modifiers : true;
         
-        if (owner != noone && should_trigger) {
-            var hit_event = {
-                target: enemy,
-                damage: damage,
-                attack_position_x: x,
-                attack_position_y: y,
-                projectile: id
-            };
+        if (owner != noone && instance_exists(owner) && should_trigger) {
+            // Use the projectile hit event helper
+            var hit_event = CreateProjectileHitEvent(owner, id, enemy, damage);
             
             TriggerModifiers(owner, MOD_TRIGGER.ON_HIT, hit_event);
         }
         
-        // Check for kill - but don't trigger if already marked
+        // ==========================================
+        // CHECK FOR KILL - But don't manually trigger
+        // Let the enemy's death system handle it properly
+        // ==========================================
         if (enemy.hp <= 0 && !enemy.marked_for_death) {
-            if (owner != noone) {
-                var kill_event = {
-                    enemy_x: enemy.x,
-                    enemy_y: enemy.y,
-                    damage: damage,
-                    kill_source: "projectile",
-                    enemy_type: enemy.object_index
-                };
-                
-                TriggerModifiers(owner, MOD_TRIGGER.ON_KILL, kill_event);
-            }
+            // The enemy will die in its next step
+            // The controller will handle death and trigger ON_KILL modifiers
+            // with the proper kill_source from killed_by_modifier flag
         }
         
+        // Destroy projectile if not piercing
         if (!piercing) {
             instance_destroy();
         }
     }
 }
 
-
+if (destroy)
+{
+    instance_destroy();
+}

@@ -32,4 +32,4 @@ critShake = 0;
 
 owner = noone;
 
-depth = -999;
+depth = -y-99;

@@ -21,6 +21,122 @@ global.WeaponStruct =
             return _attack;
         }
     },
+	
+	ChainWhip: {
+    name: "Chain Whip",
+    id: Weapon.ChainWhip, // Add to your Weapon enum
+    type: WeaponType.Melee,
+    projectile_struct: undefined, // Not using projectile struct
+    melee_object_type: obj_chain_whip,
+    
+    // Attack queue system
+    attack_queue: 0,
+    max_queue: 3,
+    queue_timer: 0,
+    queue_interval: 10,
+    is_executing_queue: false,
+    current_attack_direction: 0,
+    
+    // Attack properties
+    attack_range: 128,
+    knife_range: 256,
+    
+    // Damage scaling per queued hit
+    queue_damage_mults: [1.0, 1.1, 1.2], // 1st, 2nd, 3rd hit
+    queue_knockback_mults: [1.0, 1.0, 1.2],
+    
+    // Knife tracking
+    active_knife: noone,
+    
+    primary_attack: function(_self, _direction, _range, _projectile_struct) {
+        // Queue up an attack (max 3)
+        if (attack_queue < max_queue) {
+            attack_queue++;
+            
+            // Start executing if not already
+            if (!is_executing_queue) {
+                is_executing_queue = true;
+                queue_timer = 0;
+                current_attack_direction = _direction;
+                ExecuteQueuedAttack(_self, 0); // Execute first immediately
+            }
+        }
+        
+        return _self.melee_weapon;
+    },
+    
+    secondary_attack: function(_self, _direction, _range, _projectile_struct) {
+        // Only throw if no active knife
+        //if (active_knife != noone && instance_exists(active_knife)) {
+            //return noone;
+        //}
+        show_debug_message("secondary_attack chain link init");
+        // Create knife projectile
+        var knife = instance_create_depth(_self.x, _self.y, _self.depth - 1, obj_chain_knife);
+        knife.owner = _self.id;
+        knife.direction = _direction;
+        knife.image_angle = _direction;
+        knife.damage = _self.attack * 0.7;
+        knife.max_distance = knife_range;
+        knife.weapon_struct = self; // Reference back to weapon
+        
+        active_knife = knife;
+        
+        var attack_event = CreateAttackEvent(_self, AttackType.RANGED, _direction, knife);
+        TriggerModifiers(_self, MOD_TRIGGER.ON_ATTACK, attack_event);
+        
+        return knife;
+    },
+    
+    step: function(_self) {
+        // Process attack queue
+        if (is_executing_queue) {
+            queue_timer++;
+            
+            // Check if it's time for next queued attack
+            if (queue_timer >= queue_interval && attack_queue > 0) {
+                var attack_index = max_queue - attack_queue; // 0, 1, or 2
+                ExecuteQueuedAttack(_self, attack_index);
+                queue_timer = 0;
+            }
+            
+            // Check if queue is finished
+            if (attack_queue <= 0 && queue_timer >= queue_interval) {
+                is_executing_queue = false;
+                queue_timer = 0;
+            }
+        }
+        
+        // Clean up dead knife reference
+        if (active_knife != noone && !instance_exists(active_knife)) {
+            active_knife = noone;
+        }
+    },
+    
+    /// @method ExecuteQueuedAttack(_self, _attack_index)
+    ExecuteQueuedAttack: function(_self, _attack_index) {
+        if (!instance_exists(_self.melee_weapon)) return;
+        
+        attack_queue--;
+        
+        // Get damage multiplier for this hit in sequence
+        var damage_mult = queue_damage_mults[_attack_index];
+        var knockback_mult = queue_knockback_mults[_attack_index];
+        
+        // Update melee weapon
+        _self.melee_weapon.attack = _self.attack * damage_mult;
+        _self.melee_weapon.knockbackForce = 20 * knockback_mult;
+        _self.melee_weapon.startSwing = true;
+        _self.melee_weapon.current_queue_hit = _attack_index;
+        
+        // Create attack event
+        var attack_event = CreateAttackEvent(_self, AttackType.MELEE, current_attack_direction, noone);
+        attack_event.damage = _self.melee_weapon.attack;
+        attack_event.queue_hit = _attack_index;
+        
+        TriggerModifiers(_self, MOD_TRIGGER.ON_ATTACK, attack_event);
+    }
+},
     
     Sword: {
         name: "Sword",

@@ -5,19 +5,10 @@ other.last_hit_by = owner;
 other.last_damage_taken = damage;
 
 // apply damage (call your existing damage function)
-takeDamage(other, damage);
+takeDamage(other, damage, owner);
 
-// Build a normalized hit event
-var hit_event = {
-    attack_type: AttackType.RANGED,
-    attack_direction: point_direction(x, y, other.x, other.y),
-    attack_position_x: x,
-    attack_position_y: y,
-    damage: damage,
-    projectile: id,
-    weapon: (variable_instance_exists(owner, "weaponCurrent") ? owner.weaponCurrent : noone),
-    target: other
-};
+
+var hit_event = CreateHitEvent(self, other, damage, AttackType.RANGED);
 
 // Trigger modifiers on the owner
 if (owner != noone) {

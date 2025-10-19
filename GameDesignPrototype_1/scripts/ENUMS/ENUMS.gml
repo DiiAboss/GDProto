@@ -14,6 +14,7 @@ enum Weapon {
 	BaseballBat = 5,
 	Holy_Water = 6,
 	ThrowableItem = 7,
+	ChainWhip = 8,
 }
 
 enum AttackType {

@@ -3,6 +3,9 @@
 
 if (!show_menu) exit;
 
+
+	
+
 var gui_w = display_get_gui_width();
 var gui_h = display_get_gui_height();
 

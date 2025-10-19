@@ -18,7 +18,70 @@ if (cached_player_exists) {
     cached_player_x = obj_player.x;
     cached_player_y = obj_player.y;
 }
+// ==========================================
+// CACHE ARMED BOMBS (periodic check)
+// ==========================================
 
+if (instance_exists(obj_bomb)) {
+    bomb_check_timer--;
+    
+    if (bomb_check_timer <= 0) {
+        bomb_check_timer = bomb_check_frequency;
+        // ==========================================
+// BOMB AVOIDANCE (similar to enemy separation)
+// ==========================================
+with (obj_enemy)
+	{
+		// Check for nearby armed bombs
+var bomb = instance_nearest(x, y, obj_bomb);
+
+if (instance_exists(bomb) && bomb.is_armed) {
+    var bomb_dist = point_distance(x, y, bomb.x, bomb.y);
+    var avoidance_radius = 128; // How far enemies start avoiding
+    
+    if (bomb_dist < avoidance_radius) {
+        // Calculate danger level based on timer
+        var danger_multiplier = 1.0;
+        
+        if (bomb.timer <= bomb.timer_critical_threshold) {
+            danger_multiplier = 3.0; // PANIC in critical phase
+        } else if (bomb.timer <= bomb.timer_warning_threshold) {
+            danger_multiplier = 2.0; // Urgent in warning phase
+        }
+        
+        // Stronger push force as bomb gets closer and timer runs out
+        var distance_factor = 1.0 - (bomb_dist / avoidance_radius);
+        var push_strength = 1.5 * danger_multiplier * distance_factor;
+        
+        // Push away from bomb
+        var avoid_dir = point_direction(bomb.x, bomb.y, x, y);
+        var avoid_x = lengthdir_x(push_strength, avoid_dir);
+        var avoid_y = lengthdir_y(push_strength, avoid_dir);
+        
+        // Apply avoidance with wall checking (same as separation)
+        if (!place_meeting(x + avoid_x, y + avoid_y, obj_wall)) {
+            x += avoid_x;
+            y += avoid_y;
+        } else {
+            // Slide along walls
+            if (!place_meeting(x + avoid_x, y, obj_wall)) {
+                x += avoid_x;
+            }
+            if (!place_meeting(x, y + avoid_y, obj_wall)) {
+                y += avoid_y;
+            }
+        }
+        
+        // Optional: Visual panic indicator
+        if (danger_multiplier >= 2.0) {
+            // Enemy looks "scared" - could add particle or animation state
+        }
+    }
+}
+}
+	}
+
+}
 // ==========================================
 // REBUILD ENEMY LIST (if needed)
 // ==========================================

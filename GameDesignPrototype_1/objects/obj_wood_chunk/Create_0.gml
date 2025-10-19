@@ -3,7 +3,7 @@ event_inherited(); // Get base properties
 // Override base properties
 weight = 1.2; // Slightly heavy
 throw_force = 12;
-interaction_text = "[E] Pick Up Wood";
+interaction_text = "[E]";
 
 // Wood-specific properties
 base_damage = 15;

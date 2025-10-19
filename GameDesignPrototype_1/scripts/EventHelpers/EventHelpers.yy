@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"EventHelpers",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"EventHelpers",
+  "parent":{
+    "name":"CONTROL_SCRIPTS",
+    "path":"folders/Scripts/CONTROL_SCRIPTS.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

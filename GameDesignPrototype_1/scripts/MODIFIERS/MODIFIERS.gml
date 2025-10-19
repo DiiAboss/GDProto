@@ -166,20 +166,25 @@ global.Modifiers.DoubleLightning = {
     }
 };
 
-
 global.Modifiers.SpreadFire = {
     name: "Spread Fire",
     triggers: [MOD_TRIGGER.ON_ATTACK],
     
-    extra_projectiles: 4,  // Changed from base_spread_count
+    extra_projectiles: 4,
     spread_angle: 15,
     melee_arc_bonus: 30,
     
     action: function(_entity, _event) {
         var mod_template = global.Modifiers[$ _event.mod_instance.template_key];
         
-        // MELEE: Keep this exactly as is
-        if (_event.attack_type == AttackType.MELEE) {
+        // FIX: Check if field exists before using it
+        var attack_type = AttackType.UNKNOWN;
+        if (variable_struct_exists(_event, "attack_type")) {
+            attack_type = _event.attack_type;
+        }
+        
+        // MELEE: Increase swing arc
+        if (attack_type == AttackType.MELEE) {
             with (_entity) {
                 if (instance_exists(melee_weapon)) {
                     if (!variable_instance_exists(melee_weapon, "swing_arc")) {
@@ -189,13 +194,12 @@ global.Modifiers.SpreadFire = {
                 }
             }
         } 
-        // RANGED: Only add to bonus count, don't create projectiles
-        else if (_event.attack_type == AttackType.RANGED || _event.attack_type == AttackType.CANNON) {
+        // RANGED: Add extra projectiles
+        else if (attack_type == AttackType.RANGED || attack_type == AttackType.CANNON) {
             _event.projectile_count_bonus += mod_template.extra_projectiles;
         }
     }
-}
-
+};
 
 // Fixed Chain Lightning Modifier
 global.Modifiers.ChainLightning = {
@@ -228,10 +232,30 @@ global.Modifiers.ChainLightning = {
             // ON_ATTACK needs to find nearest enemy
             with (_entity) {
                 var nearest_dist = 200; // Max range to find initial target
-                var check_x = _event.attack_position_x;
-                var check_y = _event.attack_position_y;
+                
+                // ==========================================
+                // FIXED: Safe field access with fallbacks
+                // ==========================================
+                var check_x = _entity.x; // Default to entity position
+                var check_y = _entity.y;
+                
+                // Try multiple field name variations
+                if (variable_struct_exists(_event, "attack_position_x")) {
+                    check_x = _event.attack_position_x;
+                    check_y = _event.attack_position_y;
+                } else if (variable_struct_exists(_event, "hit_x")) {
+                    check_x = _event.hit_x;
+                    check_y = _event.hit_y;
+                } else if (variable_struct_exists(_event, "x")) {
+                    check_x = _event.x;
+                    check_y = _event.y;
+                }
                 
                 with (obj_enemy) {
+                    if (variable_instance_exists(id, "marked_for_death") && marked_for_death) {
+                        continue; // Skip dead enemies
+                    }
+                    
                     var dist = point_distance(x, y, check_x, check_y);
                     if (dist < nearest_dist) {
                         nearest_dist = dist;
@@ -243,6 +267,12 @@ global.Modifiers.ChainLightning = {
         
         // If we found a target, trigger chain lightning
         if (start_target != noone && instance_exists(start_target)) {
+            // Skip if target is already dead
+            if (variable_instance_exists(start_target, "marked_for_death") && 
+                start_target.marked_for_death) {
+                return;
+            }
+            
             var lightning_damage = (_event.damage ?? _entity.attack) * mod_template.damage_multiplier;
             
             // Call your chain lightning script
@@ -254,7 +284,6 @@ global.Modifiers.ChainLightning = {
                 lightning_damage,               // base damage
                 mod_template.damage_falloff     // falloff
             );
-            
         }
     }
 };
@@ -384,26 +413,93 @@ global.Modifiers.ThunderStrike = {
     }
 };
 
-// Death Fireworks Modifier
+// Death Fireworks Modifier - FIXED VERSION
 global.Modifiers.DeathFireworks = {
     name: "Corpse Explosion",
     triggers: [MOD_TRIGGER.ON_KILL],
     
     // Configuration
-    projectile_count: 8,        // Number of projectiles
-    projectile_type: obj_arrow, // What to shoot (can be changed)
+    projectile_count: 8,
+    projectile_type: obj_arrow,
     projectile_speed: 6,
-    damage_multiplier: 0.3,     // Damage relative to killing blow
-    explosion_delay: 5,         // Frames before explosion
+    damage_multiplier: 0.3,
+    explosion_delay: 1,
+    
+    // CRITICAL: Prevent chain reactions
+    can_trigger_on_modifier_kills: false, // Don't trigger on explosion kills
+    max_explosions_per_frame: 10,         // Frame-based limiter
     
     action: function(_entity, _event) {
         var mod_template = global.Modifiers[$ _event.mod_instance.template_key];
         
-        // Get the dead enemy's position
+        // ==========================================
+        // FAILSAFE 1: Check if kill was from this modifier
+        // ==========================================
+        if (_event.kill_source == "corpse_explosion" || 
+            _event.kill_source == "explosion") {
+            // Don't create explosions from explosion kills (AOE or projectiles)
+            return;
+        }
+        
+        // ==========================================
+        // FAILSAFE 2: Check enemy hasn't already exploded
+        // ==========================================
+        // Get the actual enemy instance if it still exists
+        var enemy_inst = noone;
+        with (obj_enemy) {
+            if (x == _event.enemy_x && y == _event.enemy_y && marked_for_death) {
+                enemy_inst = id;
+                break;
+            }
+        }
+        
+        // If we found the enemy, check if already processed
+        if (instance_exists(enemy_inst)) {
+            if (variable_instance_exists(enemy_inst, "has_exploded")) {
+                if (enemy_inst.has_exploded) {
+                    return; // Already exploded, don't do it again
+                }
+            }
+            enemy_inst.has_exploded = true; // Mark as exploded
+        }
+        
+        // ==========================================
+        // FAILSAFE 3: Global frame limiter
+        // ==========================================
+        if (!variable_global_exists("explosion_count_this_frame")) {
+            global.explosion_count_this_frame = 0;
+            global.explosion_frame_reset = current_time;
+        }
+        
+        // Reset counter if new frame
+        if (current_time != global.explosion_frame_reset) {
+            global.explosion_count_this_frame = 0;
+            global.explosion_frame_reset = current_time;
+        }
+        
+        // Check if we've hit the limit
+        if (global.explosion_count_this_frame >= mod_template.max_explosions_per_frame) {
+            return; // Too many explosions this frame, skip
+        }
+        
+        global.explosion_count_this_frame++;
+        
+        // ==========================================
+        // FAILSAFE 4: Total instance check
+        // ==========================================
+        var total_explosions = instance_number(obj_delayed_explosion);
+        var total_projectiles = instance_number(obj_projectile);
+        
+        if (total_explosions > 20 || total_projectiles > 100) {
+            return; // System overloaded, abort
+        }
+        
+        // ==========================================
+        // CREATE EXPLOSION
+        // ==========================================
         var death_x = _event.enemy_x;
         var death_y = _event.enemy_y;
         
-         //Create delayed explosion effect
         with (_entity) {
             var explosion = instance_create_depth(death_x, death_y, depth - 10, obj_delayed_explosion);
             explosion.delay = mod_template.explosion_delay;
@@ -412,13 +508,13 @@ global.Modifiers.DeathFireworks = {
             explosion.projectile_type = mod_template.projectile_type;
             explosion.projectile_speed = mod_template.projectile_speed;
             explosion.damage = (_event.damage ?? attack) * mod_template.damage_multiplier;
-            
-            // Store entity reference for modifier chaining
             explosion.source_entity = id;
+            
+            // CRITICAL: Mark explosion projectiles
+            explosion.from_corpse_explosion = true;
         }
     }
 };
-
 // Poison Death - Different projectile type
 global.Modifiers.PoisonCorpse = {
     name: "Toxic Explosion",
@@ -533,6 +629,142 @@ global.Modifiers.BurstFire = {
         if (mod_instance.burst_shots_remaining == 0) {
             mod_instance.burst_shots_remaining = mod_template.burst_count - 1; // -1 because original shot already fired
             mod_instance.burst_timer = mod_template.burst_delay;
+        }
+    }
+};
+
+// Flat attack boost
+global.Modifiers.AttackUp = {
+    name: "Attack Up",
+    triggers: [MOD_TRIGGER.PASSIVE],
+    attack_mult: 1.2, // +20%
+    
+    action: function(_entity, _event) { }
+};
+
+// Flat HP boost
+global.Modifiers.HPUp = {
+    name: "Tough Skin",
+    triggers: [MOD_TRIGGER.PASSIVE],
+    hp_mult: 1.25, // +25% HP
+    
+    action: function(_entity, _event) { }
+};
+
+// Speed boost
+global.Modifiers.SpeedUp = {
+    name: "Swift Steps",
+    triggers: [MOD_TRIGGER.PASSIVE],
+    speed_mult: 1.15, // +15%
+    
+    action: function(_entity, _event) { }
+};
+
+// Knockback resistance
+global.Modifiers.KnockbackResist = {
+    name: "Heavy Frame",
+    triggers: [MOD_TRIGGER.PASSIVE],
+    kb_mult: 0.8, // -20% knockback taken
+    
+    action: function(_entity, _event) { }
+};
+
+// Glass Cannon
+global.Modifiers.GlassCannon = {
+    name: "Glass Cannon",
+    triggers: [MOD_TRIGGER.PASSIVE],
+    attack_mult: 1.4, // +40% damage
+    hp_mult: 0.6,     // -40% HP
+    
+    action: function(_entity, _event) { }
+};
+
+// Berserker (bonus damage at low HP)
+global.Modifiers.Berserker = {
+    name: "Berserker",
+    triggers: [MOD_TRIGGER.ON_ATTACK],
+    min_bonus: 1.0,
+    max_bonus: 1.5,
+    
+    action: function(_entity, _event) {
+        var mod_template = global.Modifiers[$ _event.mod_instance.template_key];
+        var hp_ratio = _entity.hp / _entity.hp_max;
+        var dmg_mult = lerp(mod_template.max_bonus, mod_template.min_bonus, hp_ratio);
+        _event.damage *= dmg_mult;
+    }
+};
+
+// Adrenaline Rush (move faster below half HP)
+global.Modifiers.AdrenalineRush = {
+    name: "Adrenaline Rush",
+    triggers: [MOD_TRIGGER.PASSIVE],
+    hp_threshold: 0.5,
+    speed_mult_low_hp: 1.3,
+    
+    action: function(_entity, _event) {
+        if (_entity.hp / _entity.hp_max < 0.5) {
+            _entity.stats.speed *= 1.3;
+        }
+    }
+};
+
+// Lucky Strike (small crit chance)
+global.Modifiers.LuckyStrike = {
+    name: "Lucky Strike",
+    triggers: [MOD_TRIGGER.ON_ATTACK],
+    crit_chance: 0.1,
+    crit_mult: 2.0,
+    
+    action: function(_entity, _event) {
+        var mod_template = global.Modifiers[$ _event.mod_instance.template_key];
+        if (random(1) < mod_template.crit_chance) {
+            _event.damage *= mod_template.crit_mult;
+            // Optionally spawn crit popup
+        }
+    }
+};
+
+// Second Wind (heal a bit after room clear)
+global.Modifiers.SecondWind = {
+    name: "Second Wind",
+    triggers: [MOD_TRIGGER.ON_ROOM_CLEAR],
+    heal_ratio: 0.1,
+    
+    action: function(_entity, _event) {
+        var mod_template = global.Modifiers[$ _event.mod_instance.template_key];
+        var heal_amount = _entity.hp_max * mod_template.heal_ratio;
+        _entity.hp = clamp(_entity.hp + heal_amount, 0, _entity.hp_max);
+    }
+};
+
+// Critical Focus (stacking crit chance on misses)
+global.Modifiers.CriticalFocus = {
+    name: "Critical Focus",
+    triggers: [MOD_TRIGGER.ON_ATTACK, MOD_TRIGGER.ON_HIT],
+    base_chance: 0.05,
+    stack_gain: 0.02,
+    max_bonus: 0.25,
+    
+    action: function(_entity, _event) {
+        var mod_instance = _event.mod_instance;
+        var mod_template = global.Modifiers[$ mod_instance.template_key];
+        
+        if (!variable_struct_exists(mod_instance, "bonus_chance")) {
+            mod_instance.bonus_chance = 0;
+        }
+        
+        // On attack, apply crit
+        if (_event.trigger == MOD_TRIGGER.ON_ATTACK) {
+            var total_chance = mod_template.base_chance + mod_instance.bonus_chance;
+            if (random(1) < total_chance) {
+                _event.damage *= 2;
+                mod_instance.bonus_chance = 0;
+            }
+        }
+        
+        // On hit miss, stack chance
+        if (_event.trigger == MOD_TRIGGER.ON_HIT && !_event.hit_success) {
+            mod_instance.bonus_chance = min(mod_instance.bonus_chance + mod_template.stack_gain, mod_template.max_bonus);
         }
     }
 };

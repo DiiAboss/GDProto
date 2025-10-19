@@ -1,13 +1,5 @@
 /// @desc Player Step Event - Component-based
 
-//if (global.gameSpeed <= 0) {
-    //if (keyboard_check_pressed(vk_escape)) {
-        //global.gameSpeed = 1.0;
-        //global.pause_game = false;
-    //}
-    //exit;
-//}
-
 // ==========================================
 // SYSTEM UPDATES
 // ==========================================
@@ -181,6 +173,7 @@ if (input.FirePress) {
 
 if (input.AltPress) {
     weaponCurrent.secondary_attack(self, mouseDirection, mouseDistance, weaponCurrent.projectile_struct);
+	show_debug_message("AltrFire Pressed");
 }
 
 if (variable_struct_exists(weaponCurrent, "step")) {
@@ -467,6 +460,14 @@ function HandleWeaponSwitching() {
             SwitchToWeaponSlot(prev_slot);
         }
     }
+	
+	if (keyboard_check_pressed(ord("7"))) {
+    if (instance_exists(melee_weapon)) instance_destroy(melee_weapon);
+    new_weapon = global.WeaponStruct.ChainWhip;
+    melee_weapon = instance_create_depth(x, y, depth-1, obj_chain_whip);
+    melee_weapon.owner = id;
+    weapon_changed = true;
+}
 }
 
 
