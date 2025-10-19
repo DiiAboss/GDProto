@@ -4,7 +4,7 @@
 draw_self();
 
 // Draw glow if active
-if (totem_data.active) {
+if (active) {
     gpu_set_blendmode(bm_add);
     draw_sprite_ext(
         sprite_index,
@@ -21,7 +21,7 @@ if (totem_data.active) {
 }
 
 // Draw interaction prompt
-if (show_prompt && !totem_data.active) {
+if (show_prompt && !active) {
     var cost = totem_data.GetScaledCost(obj_player.player_level);
     var can_afford = obj_player.gold >= cost;
     

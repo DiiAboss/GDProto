@@ -115,59 +115,6 @@ if (variable_global_exists("chest_popup") && global.chest_popup != undefined) {
         global.chest_popup = undefined;
     }
 }
-
-// ==========================================
-// TOTEM SYSTEMS
-// ==========================================
-// Chaos Totem - Spawn rolling balls
-//if (chaos_totem_active) {
-    //chaos_spawn_timer = timer_tick(chaos_spawn_timer);
-    //
-    //if (chaos_spawn_timer >= chaos_spawn_interval) {
-        //
-        //
-        //if (instance_exists(obj_player)) {
-            //var spawn_x = obj_player.x + irandom_range(-200, 200);
-            //var spawn_y = obj_player.y + irandom_range(-200, 200);
-            //
-            //if (!place_meeting(spawn_x, spawn_y, obj_wall)) {
-                //var ball = instance_create_depth(spawn_x, spawn_y, 0, obj_rolling_ball);
-                //ball.myDir = irandom(359);
-                //show_debug_message("Chaos Totem: Spawned rolling ball");
-            //}
-			//chaos_spawn_timer = 0;
-        //}
-    //}
-//}
-
-// Champion Totem - Spawn mini-boss
-if (champion_totem_active) {
-    champion_spawn_timer = timer_tick(champion_spawn_timer);
-    
-    if (champion_spawn_timer <= 0) {
-        champion_spawn_timer = champion_spawn_interval;
-        
-        if (instance_exists(obj_player)) {
-            var spawn_x = obj_player.x + irandom_range(-300, 300);
-            var spawn_y = obj_player.y + irandom_range(-300, 300);
-            
-            if (!place_meeting(spawn_x, spawn_y, obj_wall)) {
-                var champion = instance_create_depth(spawn_x, spawn_y, 0, obj_enemy);
-                
-                // Buff champion stats
-                champion.damage_sys.max_hp *= 3;
-                champion.damage_sys.hp *= 3;
-                champion.damage *= 1.5;
-                champion.moveSpeed *= 0.8;
-                champion.image_xscale = 1.5;
-                champion.image_yscale = 1.5;
-                champion.image_blend = c_red;
-                
-                show_debug_message("Champion Totem: Spawned mini-boss!");
-            }
-        }
-    }
-}
 	
 }
 

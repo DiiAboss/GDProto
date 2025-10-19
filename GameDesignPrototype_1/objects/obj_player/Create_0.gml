@@ -62,8 +62,8 @@ weapons = array_create(weapon_slots, noone);
 current_weapon_index = 0;
 
 // Give starting weapon
-weapons[1] = global.WeaponStruct.Sword; // Or whatever starting weapon
-weapons[0] = global.WeaponStruct.Bow; // Or whatever starting weapon
+//weapons[1] = global.WeaponStruct.Dagger; // Or whatever starting weapon
+weapons[0] = global.WeaponStruct.Dagger; // Or whatever starting weapon
 weaponCurrent = weapons[0];
 melee_weapon = noone;
 previous_weapon_instance = weaponCurrent;
@@ -292,3 +292,5 @@ RespawnFromPit = function() {
     
     show_debug_message("PLAYER RESPAWNED at " + string(x) + ", " + string(y));
 }
+
+SpawnWeaponPickup(x, y - 64, global.WeaponStruct.Dagger);

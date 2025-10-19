@@ -13,3 +13,9 @@ pulse_scale = 1.0;
 
 // Set data based on type
 totem_data = GetTotemByType(totem_type);
+
+particle_timer = 0;
+
+chaos_spawn_timer = 0;
+
+active = false;

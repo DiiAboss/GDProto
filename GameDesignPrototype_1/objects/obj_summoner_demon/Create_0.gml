@@ -19,10 +19,10 @@ nextY = y;
 nextType = 0;
 
 // Spawn boundaries
-x_min = x-12;
+x_min = x - 12;
 x_max = x + 12;
 y_min = y;
-y_max = y + 32;
+y_max = y + 16;
 
 // Resistance system
 melee_resistance = 1.0;      // Normal damage from melee

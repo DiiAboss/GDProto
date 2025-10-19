@@ -1,20 +1,17 @@
 {
   "$GMObject":"",
-  "%Name":"obj_can_carry",
+  "%Name":"obj_weapon_pickup",
   "eventList":[
     {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":0,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
     {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":3,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
     {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":8,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
-    {"$GMEvent":"v1","%Name":"","collisionObjectId":{"name":"obj_melee_parent","path":"objects/obj_melee_parent/obj_melee_parent.yy",},"eventNum":0,"eventType":4,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
-    {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":4,"eventType":7,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
-    {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":2,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
   ],
   "managed":true,
-  "name":"obj_can_carry",
+  "name":"obj_weapon_pickup",
   "overriddenProperties":[],
   "parent":{
-    "name":"PICKUP_OBJECTS",
-    "path":"folders/Objects/In-Game/PICKUP_OBJECTS.yy",
+    "name":"ENIRONMENT_OBJECTS",
+    "path":"folders/Objects/In-Game/ENIRONMENT_OBJECTS.yy",
   },
   "parentObjectId":null,
   "persistent":false,
@@ -34,10 +31,7 @@
   "resourceType":"GMObject",
   "resourceVersion":"2.0",
   "solid":false,
-  "spriteId":{
-    "name":"spr_orb",
-    "path":"sprites/spr_orb/spr_orb.yy",
-  },
+  "spriteId":null,
   "spriteMaskId":null,
   "visible":true,
 }

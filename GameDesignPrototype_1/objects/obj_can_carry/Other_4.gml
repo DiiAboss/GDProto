@@ -68,7 +68,7 @@ shadow_scale = 1.0;
 targetX = x;
 targetY = y;
 lobStep = 0; // 0.0 to 1.0 progress
-
+loaded = false;
 
 // Knockback component (like enemies have)
 knockback = new KnockbackComponent(0.85, 0.1);
@@ -97,6 +97,4 @@ fall_start_depth = 0;
 tile_layer = "Tiles_2";
 tile_layer_id = layer_get_id(tile_layer);
 tilemap_id = layer_tilemap_get_id(tile_layer_id);
-
-loaded = false;
-alarm[0] = 1;
+damage_cooldown = 0;

@@ -1,3 +1,5 @@
+if (!loaded) exit;
+
 /// @description Handle carrying and projectile physics
 // At the VERY TOP of step event:
 if (is_falling) {

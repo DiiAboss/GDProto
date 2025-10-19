@@ -35,7 +35,9 @@ if (abs(moveX) > speed_threshold || abs(moveY) > speed_threshold) {
         }
     }
 }
-
-// Timers
+if (loaded)
+{
+	// Timers
 if (damage_cooldown > 0) damage_cooldown = timer_tick(damage_cooldown);
 if (hit_flash > 0) hit_flash = timer_tick(hit_flash);
+}
