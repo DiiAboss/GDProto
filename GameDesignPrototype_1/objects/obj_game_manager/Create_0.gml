@@ -18,7 +18,7 @@ enum GAME_ROOM {
 // ==========================================
 
 // Make persistent
-persistent = true;
+//persistent = true;
 depth = -999;
 
 // Current room tracking
@@ -29,7 +29,7 @@ current_room_type = GAME_ROOM.MENU;
 // ==========================================
 pause_manager = new PauseManager();
 score_manager = new ScoreManager();
-time_manager = new TimeManager();
+time_manager  = new TimeManager();
 ui = new UIManager();
 depth = -9999; // Draw on top of everything
 // Setup time milestones
@@ -265,7 +265,7 @@ function OnRoomStart(_room_type) {
 /// @function HandleMenuStart()
 function HandleMenuStart() {
     // Reset game speed
-    game_speed = 1.0;
+    game_speed = 0.0;
     global.gameSpeed = game_speed;
     
     // Ensure UI manager exists

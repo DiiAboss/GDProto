@@ -11,12 +11,12 @@ if (slowdown_active) {
     var progress = slowdown_timer / slowdown_duration;
     var target_speed = lerp(1.0, slowdown_target, progress);
     
-    // Override game speed during slowdown
-    // (This happens BEFORE pause manager pauses fully)
-    if (!pause_manager.IsPaused()) {
-        global.gameSpeed = target_speed;
-    }
-    
+    //// Override game speed during slowdown
+    //// (This happens BEFORE pause manager pauses fully)
+    //if (!pause_manager.IsPaused()) {
+        //global.gameSpeed = target_speed;
+    //}
+    //
     // When slowdown complete, pause fully
     if (slowdown_timer >= slowdown_duration) {
         slowdown_active = false;
@@ -462,3 +462,5 @@ function GetModifierDescription(_mod_key) {
     
     return desc;
 }
+
+

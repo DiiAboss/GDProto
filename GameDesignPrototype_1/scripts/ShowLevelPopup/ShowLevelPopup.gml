@@ -23,11 +23,11 @@ function ShowLevelUpPopup() {
         }
         
         // Resume game
-        //global.gameSpeed = 1;
+        global.gameSpeed = 1;
     }
     
     // Pause game
-    //global.gameSpeed = 0;
+    global.gameSpeed = 0;
     
     // Create popup
     global.selection_popup = new SelectionPopup(

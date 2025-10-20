@@ -1,7 +1,5 @@
 /// @description Float and check for pickup
-
 if (!instance_exists(obj_player)) exit;
-
 var player = obj_player;
 var dist = point_distance(x, y, player.x, player.y);
 
@@ -17,14 +15,29 @@ glow_pulse = 0.5 + sin(glow_timer) * 0.3;
 if (dist <= pickup_range && can_pickup) {
     show_prompt = true;
     
-    // Press E to pickup - swaps with current weapon
+    // Press E to pickup
     if (keyboard_check_pressed(ord("E"))) {
         if (weapon_data != undefined) {
-            // Get player's current weapon slot
             var slot = player.current_weapon_index;
+            var old_weapon = player.weapons[slot];
             
-            // Put new weapon in the slot
-            player.weapons[slot] = weapon_data;
+            // Check if slot 2 is empty
+            var other_slot = (slot == 0) ? 1 : 0;
+            
+            if (player.weapons[other_slot] == undefined) {
+                // Slot 2 is empty - move current weapon there
+                player.weapons[other_slot] = old_weapon;
+                player.weapons[slot] = weapon_data;
+            } else {
+                // Slot 2 is full - drop current weapon as pickup
+                if (old_weapon != undefined) {
+                    SpawnWeaponPickup(player.x, player.y - 32, old_weapon);
+                }
+                // Equip new weapon in current slot
+                player.weapons[slot] = weapon_data;
+            }
+            
+            // Update current weapon reference
             player.weaponCurrent = weapon_data;
             
             // Handle melee weapon switching
@@ -69,5 +82,4 @@ if (dist <= pickup_range && can_pickup) {
 } else {
     show_prompt = false;
 }
-
 depth = -y;

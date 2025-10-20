@@ -42,3 +42,21 @@ if (keyboard_check(vk_f1)) {
 
 /// @description
 ui.draw();
+
+// DEBUG: Check pause state
+if (keyboard_check(vk_f10)) {
+    draw_set_alpha(0.8);
+    draw_set_color(c_black);
+    draw_rectangle(10, 10, 400, 150, false);
+    draw_set_alpha(1);
+    draw_set_color(c_lime);
+    draw_set_halign(fa_left);
+    draw_set_valign(fa_top);
+    
+    draw_text(20, 20, "=== PAUSE DEBUG ===");
+    draw_text(20, 40, "IsPaused: " + string(pause_manager.IsPaused()));
+    draw_text(20, 60, "global.gameSpeed: " + string(global.gameSpeed));
+    draw_text(20, 80, "Pause Stack Length: " + string(array_length(pause_manager.pause_stack)));
+    draw_text(20, 100, "Current Speed: " + string(pause_manager.current_speed));
+    draw_text(20, 120, "Target Speed: " + string(pause_manager.target_speed));
+}

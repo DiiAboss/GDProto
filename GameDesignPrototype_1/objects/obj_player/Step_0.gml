@@ -1,11 +1,12 @@
 /// @desc Player Step Event - Component-based
-
+if (is_dead) exit;
 // ==========================================
 // SYSTEM UPDATES
 // ==========================================
 camera.update();
 depth = -y;
 
+if (global.gameSpeed == 0) exit;
 // ==========================================
 // COMPONENT UPDATES
 // ==========================================
@@ -484,4 +485,19 @@ if (keyboard_check_pressed(vk_f6)) {
         var current = obj_game_manager.score_manager.GetScore();
         show_debug_message("Added 100 score. Total now: " + string(current));
     }
+}
+
+// ==========================================
+// DEATH CHECK
+// ==========================================
+if (hp <= 0 && instance_exists(obj_main_controller) && !obj_main_controller.death_sequence_active) {
+    // Trigger death sequence through main controller
+    obj_main_controller.TriggerDeathSequence();
+    
+    // Stop player movement
+    hsp = 0;
+    vsp = 0;
+    
+    // Optional: Change sprite to death sprite if you have one
+    // sprite_index = spr_player_death;
 }

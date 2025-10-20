@@ -63,6 +63,7 @@ current_weapon_index = 0;
 
 // Give starting weapon
 //weapons[1] = global.WeaponStruct.Dagger; // Or whatever starting weapon
+weapons[1] = undefined;
 weapons[0] = global.WeaponStruct.Dagger; // Or whatever starting weapon
 weaponCurrent = weapons[0];
 melee_weapon = noone;
@@ -294,3 +295,6 @@ RespawnFromPit = function() {
 }
 
 SpawnWeaponPickup(x, y - 64, global.WeaponStruct.Dagger);
+
+
+is_dead = false;

@@ -10,8 +10,8 @@
   "name":"obj_weapon_pickup",
   "overriddenProperties":[],
   "parent":{
-    "name":"ENIRONMENT_OBJECTS",
-    "path":"folders/Objects/In-Game/ENIRONMENT_OBJECTS.yy",
+    "name":"PICKUP_OBJECTS",
+    "path":"folders/Objects/In-Game/PICKUP_OBJECTS.yy",
   },
   "parentObjectId":null,
   "persistent":false,
