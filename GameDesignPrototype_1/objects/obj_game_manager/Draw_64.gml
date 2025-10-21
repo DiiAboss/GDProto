@@ -30,8 +30,6 @@ if (keyboard_check(vk_f1)) {
     draw_text(20, debug_y, "Time: " + time_manager.GetFormattedTime(true));
     debug_y += 15;
     
-    draw_text(20, debug_y, "Room: " + string(current_room_type));
-    debug_y += 15;
     
     var stats = score_manager.GetStyleStats();
     draw_text(20, debug_y, "Perfect Kills: " + string(stats.perfect_timing_kills));

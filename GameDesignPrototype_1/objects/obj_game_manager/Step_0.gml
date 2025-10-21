@@ -11,28 +11,28 @@ time_manager.Update(game_speed_delta());
 
 if (instance_exists(obj_exp))
 {
-with (obj_exp)
-{
-	if (settled)
-	{
-		var _dist_to_player = point_distance(x, y, obj_player.x, obj_player.y);
-		if (_dist_to_player <= 128)
-		{
-			direction = point_direction(x, y, obj_player.x, obj_player.y);
-			speed += 0.1 * game_speed_delta();
-			
-			if (_dist_to_player <= 4)
-			{
-				obj_player.experience_points += obj_exp.amount;
-				instance_destroy();
-			}
-		}
-		else
-		{
-			speed = 0;
-		}
-	}
-}
+    with (obj_exp)
+    {
+    	if (settled)
+    	{
+    		var _dist_to_player = point_distance(x, y, obj_player.x, obj_player.y);
+    		if (_dist_to_player <= 128)
+    		{
+    			direction = point_direction(x, y, obj_player.x, obj_player.y);
+    			speed += 0.1 * game_speed_delta();
+    			
+    			if (_dist_to_player <= 4)
+    			{
+    				obj_player.experience_points += obj_exp.amount;
+    				instance_destroy();
+    			}
+    		}
+    		else
+    		{
+    			speed = 0;
+    		}
+    	}
+    }
 }
 
 if (instance_exists(obj_coin))
