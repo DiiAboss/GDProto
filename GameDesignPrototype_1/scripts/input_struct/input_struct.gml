@@ -50,7 +50,6 @@ function Input() constructor
 		}
 	}
 	
-	
 	static Update = function(_self)
 	{
 		if (InputType == INPUT.KEYBOARD)
@@ -60,10 +59,10 @@ function Input() constructor
 			Right	= keyboard_check(InputMap.Right);
 			Down	= keyboard_check(InputMap.Down);
 			
-			UpPress =    keyboard_check_pressed(vk_up);
-			LeftPress =  keyboard_check_pressed(vk_left);
-			RightPress = keyboard_check_pressed(vk_right);
-			DownPress =  keyboard_check_pressed(vk_down);
+			UpPress =    keyboard_check_pressed(vk_up) || keyboard_check_pressed(InputMap.Up);
+			LeftPress =  keyboard_check_pressed(vk_left) || keyboard_check_pressed(InputMap.Left);
+			RightPress = keyboard_check_pressed(vk_right) || keyboard_check_pressed(InputMap.Right);
+			DownPress =  keyboard_check_pressed(vk_down) || keyboard_check_pressed(InputMap.Down);
 			
 			Action	= keyboard_check_pressed(InputMap.Action);
 			Back    = keyboard_check_pressed(InputMap.Back);

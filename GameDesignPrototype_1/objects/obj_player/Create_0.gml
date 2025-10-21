@@ -47,7 +47,7 @@ mouseDirection = 0;
 mouseDistance = 0;
 controllerType = CONTROL_TYPE.KBM;
 
-input = new Input();
+input = noone;//new Input();
 movement = new PlayerMovement(self, stats.speed);
 spriteHandler = new SpriteHandler(spr_vh_walk_west, spr_vh_walk_east, spr_vh_walk_north, spr_vh_walk_south);
 currentSprite = spr_vh_walk_west;
@@ -57,6 +57,7 @@ image_speed = 1;
 // ==========================================
 // WEAPON SYSTEM
 // ==========================================
+melee_weapon = noone;
 weapon_slots = class_stats.weapon_slots;
 weapons = array_create(weapon_slots, noone);
 current_weapon_index = 0;
@@ -66,7 +67,7 @@ current_weapon_index = 0;
 weapons[1] = undefined;
 weapons[0] = global.WeaponStruct.Dagger; // Or whatever starting weapon
 weaponCurrent = weapons[0];
-melee_weapon = noone;
+
 previous_weapon_instance = weaponCurrent;
 
 

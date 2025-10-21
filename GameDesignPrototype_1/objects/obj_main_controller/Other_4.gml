@@ -20,6 +20,7 @@ death_player_fade = 0;
 
 switch(room) {
     case rm_main_menu:
+        input_caller = self;
         // Use the new audio system for menu music
         if (_audio_system.GetCurrentMusic() != audio_get_name(Sound1)) {
             _audio_system.CrossfadeMusic(Sound1, true, 60); // 1 second crossfade
@@ -36,6 +37,10 @@ switch(room) {
         break;
         
     case rm_demo_room:
+        
+        var game_manager = instance_create_layer(x, y, "Instances", obj_game_manager);
+        alarm[0] = 1;
+    
         // Start gameplay music with fade in
         _audio_system.PlayMusic(Sound2, true, 120); // 2 second fade in
         

@@ -1,10 +1,8 @@
 /// @desc Main Controller - Should be created in the first room
-// This is PERSISTENT across all rooms
+persistent = true;
 
-// Should be created in the first room
-
-// Make this object persistent
-persistent = true  ;
+player_input = new Input();
+controller_type = INPUT.KEYBOARD;
 
 // ==========================================
 // MENU STATES
@@ -16,6 +14,7 @@ enum MENU_STATE {
     PAUSE_MENU,
     GAME_OVER
 }
+
 
 menu_state = MENU_STATE.MAIN;
 selected_option = 0;
@@ -445,10 +444,10 @@ function HandleMainMenu(_mx, _my) {
     var prev_selection = selected_option;
     
     // Keyboard navigation
-    if (keyboard_check_pressed(vk_up)) {
+    if (player_input.UpPress) {
         selected_option = (selected_option - 1 + array_length(menu_options)) mod array_length(menu_options);
     }
-    if (keyboard_check_pressed(vk_down)) {
+    if (player_input.DownPress) {
         selected_option = (selected_option + 1) mod array_length(menu_options);
     }
     
@@ -477,7 +476,7 @@ function HandleMainMenu(_mx, _my) {
     }
     
     // Keyboard select
-    if (keyboard_check_pressed(vk_enter) || keyboard_check_pressed(vk_space)) {
+    if (player_input.Action) {
         // NEW: Play select sound
         _audio_system.PlayUISound(snd_menu_select);
         SelectMainMenuOption();
@@ -509,10 +508,10 @@ function HandleCharacterSelect(_mx, _my) {
     var cy = display_get_gui_height() / 2 + 50;
     
     // Keyboard
-    if (keyboard_check_pressed(vk_left)) {
+    if (player_input.LeftPress) {
         selected_class = (selected_class - 1 + array_length(class_options)) mod array_length(class_options);
     }
-    if (keyboard_check_pressed(vk_right)) {
+    if (player_input.RightPress) {
         selected_class = (selected_class + 1) mod array_length(class_options);
     }
     
@@ -531,11 +530,11 @@ function HandleCharacterSelect(_mx, _my) {
         }
     }
     
-    if (keyboard_check_pressed(vk_enter) || keyboard_check_pressed(vk_space)) {
+    if (player_input.Action) {
         StartGame();
     }
     
-    if (keyboard_check_pressed(vk_escape)) {
+    if (player_input.Escape) {
         menu_state = MENU_STATE.MAIN;
         selected_option = 0;
     }
@@ -552,19 +551,19 @@ function HandleSettings(_mx, _my) {
     var settings_options = 5; // Master, Music, SFX, Voice, Back
     
     // Keyboard navigation
-    if (keyboard_check_pressed(vk_up)) {
+    if (player_input.UpPress) {
         selected_option = (selected_option - 1 + settings_options) mod settings_options;
         _audio_system.PlayUISound(snd_menu_hover);
     }
-    if (keyboard_check_pressed(vk_down)) {
+    if (player_input.DownPress) {
         selected_option = (selected_option + 1) mod settings_options;
         _audio_system.PlayUISound(snd_menu_hover);
     }
     
     // Adjust volumes with left/right
     var adjustment = 0;
-    if (keyboard_check_pressed(vk_left) || keyboard_check_pressed(ord("A"))) adjustment = -0.1;
-    if (keyboard_check_pressed(vk_right) || keyboard_check_pressed(ord("D"))) adjustment = 0.1;
+    if (player_input.LeftPress) adjustment = -0.1;
+    if (player_input.RightPress) adjustment = 0.1;
     
     if (adjustment != 0) {
         _audio_system.PlayUISound(snd_menu_select);
@@ -588,7 +587,7 @@ function HandleSettings(_mx, _my) {
     }
     
     // Back button
-    if (selected_option == 4 && (keyboard_check_pressed(vk_enter) || keyboard_check_pressed(vk_space))) {
+    if (selected_option == 4 && (player_input.Action)) {
         _audio_system.PlayUISound(snd_menu_select);
         menu_state = MENU_STATE.MAIN;
         selected_option = 1; // Return to Settings option
@@ -615,7 +614,7 @@ function HandlePauseMenu(_mx, _my) {
     
     // Return from sub-screens
     if (show_controls || show_stats) {
-        if (keyboard_check_pressed(vk_escape) || mouse_check_button_pressed(mb_right)) {
+        if (player_input.Escape || mouse_check_button_pressed(mb_right)) {
             show_controls = false;
             show_stats = false;
         }
@@ -623,10 +622,10 @@ function HandlePauseMenu(_mx, _my) {
     }
     
     // Keyboard
-    if (keyboard_check_pressed(vk_up)) {
+    if (player_input.UpPress) {
         pause_selected = (pause_selected - 1 + array_length(pause_options)) mod array_length(pause_options);
     }
-    if (keyboard_check_pressed(vk_down)) {
+    if (player_input.DownPress) {
         pause_selected = (pause_selected + 1) mod array_length(pause_options);
     }
     
@@ -830,3 +829,5 @@ function SaveAudioSettings() {
 
 // Call LoadAudioSettings() at the end of Create Event
 LoadAudioSettings();
+
+input_caller = self;

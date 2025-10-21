@@ -110,7 +110,7 @@ if (place_meeting(x, y, obj_coin)) {
 // ==========================================
 // INPUT UPDATE
 // ==========================================
-input.Update(self);
+//input.Update(self);
 mouseDirection = input.Direction;
 mouseDistance = distance_to_point(mouse_x, mouse_y);
 

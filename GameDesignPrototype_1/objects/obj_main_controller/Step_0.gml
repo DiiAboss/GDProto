@@ -1,4 +1,6 @@
+
 /// @desc Main Controller - Step Event
+player_input.Update(input_caller);
 
 // Update audio system
 _audio_system.Update();
