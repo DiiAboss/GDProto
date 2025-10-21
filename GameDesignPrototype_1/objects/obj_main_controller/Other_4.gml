@@ -17,31 +17,32 @@ death_fade_alpha = 0;
 death_stats_alpha = 0;
 death_player_fade = 0;
 
-// Handle room-specific setup
+
 switch(room) {
     case rm_main_menu:
-        // Ensure menu music is playing
-        if (!audio_is_playing(Sound1) || current_music != Sound1) {
-            PlayMusic(Sound1, true);
+        // Use the new audio system for menu music
+        if (_audio_system.GetCurrentMusic() != audio_get_name(Sound1)) {
+            _audio_system.CrossfadeMusic(Sound1, true, 60); // 1 second crossfade
         }
         
         // Reset menu state
         menu_state = MENU_STATE.MAIN;
         selected_option = 0;
         
-        // CRITICAL: Unpause game if coming from gameplay
+        // Unpause if needed
         if (instance_exists(obj_game_manager)) {
             obj_game_manager.pause_manager.ResumeAll();
         }
-        
+        break;
         
     case rm_demo_room:
-        // Start gameplay music
-        if (!audio_is_playing(Sound2)) {
-            PlayMusic(Sound2, true);
-        }
+        // Start gameplay music with fade in
+        _audio_system.PlayMusic(Sound2, true, 120); // 2 second fade in
         
-        // Reset menu state to neutral
+        // Play ambient sounds for atmosphere
+        // audio_system.PlayAmbient(snd_wind_ambient, 0.3);
+        // audio_system.PlayAmbient(snd_cave_drip, 0.2);
+        
         menu_state = MENU_STATE.MAIN;
-	break;	
+        break;
 }

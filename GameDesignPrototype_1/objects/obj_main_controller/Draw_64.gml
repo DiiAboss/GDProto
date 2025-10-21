@@ -63,7 +63,7 @@ if (room == rm_main_menu) {
     }
 	
 	draw_set_font(fnt_default);
-	DrawHighscores(gui_w, gui_h);
+	DrawHighscores(highscore_table, gui_w, gui_h);
 }
 
 // Reset

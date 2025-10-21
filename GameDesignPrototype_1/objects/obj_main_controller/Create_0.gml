@@ -1,5 +1,7 @@
-/// @desc Main Controller - Create Event
+/// @desc Main Controller - Should be created in the first room
 // This is PERSISTENT across all rooms
+
+// Should be created in the first room
 
 // Make this object persistent
 persistent = true  ;
@@ -29,49 +31,47 @@ show_pause_menu = false;
 
 // Character selection
 selected_class = 0;
+
 class_options = [
-    {
-        type: CharacterClass.WARRIOR,
-        name: "WARRIOR",
-        desc: "High damage\nRage builds",
-        color: c_red
-    },
-    {
-        type: CharacterClass.HOLY_MAGE, 
-        name: "HOLY MAGE",
-        desc: "Projectiles\nArea control",
-        color: c_aqua
-    },
-    {
-        type: CharacterClass.VAMPIRE,
-        name: "VAMPIRE",
-        desc: "Lifesteal\nHigh mobility",
-        color: c_purple
-    }
+    global.Player_Class.Warrior,
+	global.Player_Class.Holy_Mage,
+	global.Player_Class.Vampire
 ];
 
 // ==========================================
 // SETTINGS
 // ==========================================
-global.sfx_volume = 0.8;
-global.music_volume = 0.5;
 global.screen_shake = true;
+
+
+// Weapon synergy
+global.WeaponSynergies = {};
+InitWeaponSynergySystem();
+
+// Popup references
+global.selection_popup	  = undefined;
+global.chest_popup		  = undefined;
+global.weapon_swap_prompt = undefined;
 
 // ==========================================
 // VISUAL
 // ==========================================
-logo_scale = 0;
+logo_scale  = 0;
 logo_bounce = 0;
-menu_alpha = 0;
+menu_alpha  = 0;
 
 // ==========================================
 // AUDIO SYSTEM
 // ==========================================
-current_music = noone;
-music_volume = 0.5;
-target_music_volume = 0.5;
-is_fading_music = false;
-fade_callback = noone;
+// Create the audio system
+_audio_system = new AudioSystem();
+
+// Configure audio settings
+_audio_system.SetMasterVolume(1.0);
+_audio_system.SetMusicVolume(0.8);
+_audio_system.SetSFXVolume(1.0);
+_audio_system.SetVoiceVolume(1.0);
+_audio_system.SetUIVolume(0.9);
 
 // ==========================================
 // GAME OVER SEQUENCE
@@ -83,106 +83,13 @@ death_fade_alpha = 0;
 death_stats_alpha = 0;
 death_player_fade = 0;
 final_score = 0;
-final_time = "";
+final_time  = "";
 
 // ==========================================
 // HIGHSCORES (for future)
 // ==========================================
 highscore_table = [];
 
-// ==========================================
-// START MENU MUSIC
-// ==========================================
-PlayMusic(Sound1, true);
-
-/// @function AddHighscore(_score, _name)
-function AddHighscore(_score, _name) {
-    // Create new score entry
-    var new_entry = {score: _score, name: _name};
-    
-    // Add to table
-    array_push(highscore_table, new_entry);
-    
-    // Sort by score (highest first)
-    array_sort(highscore_table, function(a, b) {
-        return b.score - a.score;
-    });
-    
-    // Keep only top 10
-    if (array_length(highscore_table) > 10) {
-        array_resize(highscore_table, 10);
-    }
-    
-    // Find the index of the score we just added
-    global.last_highscore_index = -1;
-    for (var i = 0; i < array_length(highscore_table); i++) {
-        if (highscore_table[i].score == _score && highscore_table[i].name == _name) {
-            global.last_highscore_index = i;
-            break;
-        }
-    }
-}
-
-/// @function DrawHighscores(_w, _h)
-function DrawHighscores(_w, _h) {
-    // Position on the right side of the screen
-    var table_x = _w - 250;
-    var table_y = 100;
-    var row_height = 32;
-    
-    // Draw background panel
-    draw_set_alpha(0.8);
-    draw_set_color(c_black);
-    draw_rectangle(table_x - 20, table_y - 40, table_x + 220, table_y + (row_height * 10) + 20, false);
-    
-    // Draw title
-    draw_set_alpha(1);
-    draw_set_color(c_yellow);
-    draw_set_halign(fa_center);
-    draw_set_valign(fa_top);
-    draw_text(table_x + 100, table_y - 30, "HIGH SCORES");
-    
-    // Draw column headers
-    draw_set_color(c_white);
-    draw_set_halign(fa_left);
-    draw_text(table_x, table_y - 10, "RANK");
-    draw_text(table_x + 60, table_y - 10, "SCORE");
-    draw_text(table_x + 140, table_y - 10, "NAME");
-    
-    // Get highscores (top 10)
-    var num_scores = min(10, array_length(highscore_table));
-    
-    for (var i = 0; i < num_scores; i++) {
-        var yy = table_y + 10 + (i * row_height);
-        
-        // Check if this is the last score added
-        var is_latest = (i == global.last_highscore_index);
-        
-        // Draw arrow for latest score
-        if (is_latest) {
-            draw_set_color(c_lime);
-            draw_text(table_x - 15, yy, ">");
-        }
-        
-        // Set color based on rank
-        if (i == 0) draw_set_color(c_yellow);      // 1st place
-        else if (i == 1) draw_set_color(c_silver); // 2nd place
-        else if (i == 2) draw_set_color(c_orange); // 3rd place
-        else if (is_latest) draw_set_color(c_lime); // Latest score
-        else draw_set_color(c_white);
-        
-        // Draw rank, score, and name
-        draw_text(table_x + 10, yy, string(i + 1));
-        draw_text(table_x + 60, yy, string(highscore_table[i].score));
-        draw_text(table_x + 140, yy, highscore_table[i].name);
-    }
-    
-    // Reset drawing settings
-    draw_set_color(c_white);
-    draw_set_alpha(1);
-    draw_set_halign(fa_left);
-    draw_set_valign(fa_top);
-}
 
 /// @desc Main Controller - ALL Draw Functions
 // Add ALL of these to the END of your Create event
@@ -231,6 +138,10 @@ function DrawMainMenu(_w, _h, _cx, _cy) {
     draw_set_alpha(1);
 }
 
+
+
+
+
 /// @function DrawCharacterSelect(_w, _h, _cx, _cy)
 function DrawCharacterSelect(_w, _h, _cx, _cy) {
     // Background
@@ -273,30 +184,44 @@ function DrawCharacterSelect(_w, _h, _cx, _cy) {
     draw_set_alpha(1);
 }
 
-/// @function DrawSettings(_w, _h, _cx, _cy)
+draw_set_font(fnt_default);
+
 function DrawSettings(_w, _h, _cx, _cy) {
-    draw_set_color(c_black);
-    draw_set_alpha(0.8);
-    draw_rectangle(0, 0, _w, _h, false);
-    draw_set_alpha(1);
-    
     draw_set_halign(fa_center);
     draw_set_valign(fa_middle);
     draw_set_font(fnt_large);
-    draw_text(_cx, _cy - 100, "SETTINGS");
+    draw_text(_cx, _cy - 150, "SETTINGS");
+    // Master Volume
+    var master_y = _cy - 60;
+    draw_text(_cx - 200, master_y, "Master Volume:");
+    DrawVolumeBar(_cx, master_y, _audio_system.settings.master_volume);
     
-    draw_set_font(fnt_default);
-    draw_text(_cx, _cy, "Coming Soon!");
-    draw_text(_cx, _cy + 100, "Press ESC to return");
+    // Music Volume
+    var music_y = _cy - 20;
+    draw_text(_cx - 200, music_y, "Music Volume:");
+    DrawVolumeBar(_cx, music_y, _audio_system.music_master_volume);
+    
+    // SFX Volume
+    var sfx_y = _cy + 20;
+    draw_text(_cx - 200, sfx_y, "SFX Volume:");
+    DrawVolumeBar(_cx, sfx_y, _audio_system.sfx_master_volume);
+    
+    // Voice Volume
+    var voice_y = _cy + 60;
+    draw_text(_cx - 200, voice_y, "Voice Volume:");
+    DrawVolumeBar(_cx, voice_y, _audio_system.voice_volume);
+    
+    // Back button
+    var selected = (selected_option == 4);
+    draw_set_font(selected ? fnt_large : fnt_default);
+    var col = selected ? c_yellow : c_white;
+    draw_text_color(_cx, _cy + 120, "BACK", col, col, col, col, 1);
 }
 
 /// @function DrawPauseMenu(_w, _h, _cx, _cy)
 function DrawPauseMenu(_w, _h, _cx, _cy) {
     // Dark overlay
-    draw_set_alpha(0.7);
-    draw_set_color(c_black);
-    draw_rectangle(0, 0, _w, _h, false);
-    draw_set_alpha(1);
+    drawAlphaRectangle(0, 0, _w, _h, 0.8);
     
     // Show controls screen
     if (show_controls) {
@@ -457,13 +382,11 @@ function DrawStatsScreen(_w, _h, _cx, _cy) {
 function DrawDeathSequence(_w, _h, _cx, _cy) {
     // Black fade overlay
     if (death_fade_alpha > 0) {
-        draw_set_alpha(death_fade_alpha);
-        draw_set_color(c_black);
-        draw_rectangle(0, 0, _w, _h, false);
-        draw_set_alpha(1);
+        drawAlphaRectangle(0, 0, _w, _h, death_fade_alpha);
     }
     draw_sprite_ext(spr_vh_dead, 0, _cx, _cy, 3, 3, 0, c_white, death_fade_alpha);
-    // Stats display
+    
+	// Stats display
     if (death_phase >= 2 && death_stats_alpha > 0) {
         draw_set_alpha(death_stats_alpha);
         draw_set_halign(fa_center);
@@ -508,62 +431,6 @@ function DrawDeathSequence(_w, _h, _cx, _cy) {
     }
 }
 	
-// ==========================================
-// AUDIO FUNCTIONS
-// ==========================================
-
-/// @function PlayMusic(_sound, _loop)
-function PlayMusic(_sound, _loop = true) {
-    // Stop current music
-    if (audio_is_playing(current_music)) {
-        audio_stop_sound(current_music);
-    }
-    
-    // Play new music
-    current_music = audio_play_sound(_sound, 1, _loop, music_volume);
-    target_music_volume = global.music_volume;
-}
-
-/// @function FadeOutMusic(_callback)
-function FadeOutMusic(_callback = noone) {
-    is_fading_music = true;
-    target_music_volume = 0;
-    fade_callback = _callback;
-}
-
-/// @function FadeInMusic(_sound, _loop)
-function FadeInMusic(_sound, _loop = true) {
-    // Start at 0 volume
-    music_volume = 0;
-    current_music = audio_play_sound(_sound, 1, _loop, 0);
-    target_music_volume = global.music_volume;
-}
-
-/// @function UpdateMusic()
-function UpdateMusic() {
-    if (!audio_is_playing(current_music)) return;
-    
-    // Lerp volume
-    if (music_volume != target_music_volume) {
-        music_volume = lerp(music_volume, target_music_volume, 0.05);
-        audio_sound_gain(current_music, music_volume, 0);
-        
-        // Check if fade complete
-        if (abs(music_volume - target_music_volume) < 0.01) {
-            music_volume = target_music_volume;
-            
-            // If faded to 0, stop and call callback
-            if (music_volume == 0) {
-                audio_stop_sound(current_music);
-                if (is_callable(fade_callback)) {
-                    fade_callback();
-                }
-                is_fading_music = false;
-                fade_callback = noone;
-            }
-        }
-    }
-}
 
 // ==========================================
 // MENU HANDLERS
@@ -571,12 +438,13 @@ function UpdateMusic() {
 
 /// @function HandleMainMenu(_mx, _my)
 function HandleMainMenu(_mx, _my) {
-    var gui_w = display_get_gui_width();
-    var gui_h = display_get_gui_height();
-    var cx = gui_w / 2;
-    var cy = gui_h / 2;
+    var cy = room_height / 2;
+    var cx = room_width / 2;
     
-    // Keyboard
+    // Store previous selection
+    var prev_selection = selected_option;
+    
+    // Keyboard navigation
     if (keyboard_check_pressed(vk_up)) {
         selected_option = (selected_option - 1 + array_length(menu_options)) mod array_length(menu_options);
     }
@@ -584,14 +452,25 @@ function HandleMainMenu(_mx, _my) {
         selected_option = (selected_option + 1) mod array_length(menu_options);
     }
     
+    // NEW: Play navigation sound if selection changed
+    if (prev_selection != selected_option) {
+        _audio_system.PlayUISound(snd_menu_hover);
+    }
+    
     // Mouse hover
     for (var i = 0; i < array_length(menu_options); i++) {
         var yy = cy + i * 60;
         if (point_in_rectangle(_mx, _my, cx - 100, yy - 25, cx + 100, yy + 25)) {
-            selected_option = i;
+            if (selected_option != i) {
+                selected_option = i;
+                // NEW: Play hover sound
+                _audio_system.PlayUISound(snd_menu_hover);
+            }
             
             // Mouse click
             if (mouse_check_button_pressed(mb_left)) {
+                // NEW: Play select sound
+                _audio_system.PlayUISound(snd_menu_select);
                 SelectMainMenuOption();
             }
         }
@@ -599,9 +478,12 @@ function HandleMainMenu(_mx, _my) {
     
     // Keyboard select
     if (keyboard_check_pressed(vk_enter) || keyboard_check_pressed(vk_space)) {
+        // NEW: Play select sound
+        _audio_system.PlayUISound(snd_menu_select);
         SelectMainMenuOption();
     }
 }
+
 
 /// @function SelectMainMenuOption()
 function SelectMainMenuOption() {
@@ -662,20 +544,66 @@ function HandleCharacterSelect(_mx, _my) {
 /// @function StartGame()
 function StartGame() {
     global.selected_class = class_options[selected_class].type;
-    
-    // Fade out menu music, then switch to gameplay
-    FadeOutMusic(function() {
-        room_goto(rm_demo_room);
-    });
+	room_goto(rm_demo_room); 
 }
 
-/// @function HandleSettings(_mx, _my)
+/// Handle settings input:
 function HandleSettings(_mx, _my) {
-    if (keyboard_check_pressed(vk_escape)) {
-        menu_state = MENU_STATE.MAIN;
-        selected_option = 0;
+    var settings_options = 5; // Master, Music, SFX, Voice, Back
+    
+    // Keyboard navigation
+    if (keyboard_check_pressed(vk_up)) {
+        selected_option = (selected_option - 1 + settings_options) mod settings_options;
+        _audio_system.PlayUISound(snd_menu_hover);
     }
-    // TODO: Implement settings controls
+    if (keyboard_check_pressed(vk_down)) {
+        selected_option = (selected_option + 1) mod settings_options;
+        _audio_system.PlayUISound(snd_menu_hover);
+    }
+    
+    // Adjust volumes with left/right
+    var adjustment = 0;
+    if (keyboard_check_pressed(vk_left) || keyboard_check_pressed(ord("A"))) adjustment = -0.1;
+    if (keyboard_check_pressed(vk_right) || keyboard_check_pressed(ord("D"))) adjustment = 0.1;
+    
+    if (adjustment != 0) {
+        _audio_system.PlayUISound(snd_menu_select);
+        
+        switch(selected_option) {
+            case 0: // Master
+                _audio_system.SetMasterVolume(_audio_system.settings.master_volume + adjustment);
+                break;
+            case 1: // Music
+                _audio_system.SetMusicVolume(_audio_system.music_master_volume + adjustment);
+                break;
+            case 2: // SFX
+                _audio_system.SetSFXVolume(_audio_system.sfx_master_volume + adjustment);
+                // Play test sound
+                _audio_system.PlaySFX(snd_menu_select);
+                break;
+            case 3: // Voice
+                _audio_system.SetVoiceVolume(_audio_system.voice_volume + adjustment);
+                break;
+        }
+    }
+    
+    // Back button
+    if (selected_option == 4 && (keyboard_check_pressed(vk_enter) || keyboard_check_pressed(vk_space))) {
+        _audio_system.PlayUISound(snd_menu_select);
+        menu_state = MENU_STATE.MAIN;
+        selected_option = 1; // Return to Settings option
+        
+        // Save audio settings
+        SaveAudioSettings();
+    }
+    
+    // ESC to go back
+    if (keyboard_check_pressed(vk_escape)) {
+        _audio_system.PlayUISound(snd_menu_select);
+        menu_state = MENU_STATE.MAIN;
+        selected_option = 1;
+        SaveAudioSettings();
+    }
 }
 
 /// @function HandlePauseMenu(_mx, _my)
@@ -741,35 +669,38 @@ function SelectPauseOption() {
 // PAUSE/RESUME
 // ==========================================
 
-/// @function PauseGame()
 function PauseGame() {
-
- 	obj_game_manager.pause_manager.Pause(PAUSE_REASON.PAUSE_MENU);
-    
-    menu_state = MENU_STATE.PAUSE_MENU;
-    pause_selected = 0;
-    show_controls = false;
-    show_stats = false;
+    if (instance_exists(obj_game_manager)) {
+        obj_game_manager.pause_manager.Pause(PAUSE_REASON.PAUSE_MENU, 0);
+        menu_state = MENU_STATE.PAUSE_MENU;
+        
+        // NEW: Duck music volume while paused
+        _audio_system.FadeMusic(_audio_system.GetMusicVolume() * 0.5, 15, FADE_TYPE.LINEAR);
+        
+        // Play pause sound
+        //_audio_system.PlayUISound(snd_pause_menu_open);
+    }
 }
+
+/// Update ResumeGame() function:
 
 function ResumeGame() {
-    // ONLY resume if we're actually in the pause menu state
-    if (menu_state == MENU_STATE.PAUSE_MENU && instance_exists(obj_game_manager)) {
+    if (instance_exists(obj_game_manager)) {
         obj_game_manager.pause_manager.Resume(PAUSE_REASON.PAUSE_MENU);
         menu_state = MENU_STATE.MAIN;
+        
+        // NEW: Restore music volume
+        _audio_system.FadeMusic(_audio_system.music_master_volume, 15, FADE_TYPE.LINEAR);
+        
+        // Play resume sound
+        //_audio_system.PlayUISound(snd_pause_menu_close);
     }
 }
 
-/// @function QuitToMenu()
 function QuitToMenu() {
-    // CRITICAL: Resume ALL game systems first
+    // Resume game systems
     if (instance_exists(obj_game_manager)) {
         obj_game_manager.pause_manager.ResumeAll();
-    }
-    
-    // Stop gameplay music
-    if (audio_is_playing(Sound2)) {
-        audio_stop_sound(Sound2);
     }
     
     // Reset states
@@ -779,8 +710,8 @@ function QuitToMenu() {
     show_controls = false;
     show_stats = false;
     
-    // Play menu music
-    PlayMusic(Sound1, true);
+    // NEW: Crossfade back to menu music
+    _audio_system.CrossfadeMusic(Sound1, true, 30); // Quick 0.5 second crossfade
     
     // Go to menu
     room_goto(rm_main_menu);
@@ -790,7 +721,6 @@ function QuitToMenu() {
 // DEATH SEQUENCE
 // ==========================================
 
-/// @function TriggerDeathSequence()
 function TriggerDeathSequence() {
     death_sequence_active = true;
     death_phase = 0;
@@ -807,11 +737,11 @@ function TriggerDeathSequence() {
         obj_game_manager.pause_manager.Pause(PAUSE_REASON.GAME_OVER);
     }
     
-    // Fade out gameplay music
-    if (audio_is_playing(Sound2)) {
-        var fade_speed = 0.02;
-        audio_sound_gain(Sound2, 0, 1000); // Fade over 1 second
-    }
+    // NEW: Use audio system for death music fade
+    _audio_system.FadeMusic(0.2, 90, FADE_TYPE.SMOOTH); // Fade to 20% over 1.5 seconds
+    
+    // Optionally play death sound effect
+    //_audio_system.PlaySFX(snd_player_death, 0, 1.0);
 }
 
 /// @function UpdateDeathSequence()
@@ -828,7 +758,6 @@ function UpdateDeathSequence() {
             if (death_timer >= 60) {
                 death_phase = 1;
                 death_timer = 0;
-                FadeInMusic(Sound1, true);
             }
             break;
             
@@ -858,9 +787,46 @@ function UpdateDeathSequence() {
             if (death_timer > 60 && (keyboard_check_pressed(vk_enter) || 
                 keyboard_check_pressed(vk_space) || 
                 mouse_check_button_pressed(mb_left))) {
-					AddHighscore(final_score, string(final_time));
+					AddHighscore(highscore_table, final_score, string(final_time));
                 QuitToMenu();
             }
             break;
     }
 }
+
+
+function LoadAudioSettings() {
+    ini_open("settings.ini");
+    
+    var settings_string = ini_read_string("Audio", "Settings", "");
+    if (settings_string != "") {
+        _audio_system.LoadSettings(settings_string);
+    }
+    
+    // Load individual volumes for backwards compatibility
+    _audio_system.SetMasterVolume(ini_read_real("Audio", "Master", 1.0));
+    _audio_system.SetMusicVolume(ini_read_real("Audio", "Music", 0.8));
+    _audio_system.SetSFXVolume(ini_read_real("Audio", "SFX", 1.0));
+    _audio_system.SetVoiceVolume(ini_read_real("Audio", "Voice", 1.0));
+    
+    ini_close();
+}
+
+function SaveAudioSettings() {
+    ini_open("settings.ini");
+    
+    // Save as JSON string
+    var settings_string = _audio_system.SaveSettings();
+    ini_write_string("Audio", "Settings", settings_string);
+    
+    // Also save individually for easy editing
+    ini_write_real("Audio", "Master", _audio_system.settings.master_volume);
+    ini_write_real("Audio", "Music", _audio_system.music_master_volume);
+    ini_write_real("Audio", "SFX", _audio_system.sfx_master_volume);
+    ini_write_real("Audio", "Voice", _audio_system.voice_volume);
+    
+    ini_close();
+}
+
+// Call LoadAudioSettings() at the end of Create Event
+LoadAudioSettings();

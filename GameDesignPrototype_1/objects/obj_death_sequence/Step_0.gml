@@ -61,20 +61,13 @@ switch (phase) {
     if (menu_wait_timer > 60 && (keyboard_check_pressed(vk_enter) || 
         keyboard_check_pressed(vk_space) || 
         keyboard_check_pressed(vk_escape))) {
+        	AddHighscore(obj_main_controller.highscore_table, final_score, string(final_time));
         
-        // DEBUG
-        show_debug_message("Adding score: " + string(final_score));
-        show_debug_message("obj_main_controller exists: " + string(instance_exists(obj_main_controller)));
-        
-        obj_main_controller.AddHighscore(final_score, string(final_time));
-        
-        // Unpause
-        if (instance_exists(obj_game_manager)) {
-            obj_game_manager.pause_manager.Resume(PAUSE_REASON.GAME_OVER);
-        }
-        
-        // Go to main menu
-        room_goto(rm_main_menu);
+        	// Unpause 
+			obj_game_manager.pause_manager.Resume(PAUSE_REASON.GAME_OVER);
+
+	        // Go to main menu
+	        room_goto(rm_main_menu);
     }
     break;
 }

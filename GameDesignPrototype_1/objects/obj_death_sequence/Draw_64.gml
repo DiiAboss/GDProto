@@ -8,13 +8,10 @@ var center_y = gui_h / 2;
 
 // Phase 1+: Draw black fade over everything
 if (fade_alpha > 0) {
-    draw_set_alpha(fade_alpha);
-    draw_set_color(c_black);
-    draw_rectangle(0, 0, gui_w, gui_h, false);
-    draw_set_alpha(1);
-	
-	
+   drawAlphaRectangle(0, 0, gui_w, gui_h, fade_alpha);
 }
+
+
 
 //var char_draw_alpha = 1-fade_alpha;
 	draw_sprite_ext(spr_vh_dead, 0, center_x, center_y, 3, 3, 0, c_white, fade_alpha);

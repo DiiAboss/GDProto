@@ -33,7 +33,7 @@ while (experience_points >= exp_to_next_level) {
 /// @function TriggerLevelUp()
 function TriggerLevelUp() {
     // Heal on level up
-    hp = min(hp + (maxHp * 0.2), maxHp);
+    //hp = min(hp + (maxHp * 0.2), maxHp);
     
     // Tell game manager to show popup
     if (instance_exists(obj_game_manager)) {
@@ -77,6 +77,7 @@ if (keyboard_check_pressed(vk_escape)) {
 // STAT RECALCULATION
 // ==========================================
 stats.Recalculate(function(_atk, _hp, _kb, _spd) {
+
     return obj_game_manager.gm_calculate_player_stats(_atk, _hp, _kb, _spd);
 });
 
@@ -134,54 +135,60 @@ currentSprite = SpriteHandler.UpdateSpriteByAimDirection(currentSprite, mouseDir
 // ==========================================
 // CHARGE WEAPON
 // ==========================================
-if (variable_struct_exists(weaponCurrent, "charge_rate")) {
-    if (input.Fire) {
-        is_charging = true;
-        charge_amount = min(charge_amount + weaponCurrent.charge_rate * game_speed_delta(), 1.0);
-    } else {
-        is_charging = false;
-    }
-    
-    // Natural decay when not charging
-    if (!is_charging && charge_amount > 0) {
-        charge_amount = max(charge_amount - 0.005 * game_speed_delta(), 0);
-    }
+if (weaponCurrent)
+{
+	if (variable_struct_exists(weaponCurrent, "charge_rate")) {
+	    if (input.Fire) {
+	        is_charging = true;
+	        charge_amount = min(charge_amount + weaponCurrent.charge_rate * game_speed_delta(), 1.0);
+	    } else {
+	        is_charging = false;
+	    }
+	    
+	    // Natural decay when not charging
+	    if (!is_charging && charge_amount > 0) {
+	        charge_amount = max(charge_amount - 0.005 * game_speed_delta(), 0);
+	    }
+	}
+	
+	// ==========================================
+	// WEAPON ATTACKS
+	// ==========================================
+	if (input.FirePress) {
+	    var timing_quality = EvaluateAttackTiming();
+	    var timing_mult = ApplyTimingBonus(timing_quality);
+	    
+	    var attack_result = weaponCurrent.primary_attack(self, mouseDirection, mouseDistance, weaponCurrent.projectile_struct);
+	    
+	    if (attack_result != noone) {
+	        if (weaponCurrent.type == WeaponType.Melee && instance_exists(attack_result)) {
+	            attack_result.attack *= timing_mult;
+	            if (timing_quality == "perfect") {
+	                attack_result.is_perfect_attack = true;
+	            }
+	        }
+	        else if (weaponCurrent.type == WeaponType.Range && instance_exists(attack_result)) {
+	            if (variable_instance_exists(attack_result, "damage")) {
+	                attack_result.damage *= timing_mult;
+	            }
+	        }
+	    }
+	}
+	
+	if (input.AltPress) {
+	    weaponCurrent.secondary_attack(self, mouseDirection, mouseDistance, weaponCurrent.projectile_struct);
+		show_debug_message("AltrFire Pressed");
+	}
+	
+	if (variable_struct_exists(weaponCurrent, "step")) {
+	    weaponCurrent.step(self);
+	}
+	
+	UpdateTimingVisuals();
 }
 
-// ==========================================
-// WEAPON ATTACKS
-// ==========================================
-if (input.FirePress) {
-    var timing_quality = EvaluateAttackTiming();
-    var timing_mult = ApplyTimingBonus(timing_quality);
-    
-    var attack_result = weaponCurrent.primary_attack(self, mouseDirection, mouseDistance, weaponCurrent.projectile_struct);
-    
-    if (attack_result != noone) {
-        if (weaponCurrent.type == WeaponType.Melee && instance_exists(attack_result)) {
-            attack_result.attack *= timing_mult;
-            if (timing_quality == "perfect") {
-                attack_result.is_perfect_attack = true;
-            }
-        }
-        else if (weaponCurrent.type == WeaponType.Range && instance_exists(attack_result)) {
-            if (variable_instance_exists(attack_result, "damage")) {
-                attack_result.damage *= timing_mult;
-            }
-        }
-    }
-}
 
-if (input.AltPress) {
-    weaponCurrent.secondary_attack(self, mouseDirection, mouseDistance, weaponCurrent.projectile_struct);
-	show_debug_message("AltrFire Pressed");
-}
 
-if (variable_struct_exists(weaponCurrent, "step")) {
-    weaponCurrent.step(self);
-}
-
-UpdateTimingVisuals();
 
 
 

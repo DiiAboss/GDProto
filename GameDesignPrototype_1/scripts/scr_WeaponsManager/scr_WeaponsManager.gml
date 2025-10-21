@@ -265,7 +265,7 @@ function SwitchToWeaponSlot(_slot_index) {
     
     current_weapon_index = _slot_index;
     weaponCurrent = weapons[_slot_index];
-    
+    if !(weaponCurrent) return;
     // Handle melee weapon switching
     if (weaponCurrent.type == WeaponType.Melee) {
         if (instance_exists(melee_weapon)) {

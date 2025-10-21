@@ -1,6 +1,7 @@
 /// @desc Main Controller - Step Event
 
-UpdateMusic();
+// Update audio system
+_audio_system.Update();
 
 // Death sequence
 if (death_sequence_active) {
@@ -45,4 +46,10 @@ if (room == rm_demo_room && keyboard_check_pressed(vk_escape) && !death_sequence
     } else {
         PauseGame();
     }
+}
+
+
+if (keyboard_check_pressed(ord("G")))
+{
+	obj_player.input.InputType = INPUT.GAMEPAD;
 }

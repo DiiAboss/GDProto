@@ -6,9 +6,6 @@ if (_dist_to_player) < 400
 
 if !activated exit;
 
-/// @description Summoner behavior
-event_inherited();
-
 // Hit flash effect
 if (hitFlashTimer > 0) hitFlashTimer--;
 

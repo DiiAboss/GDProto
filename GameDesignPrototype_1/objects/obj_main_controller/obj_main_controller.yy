@@ -14,8 +14,8 @@
   "name":"obj_main_controller",
   "overriddenProperties":[],
   "parent":{
-    "name":"Menu",
-    "path":"folders/Objects/Menu.yy",
+    "name":"Main Controller",
+    "path":"folders/Main Controller.yy",
   },
   "parentObjectId":null,
   "persistent":true,
