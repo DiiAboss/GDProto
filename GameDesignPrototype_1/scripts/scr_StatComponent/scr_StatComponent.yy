@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_StatComponent",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_StatComponent",
+  "parent":{
+    "name":"CHARACTER_OBJECTS",
+    "path":"folders/Objects/In-Game/PLAYER_AND_WEAPON_OBJECTS/CHARACTER_OBJECTS.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

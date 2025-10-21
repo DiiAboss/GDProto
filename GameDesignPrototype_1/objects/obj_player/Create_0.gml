@@ -30,13 +30,13 @@ timers = new TimerComponent();
 class_component = CreateCharacterClass(character_class, stats, damage_sys, class_stats);
 
 // Legacy compatibility (remove once fully refactored)
-attack = stats.attack;
-base_attack = stats.base_attack;
-hp = damage_sys.hp;
-hp_max = damage_sys.max_hp;
-maxHp = damage_sys.max_hp;
-mySpeed = stats.speed;
-base_speed = stats.base_speed;
+attack		 = stats.attack;
+base_attack	 = stats.base_attack;
+hp			 = damage_sys.hp;
+hp_max		 = damage_sys.max_hp;
+maxHp		 = damage_sys.max_hp;
+mySpeed		 = stats.speed;
+base_speed	 = stats.base_speed;
 
 
 

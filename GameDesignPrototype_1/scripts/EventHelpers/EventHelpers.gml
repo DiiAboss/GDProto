@@ -31,6 +31,7 @@ function CreateAttackEvent(_entity, _attack_type, _direction, _projectile = noon
         x: _entity.x,
         y: _entity.y,
         
+		element: ELEMENT.PHYSICAL,
         damage: entity_attack,
         projectile: _projectile,
         weapon: entity_weapon,

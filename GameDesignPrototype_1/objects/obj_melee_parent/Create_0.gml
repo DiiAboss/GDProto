@@ -45,3 +45,33 @@ hit_enemies = hitList; // Alias for compatibility
 // Weapon type
 weapon_id = Weapon.None;
 current_combo_hit = 0;
+
+
+/// @desc Spawn projectiles based on synergy config
+function SpawnSynergyProjectiles(_synergy, _owner) {
+    var count = _synergy.projectile_count ?? 1;
+    var spread = _synergy.projectile_spread ?? 0;
+    var base_dir = point_direction(_owner.x, _owner.y, mouse_x, mouse_y);
+    
+    var start_angle = base_dir - (spread * (count - 1)) / 2;
+    
+    for (var i = 0; i < count; i++) {
+        var proj_dir = start_angle + (spread * i);
+        
+        var proj = instance_create_depth(
+            _owner.x, 
+            _owner.y, 
+            _owner.depth - 1, 
+            _synergy.projectile
+        );
+        
+        proj.direction = proj_dir;
+        proj.image_angle = proj_dir;
+        proj.speed = 8;
+        proj.owner = _owner;
+        
+        if (variable_instance_exists(proj, "damage")) {
+            proj.damage = _owner.attack * 0.7;
+        }
+    }
+}
