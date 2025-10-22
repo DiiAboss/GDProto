@@ -51,8 +51,8 @@ if (swinging) { // Use 'swinging' not 'isSwinging'
             
             // Deal massive damage
             var homerun_damage = attack * homerun_damage_mult * (1 + comboCount * 0.25);
-            takeDamage(sweet_spot_hit, homerun_damage, owner);
-            
+            //takeDamage(sweet_spot_hit, homerun_damage, owner);
+            sweet_spot_hit.damage_sys.TakeDamage(homerun_damage, owner);
             // Massive knockback
             var kb_dir = point_direction(owner.x, owner.y, sweet_spot_hit.x, sweet_spot_hit.y);
             var homerun_kb = (knockbackForce * homerun_knockback_mult) + (comboCount * 1);

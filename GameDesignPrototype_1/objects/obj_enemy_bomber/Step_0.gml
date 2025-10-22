@@ -60,7 +60,7 @@ switch (state) {
             var kbDir = point_direction(x, y, hit.x, hit.y);
             hit.knockbackX = lengthdir_x(dashSpeed * 2, kbDir);
             hit.knockbackY = lengthdir_y(dashSpeed * 2, kbDir);
-            takeDamage(hit, 10, self); // or whatever
+            hit.damage_sys.TakeDamage(10, self);
         }
 
         // Check for other enemies with knockback

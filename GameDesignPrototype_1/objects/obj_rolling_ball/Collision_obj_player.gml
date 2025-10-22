@@ -10,7 +10,8 @@ if (hitPlayer != noone) {
     
     if (canHit) {
         // Deal damage (scaled by level)
-        hitPlayer.hp -= damage;
+        //hitPlayer.hp -= damage;
+		hitPlayer.damage_sys.TakeDamage(damage, self);  
         		// Visual feedback - spawn damage number
         spawn_damage_number(x, y - 16, damage, currentColor, false);
         // Apply knockback (scaled by level)

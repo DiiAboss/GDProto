@@ -3,7 +3,7 @@ event_inherited();
 
 
 
-damage_sys = new DamageComponent(30); // 100 base HP
+damage_sys = new DamageComponent(self, 30); // 100 base HP
 knockback = new KnockbackComponent(0.95, 0.1);
 
 // Legacy compatibility

@@ -6,6 +6,9 @@ can_be_carried = true;
 is_being_carried = false;
 carrier = noone;
 
+
+damage_sys = new DamageComponent(self, 10);
+
 // Carry properties
 carry_offset_x = 0;
 carry_offset_y = -16; // Above head by default

@@ -20,8 +20,8 @@ if (enemy != noone) {
         damage = round(damage);
         
         // Deal damage
-        takeDamage(enemy, damage);
-        
+        //takeDamage(enemy, damage);
+        enemy.damage_sys.TakeDamage(damage, self)
         // STOP the enemy completely (key spike behavior)
         enemy.knockbackX = 0;
         enemy.knockbackY = 0;

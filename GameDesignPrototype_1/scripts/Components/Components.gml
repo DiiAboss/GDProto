@@ -99,47 +99,88 @@ function InvincibilityComponent(_duration = 60, _flash_speed = 4) constructor {
     }
 }
 
-// ==========================================
-// DAMAGE COMPONENT
-// ==========================================
-function DamageComponent(_max_hp) constructor {
+function DamageComponent(_owner, _max_hp) constructor {
+    owner = _owner;   // instance this belongs to
     hp = _max_hp;
     max_hp = _max_hp;
     last_damage = 0;
     last_attacker = noone;
     damage_flash_timer = 0;
-    
-    /// @func TakeDamage(_amount, _attacker)
-    static TakeDamage = function(_amount, _attacker) {
-        hp -= _amount;
-        last_damage = _amount;
+
+    /// @func TakeDamage(_amount, _attacker, _element)
+    static TakeDamage = function(_amount, _attacker, _element = ELEMENT.PHYSICAL) {
+        var final_dmg = _amount;
+		
+	    with (self) {
+	        // Fast: check object type once
+	        var is_player = (self == obj_player);
+	        
+	        // Players have invincibility
+	        if (is_player && invincibility.active) {
+	            return hp; // Still invincible
+	        }
+	        	
+	
+	        // Apply damage
+			//self.total_damage_taken += _attacker;
+	        
+	        // Player-specific
+	        if (is_player) {
+	            invincibility.Activate();
+	            timers.Set("hp_bar", 120);
+	        }
+	        
+	        // Everyone can flash
+	        hitFlashTimer = 10;
+	        
+	        // Track damage
+	        last_hit_by = _attacker;
+	        took_damage = _attacker;
+	    }
+		
+		
+        // Apply elemental resistance if the owner has stats
+        if (variable_instance_exists(owner, "stats")) {
+            var resist_mult = 1.0;
+
+            switch(_element) {
+                case ELEMENT.FIRE:      resist_mult -= owner.stats.resist_fire; break;
+                case ELEMENT.ICE:       resist_mult -= owner.stats.resist_ice; break;
+                case ELEMENT.LIGHTNING: resist_mult -= owner.stats.resist_lightning; break;
+                case ELEMENT.POISON:    resist_mult -= owner.stats.resist_poison; break;
+            }
+
+            resist_mult = clamp(resist_mult, 0.1, 2.0);
+            final_dmg *= resist_mult;
+        }
+		spawn_damage_number(owner.x, owner.y, final_dmg);
+        hp -= final_dmg;
+        last_damage = final_dmg;
         last_attacker = _attacker;
         damage_flash_timer = 10;
+
         return hp;
     }
-    
+
     /// @func Heal(_amount)
     static Heal = function(_amount) {
         hp = min(hp + _amount, max_hp);
     }
-    
-    /// @func IsDead()
+
     static IsDead = function() {
         return hp <= 0;
     }
-    
-    /// @func GetHealthPercent()
+
     static GetHealthPercent = function() {
         return hp / max_hp;
     }
-    
-    /// @func Update()
+
     static Update = function() {
-        if (damage_flash_timer > 0) {
+        if (damage_flash_timer > 0)
             damage_flash_timer = timer_tick(damage_flash_timer);
-        }
     }
 }
+
 
 // ==========================================
 // TIMER COMPONENT

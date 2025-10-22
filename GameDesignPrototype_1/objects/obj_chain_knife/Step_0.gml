@@ -21,7 +21,8 @@ if (!is_returning) {
     // Enemy collision
     var enemy = instance_place(x, y, obj_enemy);
     if (enemy != noone && !enemy.marked_for_death && !has_hit) {
-        takeDamage(enemy, damage, owner);
+        //takeDamage(enemy, damage, owner);
+		enemy.damage_sys.TakeDamage(damage, owner);
         
         var kb_dir = direction;
         enemy.knockback.Apply(kb_dir, 8);

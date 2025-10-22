@@ -10,9 +10,9 @@ if !activated exit;
 if (hitFlashTimer > 0) hitFlashTimer--;
 
 // Death check
-if (hp <= 0 && !scored_this_death) {
+if (damage_sys.hp  <= 0 && !scored_this_death) {
     scored_this_death = true;
-    
+
     // Award score
     if (instance_exists(obj_game_manager) && obj_game_manager.score_manager) {
         obj_game_manager.score_manager.AddScore(score_value);
@@ -47,3 +47,6 @@ if (spawner_timer > 0) {
         spawner_timer = 300;
     }
 }
+
+    hp = damage_sys.hp;
+	maxHp = damage_sys.max_hp;

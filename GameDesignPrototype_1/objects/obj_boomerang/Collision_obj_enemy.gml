@@ -5,8 +5,7 @@ other.last_hit_by = owner;
 other.last_damage_taken = damage;
 
 // apply damage (call your existing damage function)
-takeDamage(other, damage, owner);
-
+other.damage_sys.TakeDamage(damage, owner);
 
 var hit_event = CreateHitEvent(self, other, damage, AttackType.RANGED);
 

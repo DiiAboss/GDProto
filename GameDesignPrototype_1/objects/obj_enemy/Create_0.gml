@@ -21,7 +21,7 @@ tilemap_id = layer_tilemap_get_id(tile_layer_id);
 // ==========================================
 // COMPONENTS (matching player)
 // ==========================================
-damage_sys = new DamageComponent(50); // 100 base HP
+damage_sys = new DamageComponent(self, 50); // 100 base HP
 knockback = new KnockbackComponent(0.85, 0.1);
 
 // Legacy compatibility

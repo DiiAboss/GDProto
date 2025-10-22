@@ -7,7 +7,7 @@ character_class = CharacterClass.WARRIOR;
 class_stats = GetCharacterStats(character_class);
 
 
-
+status = new StatusEffectComponent(self);
 
 // ==========================================
 // CORE COMPONENTS
@@ -21,7 +21,7 @@ stats = new StatsComponent(
 
 knockback = new KnockbackComponent(0.85, 0.1);
 invincibility = new InvincibilityComponent(30, 4);
-damage_sys = new DamageComponent(stats.hp_max);
+damage_sys = new DamageComponent(self, stats.hp_max);
 timers = new TimerComponent();
 
 // ==========================================

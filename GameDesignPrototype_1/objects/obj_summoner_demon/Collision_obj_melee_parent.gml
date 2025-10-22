@@ -16,7 +16,8 @@ if (other.owner != noone && instance_exists(other.owner)) {
 // Apply melee damage (normal effectiveness)
 var actual_damage = base_damage * melee_resistance;
 
-takeDamage(self, actual_damage, other.owner);
+//takeDamage(self, actual_damage, other.owner);
+damage_sys.TakeDamage(actual_damage, other.owner)
 hitFlashTimer = 5;
 
 // Show damage number

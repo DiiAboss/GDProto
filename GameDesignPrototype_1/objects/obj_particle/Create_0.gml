@@ -8,3 +8,6 @@ size = random_range(2, 4);
 // Trail effect
 trail_alpha = 0.5;
 trail_length = 3;
+
+sprite = noone;
+rotation = irandom(30) * choose(1, -1);

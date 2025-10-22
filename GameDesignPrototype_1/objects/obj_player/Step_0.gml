@@ -188,7 +188,7 @@ if (weaponCurrent)
 }
 
 
-
+status.Update();
 
 
 
@@ -507,4 +507,22 @@ if (hp <= 0 && instance_exists(obj_main_controller) && !obj_main_controller.deat
     
     // Optional: Change sprite to death sprite if you have one
     // sprite_index = spr_player_death;
+}
+
+
+
+
+
+
+if (keyboard_check_pressed(ord("1"))) {
+    status.ApplyStatusEffect(ELEMENT.FIRE, {damage: 5, duration: 180});
+}
+if (keyboard_check_pressed(ord("2"))) {
+    status.ApplyStatusEffect(ELEMENT.ICE, {slow_mult: 0.4, duration: 180});
+}
+if (keyboard_check_pressed(ord("3"))) {
+    status.ApplyStatusEffect(ELEMENT.POISON, {damage: 2, duration: 240});
+}
+if (keyboard_check_pressed(ord("4"))) {
+    status.ApplyStatusEffect(ELEMENT.LIGHTNING, {duration: 90});
 }

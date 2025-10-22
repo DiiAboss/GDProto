@@ -146,8 +146,8 @@ if (instance_exists(owner)) {
                 var damage = baseDamage * (1 + comboCount * 0.25);
                 
                 // Deal damage
-                takeDamage(hit, damage, owner);
-                
+                //takeDamage(hit, damage, owner);
+                hit.damage_sys.TakeDamage(damage, owner);
                 // ==========================================
                 // TRIGGER ON_HIT MODIFIERS
                 // ==========================================

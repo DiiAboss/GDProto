@@ -11,7 +11,7 @@ mySprite = spr_mini_boss_1;
 size = sprite_get_height(mySprite);
 
 // Enhanced stats
-damage_sys = new DamageComponent(1000); // 5x base enemy HP
+damage_sys = new DamageComponent(self, 1000); // 5x base enemy HP
 hp = damage_sys.hp;
 maxHp = damage_sys.max_hp;
 

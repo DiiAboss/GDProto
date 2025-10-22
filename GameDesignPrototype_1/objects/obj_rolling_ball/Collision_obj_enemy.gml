@@ -10,8 +10,8 @@ if (hitEnemy != noone) {
     
     if (canHit) {
         // Deal damage (scaled by level)
-        takeDamage(hitEnemy, damage, self);
-            
+        //takeDamage(hitEnemy, damage, self);
+        hitEnemy.damage_sys.TakeDamage(damage, self);  
         // Apply knockback (scaled by level)
         var kbDir = point_direction(x, y, hitEnemy.x, hitEnemy.y);
         hitEnemy.knockbackX = lengthdir_x(knockbackForce, kbDir);

@@ -20,8 +20,8 @@ if (canHit) {
     damage = round(damage);
     
     // Apply damage
-    takeDamage(other, damage, id);
-    
+    //takeDamage(other, damage, id);
+    other.damage_sys.TakeDamage(damage, self)
     // Stop knockback and bounce player away
     other.knockback.x_velocity = 0;
     other.knockback.y_velocity = 0;

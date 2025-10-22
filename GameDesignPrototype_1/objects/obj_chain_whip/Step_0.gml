@@ -43,8 +43,8 @@ if (swinging && swingProgress > 0.05 && swingProgress < 0.95) {
             var baseDamage = attack;
             var finalDamage = baseDamage * (1 + comboCount * 0.25);
             
-            takeDamage(enemy, finalDamage, owner);
-            
+            //takeDamage(enemy, finalDamage, owner);
+            enemy.damage_sys.TakeDamage(finalDamage, owner);
             // Knockback
             var kb_dir = point_direction(owner.x, owner.y, enemy.x, enemy.y);
             enemy.knockback.Apply(kb_dir, knockbackForce);

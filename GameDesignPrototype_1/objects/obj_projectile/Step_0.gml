@@ -93,8 +93,8 @@ if (place_meeting(x, y, obj_enemy)) {
         enemy.last_damage_taken = damage;
         
         // Deal damage
-        takeDamage(enemy, damage, owner);
-        
+        //takeDamage(enemy, damage, owner);
+        enemy.damage_sys.TakeDamage(damage, owner);
         // Mark if from corpse explosion (prevents chain reactions)
         if (variable_instance_exists(id, "from_corpse_explosion") && from_corpse_explosion) {
             enemy.killed_by_modifier = "corpse_explosion";

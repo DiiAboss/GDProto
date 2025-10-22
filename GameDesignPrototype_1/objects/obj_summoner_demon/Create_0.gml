@@ -2,7 +2,7 @@
 event_inherited();
 
 // HP and damage system
-damage_sys = new DamageComponent(300);
+damage_sys = new DamageComponent(self, 300);
 hp = damage_sys.hp;
 maxHp = damage_sys.max_hp;
 

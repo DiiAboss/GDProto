@@ -6,6 +6,8 @@ sprite_index = spr_bomb;
 can_be_carried = true;
 weight = 1.2; // Slightly heavy
 
+owner = self;
+
 // Bomb-specific properties
 is_armed = false;
 timer = 0;
@@ -106,8 +108,8 @@ DamageInRadius = function() {
             var final_kb = other.explosion_knockback * falloff;
             
             // Apply damage using takeDamage system
-            takeDamage(self, final_damage, other);
-            
+            //takeDamage(self, final_damage, other);
+            damage_sys.TakeDamage(final_damage, other);
             // Apply knockback
             var kb_dir = point_direction(other.x, other.y, x, y);
             knockback.Apply(kb_dir, final_kb);

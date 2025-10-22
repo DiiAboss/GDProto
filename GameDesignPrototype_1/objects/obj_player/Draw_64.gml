@@ -34,3 +34,6 @@ if (keyboard_check(vk_f12)) {
     draw_set_color(c_white);
 }
 
+
+status.DrawDebug();
+

@@ -3,8 +3,9 @@
 if (other.owner != noone && other.owner == obj_player) {
     var actual_damage = other.damage * ranged_resistance;
     
-    takeDamage(self, actual_damage, other);
-    hitFlashTimer = 5;
+    //takeDamage(self, actual_damage, other);
+    damage_sys.TakeDamage(actual_damage, other.owner)
+	hitFlashTimer = 5;
     
     // Show reduced damage number in gray to indicate resistance
     spawn_damage_number(x, y - 32, actual_damage, c_gray, false);

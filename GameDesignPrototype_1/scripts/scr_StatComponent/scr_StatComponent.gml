@@ -111,3 +111,54 @@ function StatsComponent(_base_attack, _base_hp, _base_speed, _base_knockback) co
         return dmg;
     }
 }
+
+
+/// @function ApplyElementalEffects
+/// @desc Applies burn, freeze, shock, or poison to a target
+function ApplyElementalEffects(_attacker, _target, _element, _damage) {
+    if (!instance_exists(_target)) return;
+    if (!variable_instance_exists(_target, "stats")) return;
+    
+    var t_stats = _target.stats;
+    var a_stats = _attacker.stats;
+    
+    switch(_element) {
+        case ELEMENT.FIRE:
+            if (random(1) < a_stats.burn_chance) {
+                _target.burn_timer = a_stats.burn_duration;
+                _target.burn_dps = a_stats.burn_damage;
+                _target.image_blend = c_orange;
+            }
+            break;
+
+        case ELEMENT.ICE:
+            if (random(1) < a_stats.freeze_chance) {
+                _target.freeze_timer = a_stats.freeze_duration;
+                _target.freeze_damage = a_stats.freeze_damage;
+                _target.image_blend = c_aqua;
+                // Optional: Reduce movement
+                if (variable_instance_exists(_target, "movement_speed")) {
+                    _target.movement_speed *= 0.5;
+                }
+            }
+            break;
+
+        case ELEMENT.LIGHTNING:
+            if (random(1) < a_stats.shock_chance) {
+                _target.shocked = true;
+                _target.shock_timer = 30;
+                _target.image_blend = c_yellow;
+                // Optional: chain lightning
+                scr_chain_lightning(_attacker, _target, a_stats.shock_chain_count, 250, a_stats.shock_damage, 0.75);
+            }
+            break;
+
+        case ELEMENT.POISON:
+            if (random(1) < a_stats.poison_chance) {
+                _target.poison_timer = a_stats.poison_duration;
+                _target.poison_dps = a_stats.poison_damage;
+                _target.image_blend = make_color_rgb(128, 255, 128);
+            }
+            break;
+    }
+}

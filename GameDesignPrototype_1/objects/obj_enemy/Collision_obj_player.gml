@@ -28,7 +28,8 @@ if (hitPlayer.isCannonBalling) {
         knockbackCooldown = 10;
         
         var impactDamage = round(playerSpeed * 2);
-        takeDamage(self, impactDamage, hitPlayer);
+        //takeDamage(self, impactDamage, hitPlayer);
+		hitPlayer.damage_sys.TakeDamage(impactDamage, self)
         
         hitPlayer.knockbackX *= 0.5;
         hitPlayer.knockbackY *= 0.5;

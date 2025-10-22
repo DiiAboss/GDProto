@@ -6,7 +6,8 @@ global.WeaponStruct =
         id: Weapon.Bow,
         type: WeaponType.Range,
         projectile_struct: global.Projectile_.Arrow,
-        
+        default_element: ELEMENT.PHYSICAL,
+
         primary_attack: function(_self, _direction, _range, _projectile_struct) {
             var _attack = Shoot_Projectile(_self, _direction, _self, _range, _projectile_struct, obj_arrow);
             
@@ -28,7 +29,8 @@ global.WeaponStruct =
     type: WeaponType.Melee,
     projectile_struct: undefined, // Not using projectile struct
     melee_object_type: obj_chain_whip,
-    
+    default_element: ELEMENT.PHYSICAL,
+
     // Attack queue system
     attack_queue: 0,
     max_queue: 3,
@@ -144,7 +146,9 @@ global.WeaponStruct =
         type: WeaponType.Melee,
         projectile_struct: undefined,
         melee_object_type: obj_sword,
-        
+        default_element: ELEMENT.PHYSICAL,
+
+
         combo_count: 0,
         max_combo: 3,
         combo_timer: 0,
@@ -199,7 +203,9 @@ global.WeaponStruct =
         type: WeaponType.Melee,
         projectile_struct: global.Projectile_.Knife,
         melee_object_type: obj_dagger,
-        
+        default_element: ELEMENT.PHYSICAL,
+
+
         combo_count: 0,
         max_combo: 3,
         combo_timer: 0,
@@ -273,7 +279,9 @@ global.WeaponStruct =
         id: Weapon.Holy_Water,
         type: WeaponType.Range,
         projectile_struct: global.Projectile_.Holy_Water,
-        
+        default_element: ELEMENT.PHYSICAL,
+
+
         primary_attack: function(_self, _direction, _range, _projectile_struct) {
             var _attack = Lob_Projectile(_self, _direction, _range, projectile_struct.object);
             //return _attack;
@@ -354,7 +362,9 @@ global.WeaponStruct =
         projectile_struct: global.Projectile_.Boomerang,  // Add this
         cooldown: 0,
         cooldown_max: 60,
-        
+        default_element: ELEMENT.PHYSICAL,
+
+
         primary_attack: function(_self, _direction, _range, _projectile_struct) {
             if (cooldown > 0) return noone;
             
@@ -386,7 +396,9 @@ global.WeaponStruct =
         description: "Hold right-click to charge, left-click to fire",
         type: WeaponType.Range,
         projectile_struct: global.Projectile_.Cannonball,
-        
+        default_element: ELEMENT.PHYSICAL,
+
+
         // Charge properties
         min_charge: 0.2,
         charge_rate: 0.015,
@@ -477,7 +489,9 @@ global.WeaponStruct =
     min_charge_speed: 4,  // Minimum projectile speed
     max_charge_damage_mult: 3.0, // 3x damage at full charge
     min_charge_damage_mult: 0.5, // 0.5x damage at no charge
-    
+    default_element: ELEMENT.PHYSICAL,
+
+
     primary_attack: function(_self, _direction, _range, _projectile_struct) {
         // Only attack if carrying something
         if (!_self.is_carrying || !instance_exists(_self.carried_object)) {

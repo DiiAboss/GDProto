@@ -1,14 +1,12 @@
-timer += game_speed_delta();
+/// Step Event - obj_particle
+timer++;
 
-// Apply friction
+x += lengthdir_x(speed, direction);
+y += lengthdir_y(speed, direction);
 speed *= friction_amount;
 
-// Apply gravity (if any)
-if (gravity_strength > 0) {
-    vspeed += gravity_strength * game_speed_delta();
+if (gravity_strength != 0) {
+    vspeed += gravity_strength;
 }
 
-// Destroy when lifetime ends
-if (timer >= lifetime) {
-    instance_destroy();
-}
+if (timer >= lifetime) instance_destroy();

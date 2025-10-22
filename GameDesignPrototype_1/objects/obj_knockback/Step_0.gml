@@ -20,7 +20,8 @@ if (hit != noone) {
 	var damage = baseDamage;
 	
 	// Deal damage
-	takeDamage(hit, damage, owner);
+	hit.damage_sys.TakeDamage(damage, owner);
+	//takeDamage(hit, damage, owner);
 	// Apply knockback using custom knockback variables
 	if (hit.knockbackCooldown <= 0) {
 		var knockbackDir = point_direction(owner.x, owner.y, hit.x, hit.y);
