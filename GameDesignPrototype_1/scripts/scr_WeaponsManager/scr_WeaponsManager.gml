@@ -5,6 +5,30 @@
 // WEAPON MANAGEMENT FUNCTIONS
 // ==========================================
 
+/// @function WeaponCallbackIsCallable(_callback)
+/// @description Safely determine whether the supplied value can be invoked like a function or method
+/// @param _callback The value to inspect
+function WeaponCallbackIsCallable(_callback) {
+    if (_callback == undefined) return false;
+
+    // Direct method references (struct + function binding)
+    if (is_method(_callback)) {
+        return true;
+    }
+
+    // Standalone script/function references (GMS 2022+)
+    if (function_exists("is_function") && is_function(_callback)) {
+        return true;
+    }
+
+    // Generic callable support for future runtimes
+    if (function_exists("is_callable") && is_callable(_callback)) {
+        return true;
+    }
+
+    return false;
+}
+
 /// @function GiveWeapon(_player, _weapon_id)
 /// @description Attempt to give player a weapon, handle full inventory
 /// @param {Id.Instance} _player The player instance

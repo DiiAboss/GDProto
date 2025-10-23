@@ -157,7 +157,7 @@ if (weaponCurrent)
             }
 
             var attack_result = noone;
-            if (is_callable(_primary_attack)) {
+            if (WeaponCallbackIsCallable(_primary_attack)) {
                 attack_result = _primary_attack(self, mouseDirection, mouseDistance, weaponCurrent.projectile_struct);
             }
 
@@ -182,7 +182,7 @@ if (weaponCurrent)
                 _secondary_attack = weaponCurrent.secondary_attack;
             }
 
-            if (is_callable(_secondary_attack)) {
+            if (WeaponCallbackIsCallable(_secondary_attack)) {
                 _secondary_attack(self, mouseDirection, mouseDistance, weaponCurrent.projectile_struct);
                 show_debug_message("AltrFire Pressed");
             }
@@ -190,7 +190,7 @@ if (weaponCurrent)
 
         if (variable_struct_exists(weaponCurrent, "step")) {
             var _weapon_step = weaponCurrent.step;
-            if (is_callable(_weapon_step)) {
+            if (WeaponCallbackIsCallable(_weapon_step)) {
                 _weapon_step(self);
             }
         }
