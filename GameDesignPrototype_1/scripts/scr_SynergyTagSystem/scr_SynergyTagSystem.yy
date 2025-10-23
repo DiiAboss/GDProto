@@ -1,12 +1,12 @@
 {
   "$GMScript":"v1",
-  "%Name":"scr_WeaponPickup",
+  "%Name":"scr_SynergyTagSystem",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"scr_WeaponPickup",
+  "name":"scr_SynergyTagSystem",
   "parent":{
-    "name":"WEAPONS_SCRIPTS",
-    "path":"folders/Scripts/WEAPONS_SCRIPTS.yy",
+    "name":"Main Controller",
+    "path":"folders/Main Controller.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

@@ -245,6 +245,26 @@ function AttemptPickup() {
             weaponCurrent = EnsureWeaponInstance(global.WeaponStruct.ThrowableItem);
             charge_amount = 0;
             
+            // DEBUG: Check if weapon has synergy tags
+            show_debug_message("=== PICKUP DEBUG ===");
+            if (variable_struct_exists(weaponCurrent, "synergy_tags")) {
+                show_debug_message("ThrowableItem has synergy_tags");
+            } else {
+                show_debug_message("ThrowableItem MISSING synergy_tags!");
+            }
+            
+            // Update synergy tags for throwable weapon
+            // NOTE: We're not switching weapon slots, just weaponCurrent reference
+            // So we need to temporarily put it in the weapons array
+            var temp_weapon = weapons[current_weapon_index];
+            weapons[current_weapon_index] = weaponCurrent;
+            UpdateWeaponTags(id, current_weapon_index);
+            weapons[current_weapon_index] = temp_weapon; // Restore original
+            
+            show_debug_message("Combined tags: " + active_combined_tags.DebugPrint());
+            show_debug_message("Active synergies: " + string(active_synergies));
+            show_debug_message("===================");
+            
             if (variable_instance_exists(nearest, "OnPickedUp")) {
                 nearest.OnPickedUp(id);
             }
@@ -278,6 +298,19 @@ function ThrowCarriedObject() {
         
         obj.moveX = lengthdir_x(throw_strength, throw_dir);
         obj.moveY = lengthdir_y(throw_strength, throw_dir);
+        obj.is_projectile = true;
+		obj.is_lob_shot = false;  // Straight throw
+        // ========== NEW: APPLY SYNERGIES TO THROWN OBJECT ==========
+        // Give the thrown object THROWABLE tag and apply synergies
+        if (variable_instance_exists(id, "active_combined_tags") && 
+            variable_instance_exists(id, "active_synergies")) {
+            
+            // Apply synergy behaviors (homing, power throw, etc)
+            ApplySynergyBehavior(obj, active_combined_tags, active_synergies, id);
+            
+            show_debug_message("Applied synergies to thrown object. Synergies: " + string(active_synergies));
+        }
+        // ===========================================================
         
         // Call throw event (for custom behavior)
         if (variable_instance_exists(obj, "OnThrown")) {
@@ -533,7 +566,65 @@ if (hp <= 0 && instance_exists(obj_main_controller) && !obj_main_controller.deat
 }
 
 
+// In obj_player Step_0
+if (keyboard_check_pressed(vk_f5)) {
+    show_debug_message("===== SYNERGY DEBUG =====");
+    
+    // Better character tag display
+    if (variable_instance_exists(id, "synergy_tags")) {
+        var char_tags = synergy_tags.GetAllTags();
+        var char_str = "";
+        for (var i = 0; i < array_length(char_tags); i++) {
+            char_str += GetTagName(char_tags[i]);
+            if (i < array_length(char_tags) - 1) char_str += ", ";
+        }
+        show_debug_message("Character Tags: " + char_str);
+    }
+    
+    // Better weapon tag display
+    if (weapons[current_weapon_index] != noone) {
+        var weapon = weapons[current_weapon_index];
+        if (variable_struct_exists(weapon, "synergy_tags")) {
+            var weap_tags = weapon.synergy_tags.GetAllTags();
+            var weap_str = "";
+            for (var i = 0; i < array_length(weap_tags); i++) {
+                weap_str += GetTagName(weap_tags[i]);
+                if (i < array_length(weap_tags) - 1) weap_str += ", ";
+            }
+            show_debug_message("Weapon Tags: " + weap_str);
+        }
+    }
+    
+    // Combined tags
+    if (variable_instance_exists(id, "active_combined_tags")) {
+        var combined = active_combined_tags.GetAllTags();
+        var comb_str = "";
+        for (var i = 0; i < array_length(combined); i++) {
+            comb_str += GetTagName(combined[i]);
+            if (i < array_length(combined) - 1) comb_str += ", ";
+        }
+        show_debug_message("Combined Tags: " + comb_str);
+    }
+    
+    // Active synergies
+    if (variable_instance_exists(id, "active_synergies")) {
+        var syn_str = "";
+        for (var i = 0; i < array_length(active_synergies); i++) {
+            syn_str += GetTagName(active_synergies[i]);
+            if (i < array_length(active_synergies) - 1) syn_str += ", ";
+        }
+        show_debug_message("Active Synergies: " + syn_str);
+    }
+}
 
+
+// Temporary test - press F6 to manually update tags
+if (keyboard_check_pressed(vk_f6)) {
+    if (weapons[current_weapon_index] != noone) {
+        UpdateWeaponTags(self, current_weapon_index);
+        show_debug_message("Force updated weapon tags!");
+    }
+}
 
 
 

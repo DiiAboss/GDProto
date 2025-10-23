@@ -15,7 +15,8 @@ enum MENU_STATE {
     GAME_OVER
 }
 
-
+// In Create event
+selected_character_class = CharacterClass.WARRIOR; // Instance variable instead of global
 menu_state = MENU_STATE.MAIN;
 selected_option = 0;
 menu_options = ["START", "SETTINGS", "EXIT"];
@@ -30,6 +31,9 @@ show_pause_menu = false;
 
 // Character selection
 selected_class = 0;
+
+// Initialize global variables
+global.selected_class = CharacterClass.WARRIOR; // Default selection
 
 class_options = [
     global.Player_Class.Warrior,
@@ -512,9 +516,11 @@ function HandleCharacterSelect(_mx, _my) {
     // Keyboard
     if (player_input.LeftPress) {
         selected_class = (selected_class - 1 + array_length(class_options)) mod array_length(class_options);
+        show_debug_message("Selected class index: " + string(selected_class)); // DEBUG
     }
     if (player_input.RightPress) {
         selected_class = (selected_class + 1) mod array_length(class_options);
+        show_debug_message("Selected class index: " + string(selected_class)); // DEBUG
     }
     
     // Mouse hover and click
@@ -525,14 +531,19 @@ function HandleCharacterSelect(_mx, _my) {
         
         if (point_in_rectangle(_mx, _my, xx - 100*scale, cy - 80*scale, xx + 100*scale, cy + 80*scale)) {
             selected_class = i;
+            show_debug_message("Mouse hover class index: " + string(i)); // DEBUG
             
             if (mouse_check_button_pressed(mb_left)) {
+                show_debug_message("Starting game with index: " + string(selected_class)); // DEBUG
+                show_debug_message("Class type: " + string(class_options[selected_class].type)); // DEBUG
                 StartGame();
             }
         }
     }
     
     if (player_input.Action) {
+        show_debug_message("Action pressed - Starting with index: " + string(selected_class)); // DEBUG
+        show_debug_message("Class type: " + string(class_options[selected_class].type)); // DEBUG
         StartGame();
     }
     
@@ -544,8 +555,9 @@ function HandleCharacterSelect(_mx, _my) {
 
 /// @function StartGame()
 function StartGame() {
-    global.selected_class = class_options[selected_class].type;
-	room_goto(rm_demo_room); 
+    selected_character_class = class_options[selected_class].type; // Set on the persistent controller
+    show_debug_message("SET selected_character_class to: " + string(selected_character_class));
+    room_goto(rm_demo_room);
 }
 
 /// Handle settings input:

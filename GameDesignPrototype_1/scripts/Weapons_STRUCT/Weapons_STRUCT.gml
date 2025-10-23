@@ -7,10 +7,18 @@ global.WeaponStruct =
         type: WeaponType.Range,
         projectile_struct: global.Projectile_.Arrow,
         default_element: ELEMENT.PHYSICAL,
+		synergy_tags: InitializeWeaponTags(Weapon.Bow),
 
         primary_attack: function(_self, _direction, _range, _projectile_struct) {
             var _attack = Shoot_Projectile(_self, _direction, _self, _range, _projectile_struct, obj_arrow);
             
+			
+			// NEW: Apply synergy behaviors to projectile
+		    if (variable_instance_exists(_self, "active_combined_tags")) {
+		        ApplySynergyBehavior(_attack, _self.active_combined_tags, _self.active_synergies, _self);
+		    }
+
+			
             var attack_event = CreateAttackEvent(_self, AttackType.RANGED, _direction, _attack);
             TriggerModifiers(_self, MOD_TRIGGER.ON_ATTACK, attack_event);
             
@@ -18,7 +26,16 @@ global.WeaponStruct =
         },
         
         secondary_attack: function(_self, _direction, _range, _projectile_struct) {
-            var _attack = Lob_Projectile(_self, _direction, _range, projectile_struct.object);
+           
+			
+			 var _attack = Lob_Projectile(_self, _direction, _range, projectile_struct.object);
+			
+						// NEW: Apply synergy behaviors to projectile
+		    if (variable_instance_exists(_self, "active_combined_tags")) {
+		        ApplySynergyBehavior(_attack, _self.active_combined_tags, _self.active_synergies, _self);
+		    }
+
+			
             return _attack;
         }
     },
@@ -30,6 +47,7 @@ global.WeaponStruct =
     projectile_struct: undefined, // Not using projectile struct
     melee_object_type: obj_chain_whip,
     default_element: ELEMENT.PHYSICAL,
+	synergy_tags: InitializeWeaponTags(Weapon.ChainWhip),
 
     // Attack queue system
     attack_queue: 0,
@@ -147,7 +165,7 @@ global.WeaponStruct =
         projectile_struct: undefined,
         melee_object_type: obj_sword,
         default_element: ELEMENT.PHYSICAL,
-
+		synergy_tags: InitializeWeaponTags(Weapon.Sword),
 
         combo_count: 0,
         max_combo: 3,
@@ -204,7 +222,7 @@ global.WeaponStruct =
         projectile_struct: global.Projectile_.Knife,
         melee_object_type: obj_dagger,
         default_element: ELEMENT.PHYSICAL,
-
+		synergy_tags: InitializeWeaponTags(Weapon.Dagger),
 
         combo_count: 0,
         max_combo: 3,
@@ -265,6 +283,13 @@ global.WeaponStruct =
             var attack_event = CreateAttackEvent(_self, AttackType.RANGED, _direction, proj);
             attack_event.projectile_count_bonus = 2; // 3 total knives
             
+			// NEW: Apply synergy behaviors to projectile
+		    if (variable_instance_exists(_self, "active_combined_tags")) {
+		        ApplySynergyBehavior(proj, _self.active_combined_tags, _self.active_synergies, _self);
+		    }
+
+			
+			
             TriggerModifiers(_self, MOD_TRIGGER.ON_ATTACK, attack_event);
             return proj;
         },
@@ -280,20 +305,38 @@ global.WeaponStruct =
         type: WeaponType.Range,
         projectile_struct: global.Projectile_.Holy_Water,
         default_element: ELEMENT.PHYSICAL,
+		synergy_tags: InitializeWeaponTags(Weapon.Holy_Water),
 
-
-        primary_attack: function(_self, _direction, _range, _projectile_struct) {
-            var _attack = Lob_Projectile(_self, _direction, _range, projectile_struct.object);
-            //return _attack;
-            
-            var attack_event = CreateAttackEvent(_self, AttackType.RANGED, _direction, _attack);
-            TriggerModifiers(_self, MOD_TRIGGER.ON_ATTACK, attack_event);
-            
-            return _attack;
-        },
+       primary_attack: function(_self, _direction, _range, _projectile_struct) {
+		    var proj = Lob_Projectile(_self, _direction, _range, projectile_struct.object);
+		    
+		    // NEW: Apply synergies to projectile
+		    if (variable_instance_exists(_self, "active_combined_tags") && 
+		        variable_instance_exists(_self, "active_synergies")) {
+		        ApplySynergyBehavior(proj, _self.active_combined_tags, _self.active_synergies, _self);
+		    }
+		    
+		    // Existing modifier trigger
+		    var attack_event = CreateAttackEvent(_self, AttackType.RANGED, _direction, proj);
+		    TriggerModifiers(_self, MOD_TRIGGER.ON_ATTACK, attack_event);
+		    
+		    return proj;
+		},
         
         secondary_attack: function(_self, _direction, _range, _projectile_struct) {
             var _attack = Lob_Projectile(_self, _direction, _range, projectile_struct.object);
+			
+			
+			// NEW: Apply synergies to projectile
+		    if (variable_instance_exists(_self, "active_combined_tags") && 
+		        variable_instance_exists(_self, "active_synergies")) {
+		        ApplySynergyBehavior(_attack, _self.active_combined_tags, _self.active_synergies, _self);
+		    }
+		    
+		    // Existing modifier trigger
+		    var attack_event = CreateAttackEvent(_self, AttackType.RANGED, _direction, _attack);
+		    TriggerModifiers(_self, MOD_TRIGGER.ON_ATTACK, attack_event);
+			
             return _attack;
         }
     },
@@ -304,7 +347,8 @@ global.WeaponStruct =
     type: WeaponType.Melee,
     projectile_struct: undefined,
     melee_object_type: obj_baseball_bat,
-    
+	synergy_tags: InitializeWeaponTags(Weapon.BaseballBat),    
+
     combo_count: 0,
     max_combo: 3,
     combo_timer: 0,
@@ -363,7 +407,7 @@ global.WeaponStruct =
         cooldown: 0,
         cooldown_max: 60,
         default_element: ELEMENT.PHYSICAL,
-
+		synergy_tags: InitializeWeaponTags(Weapon.Boomerang),
 
         primary_attack: function(_self, _direction, _range, _projectile_struct) {
             if (cooldown > 0) return noone;
@@ -397,7 +441,7 @@ global.WeaponStruct =
         type: WeaponType.Range,
         projectile_struct: global.Projectile_.Cannonball,
         default_element: ELEMENT.PHYSICAL,
-
+		synergy_tags: InitializeWeaponTags(Weapon.ChargeCannon),
 
         // Charge properties
         min_charge: 0.2,
@@ -490,7 +534,7 @@ global.WeaponStruct =
     max_charge_damage_mult: 3.0, // 3x damage at full charge
     min_charge_damage_mult: 0.5, // 0.5x damage at no charge
     default_element: ELEMENT.PHYSICAL,
-
+	synergy_tags: InitializeWeaponTags(Weapon.ThrowableItem),
 
     primary_attack: function(_self, _direction, _range, _projectile_struct) {
         // Only attack if carrying something

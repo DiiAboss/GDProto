@@ -70,7 +70,10 @@ global.Modifiers.TripleRhythmFire = {
     // Store configuration at top level
     trigger_on: 3,
     projectile: obj_fireball,
-    
+	
+    // NEW: Tags this modifier adds
+    synergy_tags: [SYNERGY_TAG.FIRE],
+	
     action: function(_entity, _event) {
         var mod_instance = _event.mod_instance;
         var mod_template = global.Modifiers[$ mod_instance.template_key];
@@ -119,6 +122,9 @@ global.Modifiers.DoubleLightning = {
     
     trigger_on: 2,  // Every 2nd attack
     
+	    // NEW: Tags this modifier adds
+    synergy_tags: [SYNERGY_TAG.LIGHTNING],
+	
     action: function(_entity, _event) {
         var mod_instance = _event.mod_instance;
         var mod_template = global.Modifiers[$ mod_instance.template_key];
@@ -174,6 +180,9 @@ global.Modifiers.SpreadFire = {
     spread_angle: 15,
     melee_arc_bonus: 30,
     
+	// NEW: Tags this modifier adds
+    synergy_tags: [SYNERGY_TAG.SPLASH],
+	
     action: function(_entity, _event) {
         var mod_template = global.Modifiers[$ _event.mod_instance.template_key];
         
@@ -212,7 +221,8 @@ global.Modifiers.ChainLightning = {
     jump_range: 150,        // Range for finding next target
     damage_multiplier: 0.5, // Damage relative to attack damage
     damage_falloff: 0.75,   // 75% damage retained per jump
-    
+    // NEW: Tags this modifier adds
+    synergy_tags: [SYNERGY_TAG.LIGHTNING],
     action: function(_entity, _event) {
         var mod_template = global.Modifiers[$ _event.mod_instance.template_key];
         
@@ -292,7 +302,8 @@ global.Modifiers.ChainLightning = {
 global.Modifiers.StaticCharge = {
     name: "Static Charge",
     triggers: [MOD_TRIGGER.ON_ATTACK],
-    
+        // NEW: Tags this modifier adds
+    synergy_tags: [SYNERGY_TAG.LIGHTNING],
     // Configuration
     charges_needed: 5,      // Attacks to build up
     proc_on_full: true,     // Auto-proc when charged
@@ -368,7 +379,8 @@ global.Modifiers.StaticCharge = {
 global.Modifiers.ThunderStrike = {
     name: "Thunder Strike",
     triggers: [MOD_TRIGGER.ON_ATTACK],
-    
+        // NEW: Tags this modifier adds
+    synergy_tags: [SYNERGY_TAG.LIGHTNING],
     proc_chance: 0.3,
     
     action: function(_entity, _event) {
@@ -417,7 +429,8 @@ global.Modifiers.ThunderStrike = {
 global.Modifiers.DeathFireworks = {
     name: "Corpse Explosion",
     triggers: [MOD_TRIGGER.ON_KILL],
-    
+        // NEW: Tags this modifier adds
+    synergy_tags: [SYNERGY_TAG.EXPLOSIVE],
     // Configuration
     projectile_count: 8,
     projectile_type: obj_arrow,
@@ -519,7 +532,8 @@ global.Modifiers.DeathFireworks = {
 global.Modifiers.PoisonCorpse = {
     name: "Toxic Explosion",
     triggers: [MOD_TRIGGER.ON_KILL],
-    
+        // NEW: Tags this modifier adds
+    synergy_tags: [SYNERGY_TAG.EXPLOSIVE, SYNERGY_TAG.POISON],
     projectile_count: 6,
     projectile_type: obj_poison_cloud,  // Different projectile
     projectile_speed: 3,
@@ -552,7 +566,8 @@ global.Modifiers.PoisonCorpse = {
 global.Modifiers.ChainReaction = {
     name: "Chain Reaction",
     triggers: [MOD_TRIGGER.ON_KILL],
-    
+        // NEW: Tags this modifier adds
+    synergy_tags: [SYNERGY_TAG.EXPLOSIVE, SYNERGY_TAG.CHAIN],
     proc_chance: 0.5,  // 50% chance for chain reaction
     
     action: function(_entity, _event) {
@@ -594,7 +609,8 @@ global.Modifiers.MultiShot = {
     name: "Multi Shot",
     triggers: [MOD_TRIGGER.ON_ATTACK],
     extra_projectiles: 1,
-    
+        // NEW: Tags this modifier adds
+    synergy_tags: [SYNERGY_TAG.CHAIN],
     action: function(_entity, _event) {
         if (_event.attack_type != AttackType.RANGED && _event.attack_type != AttackType.CANNON) return;
         
@@ -608,7 +624,8 @@ global.Modifiers.MultiShot = {
 global.Modifiers.BurstFire = {
     name: "Burst Fire",
     triggers: [MOD_TRIGGER.ON_ATTACK],
-    
+            // NEW: Tags this modifier adds
+    synergy_tags: [SYNERGY_TAG.CHAIN],
     burst_count: 3,     // Shots in burst
     burst_delay: 5,     // Frames between shots
     
@@ -638,7 +655,8 @@ global.Modifiers.AttackUp = {
     name: "Attack Up",
     triggers: [MOD_TRIGGER.PASSIVE],
     attack_mult: 1.2, // +20%
-    
+            // NEW: Tags this modifier adds
+    synergy_tags: [SYNERGY_TAG.BLUNT],
     action: function(_entity, _event) { }
 };
 
@@ -647,7 +665,8 @@ global.Modifiers.HPUp = {
     name: "Tough Skin",
     triggers: [MOD_TRIGGER.PASSIVE],
     hp_mult: 1.25, // +25% HP
-    
+                // NEW: Tags this modifier adds
+    synergy_tags: [SYNERGY_TAG.ATHLETIC],
     action: function(_entity, _event) { }
 };
 
@@ -656,7 +675,8 @@ global.Modifiers.SpeedUp = {
     name: "Swift Steps",
     triggers: [MOD_TRIGGER.PASSIVE],
     speed_mult: 1.15, // +15%
-    
+                // NEW: Tags this modifier adds
+    synergy_tags: [SYNERGY_TAG.ATHLETIC],
     action: function(_entity, _event) { }
 };
 
@@ -665,7 +685,7 @@ global.Modifiers.KnockbackResist = {
     name: "Heavy Frame",
     triggers: [MOD_TRIGGER.PASSIVE],
     kb_mult: 0.8, // -20% knockback taken
-    
+    synergy_tags: [SYNERGY_TAG.ATHLETIC],
     action: function(_entity, _event) { }
 };
 
@@ -675,7 +695,7 @@ global.Modifiers.GlassCannon = {
     triggers: [MOD_TRIGGER.PASSIVE],
     attack_mult: 1.4, // +40% damage
     hp_mult: 0.6,     // -40% HP
-    
+    synergy_tags: [SYNERGY_TAG.ATHLETIC],
     action: function(_entity, _event) { }
 };
 
@@ -685,7 +705,7 @@ global.Modifiers.Berserker = {
     triggers: [MOD_TRIGGER.ON_ATTACK],
     min_bonus: 1.0,
     max_bonus: 1.5,
-    
+    synergy_tags: [SYNERGY_TAG.ATHLETIC],
     action: function(_entity, _event) {
         var mod_template = global.Modifiers[$ _event.mod_instance.template_key];
         var hp_ratio = _entity.hp / _entity.hp_max;
@@ -700,7 +720,7 @@ global.Modifiers.AdrenalineRush = {
     triggers: [MOD_TRIGGER.PASSIVE],
     hp_threshold: 0.5,
     speed_mult_low_hp: 1.3,
-    
+    synergy_tags: [SYNERGY_TAG.ATHLETIC],
     action: function(_entity, _event) {
         if (_entity.hp / _entity.hp_max < 0.5) {
             _entity.stats.speed *= 1.3;
@@ -714,7 +734,7 @@ global.Modifiers.LuckyStrike = {
     triggers: [MOD_TRIGGER.ON_ATTACK],
     crit_chance: 0.1,
     crit_mult: 2.0,
-    
+    synergy_tags: [SYNERGY_TAG.ATHLETIC],
     action: function(_entity, _event) {
         var mod_template = global.Modifiers[$ _event.mod_instance.template_key];
         if (random(1) < mod_template.crit_chance) {
@@ -729,7 +749,7 @@ global.Modifiers.SecondWind = {
     name: "Second Wind",
     triggers: [MOD_TRIGGER.ON_ROOM_CLEAR],
     heal_ratio: 0.1,
-    
+    synergy_tags: [SYNERGY_TAG.ATHLETIC],
     action: function(_entity, _event) {
         var mod_template = global.Modifiers[$ _event.mod_instance.template_key];
         var heal_amount = _entity.hp_max * mod_template.heal_ratio;
@@ -744,7 +764,7 @@ global.Modifiers.CriticalFocus = {
     base_chance: 0.05,
     stack_gain: 0.02,
     max_bonus: 0.25,
-    
+    synergy_tags: [SYNERGY_TAG.ATHLETIC],
     action: function(_entity, _event) {
         var mod_instance = _event.mod_instance;
         var mod_template = global.Modifiers[$ mod_instance.template_key];

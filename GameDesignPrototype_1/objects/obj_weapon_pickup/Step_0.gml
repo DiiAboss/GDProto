@@ -88,4 +88,5 @@ if (dist <= pickup_range && can_pickup) {
 } else {
     show_prompt = false;
 }
+
 depth = -y;
