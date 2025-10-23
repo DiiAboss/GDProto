@@ -29,6 +29,10 @@ timers = new TimerComponent();
 // ==========================================
 class_component = CreateCharacterClass(character_class, stats, damage_sys, class_stats);
 
+// Synergy tagging
+synergy_tags = GetClassSynergyTags(character_class);
+active_synergy_sources = [];
+
 // Legacy compatibility (remove once fully refactored)
 attack		 = stats.attack;
 base_attack	 = stats.base_attack;
@@ -63,12 +67,17 @@ weapons = array_create(weapon_slots, noone);
 current_weapon_index = 0;
 
 // Give starting weapon
-//weapons[1] = global.WeaponStruct.Dagger; // Or whatever starting weapon
-weapons[1] = undefined;
-weapons[0] = global.WeaponStruct.Dagger; // Or whatever starting weapon
-weaponCurrent = weapons[0];
+var _starting_weapon = EnsureWeaponInstance(global.WeaponStruct.Dagger);
+weapons[0] = _starting_weapon;
+weaponCurrent = _starting_weapon;
+
+if (weapon_slots > 1) {
+    weapons[1] = undefined;
+}
 
 previous_weapon_instance = weaponCurrent;
+
+RefreshPlayerWeaponSynergies(self, weaponCurrent);
 
 
 // Charge weapon
@@ -159,9 +168,6 @@ carried_object = noone;
 carry_speed_multiplier = 0.8; // Slower when carrying
 
 
-var test_synergy = GetWeaponSynergy(CharacterClass.HOLY_MAGE, Weapon.BaseballBat);
-show_debug_message("Test synergy type: " + string(test_synergy.type));
-show_debug_message("Damage mult: " + string(test_synergy.damage_mult));
 
 
 

@@ -147,16 +147,24 @@ if (weaponCurrent)
 	// ==========================================
 	// WEAPON ATTACKS
 	// ==========================================
-	if (input.FirePress) {
-	    var timing_quality = EvaluateAttackTiming();
-	    var timing_mult = ApplyTimingBonus(timing_quality);
-	    
-	    var attack_result = weaponCurrent.primary_attack(self, mouseDirection, mouseDistance, weaponCurrent.projectile_struct);
-	    
-	    if (attack_result != noone) {
-	        if (weaponCurrent.type == WeaponType.Melee && instance_exists(attack_result)) {
-	            attack_result.attack *= timing_mult;
-	            if (timing_quality == "perfect") {
+        if (input.FirePress) {
+            var timing_quality = EvaluateAttackTiming();
+            var timing_mult = ApplyTimingBonus(timing_quality);
+
+            var _primary_attack = undefined;
+            if (variable_struct_exists(weaponCurrent, "primary_attack")) {
+                _primary_attack = weaponCurrent.primary_attack;
+            }
+
+            var attack_result = noone;
+            if (is_callable(_primary_attack)) {
+                attack_result = _primary_attack(self, mouseDirection, mouseDistance, weaponCurrent.projectile_struct);
+            }
+
+            if (attack_result != noone) {
+                if (weaponCurrent.type == WeaponType.Melee && instance_exists(attack_result)) {
+                    attack_result.attack *= timing_mult;
+                    if (timing_quality == "perfect") {
 	                attack_result.is_perfect_attack = true;
 	            }
 	        }
@@ -168,14 +176,24 @@ if (weaponCurrent)
 	    }
 	}
 	
-	if (input.AltPress) {
-	    weaponCurrent.secondary_attack(self, mouseDirection, mouseDistance, weaponCurrent.projectile_struct);
-		show_debug_message("AltrFire Pressed");
-	}
-	
-	if (variable_struct_exists(weaponCurrent, "step")) {
-	    weaponCurrent.step(self);
-	}
+        if (input.AltPress) {
+            var _secondary_attack = undefined;
+            if (variable_struct_exists(weaponCurrent, "secondary_attack")) {
+                _secondary_attack = weaponCurrent.secondary_attack;
+            }
+
+            if (is_callable(_secondary_attack)) {
+                _secondary_attack(self, mouseDirection, mouseDistance, weaponCurrent.projectile_struct);
+                show_debug_message("AltrFire Pressed");
+            }
+        }
+
+        if (variable_struct_exists(weaponCurrent, "step")) {
+            var _weapon_step = weaponCurrent.step;
+            if (is_callable(_weapon_step)) {
+                _weapon_step(self);
+            }
+        }
 	
 	UpdateTimingVisuals();
 }
@@ -224,13 +242,15 @@ function AttemptPickup() {
             
             // **SWITCH TO THROWABLE WEAPON**
             previous_weapon_instance = weaponCurrent; // Store current weapon
-            weaponCurrent = global.WeaponStruct.ThrowableItem;
+            weaponCurrent = EnsureWeaponInstance(global.WeaponStruct.ThrowableItem);
             charge_amount = 0;
             
             if (variable_instance_exists(nearest, "OnPickedUp")) {
                 nearest.OnPickedUp(id);
             }
             
+            RefreshPlayerWeaponSynergies(id, weaponCurrent);
+
             show_debug_message("Picked up: " + object_get_name(nearest.object_index));
         }
     }
@@ -268,6 +288,9 @@ function ThrowCarriedObject() {
     carried_object = noone;
     stats.temp_speed_mult = 1.0; // Restore speed
     weaponCurrent = previous_weapon_instance;
+    if (weaponCurrent != undefined) {
+        RefreshPlayerWeaponSynergies(id, weaponCurrent);
+    }
     show_debug_message("Threw object!");
 }
 
@@ -293,6 +316,9 @@ function DropCarriedObject() {
         obj.OnDropped(id);
     }
     weaponCurrent = previous_weapon_instance;
+    if (weaponCurrent != undefined) {
+        RefreshPlayerWeaponSynergies(id, weaponCurrent);
+    }
     carried_object = noone;
     stats.temp_speed_mult = 1.0;
 }
@@ -462,12 +488,16 @@ function HandleWeaponSwitching() {
         }
     }
 	
-	if (keyboard_check_pressed(ord("7"))) {
+        if (keyboard_check_pressed(ord("7"))) {
     if (instance_exists(melee_weapon)) instance_destroy(melee_weapon);
-    new_weapon = global.WeaponStruct.ChainWhip;
+    new_weapon = EnsureWeaponInstance(global.WeaponStruct.ChainWhip);
+    weaponCurrent = new_weapon;
+    weapons[current_weapon_index] = new_weapon;
     melee_weapon = instance_create_depth(x, y, depth-1, obj_chain_whip);
     melee_weapon.owner = id;
+    melee_weapon.weapon_id = weaponCurrent.id;
     weapon_changed = true;
+    RefreshPlayerWeaponSynergies(id, weaponCurrent);
 }
 }
 
