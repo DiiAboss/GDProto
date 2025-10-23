@@ -140,7 +140,8 @@ enum SynergyType {
     // Vampire synergies
     BLOOD_BAT,              // Vampire + Bat: Lifesteal on hit
     CRIMSON_BLADE,          // Vampire + Sword: Blood trail projectiles
-    
+    LIFESTEAL_GRENADE,      // Vampire + Grenade: Lifesteal explosion
+
     // Can add more as needed
 }
 
@@ -152,6 +153,11 @@ enum SynergyProjectileBehavior {
     ON_COMBO_FINISH,        // Spawn on final combo hit only
     REPLACE_ATTACK,         // Don't swing, just shoot projectile
     THROW_STYLE             // Change grenade throw behavior
+}
+
+enum SynergyTagMatch {
+    ALL,
+    ANY
 }
 
 
