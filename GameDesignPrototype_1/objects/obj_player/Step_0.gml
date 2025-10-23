@@ -147,16 +147,24 @@ if (weaponCurrent)
 	// ==========================================
 	// WEAPON ATTACKS
 	// ==========================================
-	if (input.FirePress) {
-	    var timing_quality = EvaluateAttackTiming();
-	    var timing_mult = ApplyTimingBonus(timing_quality);
-	    
-	    var attack_result = weaponCurrent.primary_attack(self, mouseDirection, mouseDistance, weaponCurrent.projectile_struct);
-	    
-	    if (attack_result != noone) {
-	        if (weaponCurrent.type == WeaponType.Melee && instance_exists(attack_result)) {
-	            attack_result.attack *= timing_mult;
-	            if (timing_quality == "perfect") {
+        if (input.FirePress) {
+            var timing_quality = EvaluateAttackTiming();
+            var timing_mult = ApplyTimingBonus(timing_quality);
+
+            var _primary_attack = undefined;
+            if (variable_struct_exists(weaponCurrent, "primary_attack")) {
+                _primary_attack = weaponCurrent.primary_attack;
+            }
+
+            var attack_result = noone;
+            if (is_method(_primary_attack)) {
+                attack_result = _primary_attack(self, mouseDirection, mouseDistance, weaponCurrent.projectile_struct);
+            }
+
+            if (attack_result != noone) {
+                if (weaponCurrent.type == WeaponType.Melee && instance_exists(attack_result)) {
+                    attack_result.attack *= timing_mult;
+                    if (timing_quality == "perfect") {
 	                attack_result.is_perfect_attack = true;
 	            }
 	        }
@@ -168,11 +176,18 @@ if (weaponCurrent)
 	    }
 	}
 	
-	if (input.AltPress) {
-	    weaponCurrent.secondary_attack(self, mouseDirection, mouseDistance, weaponCurrent.projectile_struct);
-		show_debug_message("AltrFire Pressed");
-	}
-	
+        if (input.AltPress) {
+            var _secondary_attack = undefined;
+            if (variable_struct_exists(weaponCurrent, "secondary_attack")) {
+                _secondary_attack = weaponCurrent.secondary_attack;
+            }
+
+            if (is_method(_secondary_attack)) {
+                _secondary_attack(self, mouseDirection, mouseDistance, weaponCurrent.projectile_struct);
+                show_debug_message("AltrFire Pressed");
+            }
+        }
+
         if (variable_struct_exists(weaponCurrent, "step")) {
             var _weapon_step = weaponCurrent.step;
             if (is_method(_weapon_step)) {
