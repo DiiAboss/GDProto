@@ -173,9 +173,12 @@ if (weaponCurrent)
 		show_debug_message("AltrFire Pressed");
 	}
 	
-	if (variable_struct_exists(weaponCurrent, "step")) {
-	    weaponCurrent.step(self);
-	}
+        if (variable_struct_exists(weaponCurrent, "step")) {
+            var _weapon_step = weaponCurrent.step;
+            if (is_method(_weapon_step)) {
+                _weapon_step(self);
+            }
+        }
 	
 	UpdateTimingVisuals();
 }
