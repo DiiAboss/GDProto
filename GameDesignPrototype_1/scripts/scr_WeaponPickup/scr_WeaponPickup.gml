@@ -2,7 +2,7 @@
 function SpawnWeaponPickup(_x, _y, _weapon_struct) {
     var pickup = instance_create_depth(_x, _y, 0, obj_weapon_pickup);
     
-    pickup.weapon_data = _weapon_struct;
+    pickup.weapon_data = EnsureWeaponInstance(_weapon_struct);
     pickup.weapon_name = _weapon_struct.name;
     
     // Set sprite based on weapon
