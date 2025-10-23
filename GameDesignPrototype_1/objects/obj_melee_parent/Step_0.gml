@@ -72,7 +72,9 @@ if (instance_exists(owner)) {
     }
     
     // Check if weapon has synergy projectile spawning
-    if (variable_instance_exists(id, "synergy_data") && 
+    if (variable_instance_exists(id, "synergy_data") &&
+        is_struct(synergy_data) &&
+        variable_struct_exists(synergy_data, "projectile_behavior") &&
         synergy_data.projectile_behavior != SynergyProjectileBehavior.NONE) {
         
         var should_spawn = false;
@@ -168,7 +170,9 @@ if (instance_exists(owner)) {
                 // The controller will trigger ON_KILL modifiers properly
                 
                 // Synergy projectiles on hit
-                if (variable_instance_exists(id, "synergy_data") && 
+                if (variable_instance_exists(id, "synergy_data") &&
+                    is_struct(synergy_data) &&
+                    variable_struct_exists(synergy_data, "projectile_behavior") &&
                     synergy_data.projectile_behavior == SynergyProjectileBehavior.ON_HIT) {
                     SpawnSynergyProjectiles(synergy_data, owner);
                 }
