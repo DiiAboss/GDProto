@@ -40,6 +40,10 @@ if (dist <= pickup_range && can_pickup) {
             // Update current weapon reference
             player.weaponCurrent = weapon_data;
             
+            // ========== NEW: UPDATE SYNERGY TAGS ==========
+            UpdateWeaponTags(player, slot);
+            // ==============================================
+            
             // Handle melee weapon switching
             if (weapon_data.type == WeaponType.Melee) {
                 if (instance_exists(player.melee_weapon)) {
@@ -82,4 +86,5 @@ if (dist <= pickup_range && can_pickup) {
 } else {
     show_prompt = false;
 }
+
 depth = -y;

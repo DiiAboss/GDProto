@@ -3,9 +3,30 @@
 // ==========================================
 // CHARACTER CLASS SETUP
 // ==========================================
-character_class = CharacterClass.WARRIOR;
+// Get selected class FIRST (before anything else uses it)
+// Get from the persistent main controller instead of global
+if (instance_exists(obj_main_controller)) {
+    character_class = obj_main_controller.selected_character_class;
+} else {
+    character_class = CharacterClass.WARRIOR; // Fallback
+}
+show_debug_message("PLAYER CREATED WITH CLASS: " + string(character_class));
+show_debug_message("0=WARRIOR, 1=HOLY_MAGE, 2=VAMPIRE");
+
+// Now get stats based on correct class
 class_stats = GetCharacterStats(character_class);
 
+// Initialize character synergy tags
+synergy_tags = InitializeCharacterTags(character_class);
+
+// Container for temporary mod tags
+active_mod_tags = new SynergyTags();
+
+// Cache for current weapon combo
+active_combined_tags = new SynergyTags();
+active_synergies = [];
+
+show_debug_message("Player Tags Initialized: " + synergy_tags.DebugPrint());
 
 status = new StatusEffectComponent(self);
 
@@ -27,7 +48,9 @@ timers = new TimerComponent();
 // ==========================================
 // CHARACTER CLASS COMPONENT
 // ==========================================
+// Create class component AFTER stats and damage_sys exist
 class_component = CreateCharacterClass(character_class, stats, damage_sys, class_stats);
+
 
 // Legacy compatibility (remove once fully refactored)
 attack		 = stats.attack;
@@ -295,7 +318,7 @@ RespawnFromPit = function() {
     show_debug_message("PLAYER RESPAWNED at " + string(x) + ", " + string(y));
 }
 
-SpawnWeaponPickup(x, y - 64, global.WeaponStruct.Dagger);
+SpawnWeaponPickup(x, y - 64, global.WeaponStruct.HolyWater);
 
 
 is_dead = false;

@@ -20,80 +20,73 @@ function mod_heal_on_kill(player, _mod, enemy) {
     player.hp = clamp(player.hp + 5, 0, player.maxHp);
 }
 
-function CreateBonusProjectiles(_entity, _event) {
-    if (_event.attack_type != AttackType.RANGED && _event.attack_type != AttackType.CANNON) return;
+/// @function CreateBonusProjectiles(_entity, _event_data)
+function CreateBonusProjectiles(_entity, _event_data) {
+    if (!instance_exists(_event_data.projectile)) return;
     
-    var bonus_count = _event.projectile_count_bonus;
-    if (bonus_count <= 0) return;
+    var original_proj = _event_data.projectile;
+    var bonus_count = _event_data.projectile_count_bonus;
+    var spread_angle = 15;
     
-    with (_entity) {
-        // Get projectile type
-        var proj_type = obj_arrow;
-        var is_lobbed = false;
+    // FIX: Use attack_direction instead of direction
+    var base_direction = _event_data.attack_direction ?? original_proj.direction ?? 0;
+    
+    for (var i = 0; i < bonus_count; i++) {
+        var angle_offset = spread_angle * (i + 1);
+        var new_dir = base_direction + choose(angle_offset, -angle_offset);
         
-        if (_event.projectile != noone && instance_exists(_event.projectile)) {
-            proj_type = _event.projectile.object_index;
-            
-            // Check if it's a lobbed projectile
-            if (variable_instance_exists(_event.projectile, "lobbed")) {
-                is_lobbed = _event.projectile.lobbed;
-            }
+        // Create bonus projectile
+        var bonus_proj = instance_create_depth(
+            original_proj.x,
+            original_proj.y,
+            original_proj.depth,
+            original_proj.object_index
+        );
+        
+        // Copy properties from original
+        bonus_proj.direction = new_dir;
+        bonus_proj.image_angle = new_dir;
+        bonus_proj.speed = original_proj.speed;
+        bonus_proj.damage = original_proj.damage;
+        bonus_proj.owner = original_proj.owner;
+        
+        // Copy lob properties for thrown weapons
+        if (variable_instance_exists(original_proj, "xStart")) {
+            bonus_proj.xStart = original_proj.xStart;
+            bonus_proj.yStart = original_proj.yStart;
+            bonus_proj.targetDistance = original_proj.targetDistance;
+            bonus_proj.lob_direction = new_dir;
         }
         
-        // Calculate spread
-        var spread_angle = 15; // Degrees between projectiles
-        var total_spread = spread_angle * bonus_count;
-        
-        // Create projectiles in a spread
-        for (var i = 0; i < bonus_count; i++) {
-            var angle_offset = -total_spread/2 + (i * spread_angle) + spread_angle/2;
-            var proj_direction = _event.attack_direction + angle_offset;
-            
-            // LOBBED PROJECTILES
-            if (is_lobbed) {
-                var lobbed_proj = instance_create_depth(
-                    x,
-                    y,
-                    depth - 1,
-                    proj_type
-                );
-                
-                if (lobbed_proj != noone && instance_exists(lobbed_proj)) {
-                    // Initialize lobbed projectile with spread direction
-                    lobbed_proj.xStart = x;
-                    lobbed_proj.yStart = y;
-                    lobbed_proj.targetDistance = distance_to_point(mouse_x, mouse_y);
-                    lobbed_proj.lob_direction = proj_direction; // SPREAD DIRECTION
-                    lobbed_proj.direction = proj_direction;
-                    lobbed_proj.owner = id;
-                    lobbed_proj.damage = (_event.damage ?? attack) * 0.8;
-                    
-                    // Mark as lobbed
-                    lobbed_proj.lobbed = true;
-                    lobbed_proj.lobStep = 0;
-                }
-            }
-            // REGULAR PROJECTILES
-            else {
-                var proj = instance_create_depth(
-                    _event.attack_position_x,
-                    _event.attack_position_y,
-                    depth - 1,
-                    proj_type
-                );
-                
-                proj.direction = proj_direction;
-                proj.speed = 8;
-                proj.damage = (_event.damage ?? attack) * 0.8;
-                proj.owner = id;
-                proj.image_angle = proj.direction;
-                proj.image_xscale = 0.9;
-                proj.image_yscale = 0.9;
-            }
+        // Copy synergy data
+        if (variable_instance_exists(original_proj, "synergy_tags")) {
+            bonus_proj.synergy_tags = original_proj.synergy_tags;
         }
+        if (variable_instance_exists(original_proj, "active_synergies")) {
+            bonus_proj.active_synergies = original_proj.active_synergies;
+        }
+        if (variable_instance_exists(original_proj, "synergy_owner")) {
+            bonus_proj.synergy_owner = original_proj.synergy_owner;
+        }
+        
+        // Copy synergy-applied properties
+        if (variable_instance_exists(original_proj, "element_type")) {
+            bonus_proj.element_type = original_proj.element_type;
+        }
+        if (variable_instance_exists(original_proj, "has_lifesteal")) {
+            bonus_proj.has_lifesteal = original_proj.has_lifesteal;
+            bonus_proj.lifesteal_percent = original_proj.lifesteal_percent;
+        }
+        if (variable_instance_exists(original_proj, "explosion_damage")) {
+            bonus_proj.explosion_damage = original_proj.explosion_damage;
+        }
+        if (variable_instance_exists(original_proj, "explosion_radius")) {
+            bonus_proj.explosion_radius = original_proj.explosion_radius;
+        }
+        
+        show_debug_message("Created bonus projectile with spread: " + string(angle_offset));
     }
 }
-
 
 function TriggerModifiers(_entity, _trigger, _event_data) {
     if (!variable_instance_exists(_entity, "mod_cache")) return;
@@ -143,7 +136,15 @@ function AddModifier(_entity, _modifier_key) {
         return noone;
     }
     
-    var mod_template = global.Modifiers[$ _modifier_key];
+     var mod_template = global.Modifiers[$ _modifier_key];
+    
+    // NEW: Add synergy tags from modifier
+    if (variable_struct_exists(mod_template, "synergy_tags")) {
+        for (var i = 0; i < array_length(mod_template.synergy_tags); i++) {
+            AddModifierTag(_entity, mod_template.synergy_tags[i]);
+        }
+    }
+
     
     // Create instance
     var mod_instance = {

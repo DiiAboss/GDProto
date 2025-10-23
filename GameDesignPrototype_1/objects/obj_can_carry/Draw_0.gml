@@ -77,4 +77,36 @@ if (knockback.IsActive()) {
     draw_arrow(x, y, x + knockback.x_velocity * 5, y + knockback.y_velocity * 5, 10);
     draw_set_color(c_white);
 }
-*/
+*/// Visual effects for synergies
+if (variable_instance_exists(id, "visual_effect") && is_projectile) {
+    switch (visual_effect) {
+        case "purple_glow":
+            // Mage homing glow
+            gpu_set_blendmode(bm_add);
+            draw_sprite_ext(sprite_index, image_index, x, y, 
+                1.2, 1.2, image_angle, c_purple, 0.4);
+            gpu_set_blendmode(bm_normal);
+            
+            // Optional: Draw line to homing target
+            if (is_homing && instance_exists(homing_target)) {
+                draw_set_color(c_purple);
+                draw_set_alpha(0.2);
+                draw_line_width(x, y, homing_target.x, homing_target.y, 2);
+                draw_set_alpha(1);
+            }
+            break;
+            
+        case "speed_lines":
+            // Baseball player speed lines
+            if (moveX != 0 || moveY != 0) {
+                var move_dir = point_direction(0, 0, moveX, moveY);
+                var trail_x = x - lengthdir_x(16, move_dir);
+                var trail_y = y - lengthdir_y(16, move_dir);
+                draw_set_color(c_white);
+                draw_set_alpha(0.6);
+                draw_line_width(x, y, trail_x, trail_y, 3);
+                draw_set_alpha(1);
+            }
+            break;
+    }
+}

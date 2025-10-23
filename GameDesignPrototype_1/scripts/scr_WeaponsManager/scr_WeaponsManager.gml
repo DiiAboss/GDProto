@@ -265,6 +265,13 @@ function SwitchToWeaponSlot(_slot_index) {
     
     current_weapon_index = _slot_index;
     weaponCurrent = weapons[_slot_index];
+	
+	// NEW: Update synergy tags for new weapon
+    UpdateWeaponTags(self, _slot_index);
+    
+    show_debug_message("Switched to weapon. Active synergies: " + string(array_length(active_synergies)));
+	
+	
     if !(weaponCurrent) return;
     // Handle melee weapon switching
     if (weaponCurrent.type == WeaponType.Melee) {
