@@ -153,6 +153,7 @@ function DamageComponent(_owner, _max_hp) constructor {
             resist_mult = clamp(resist_mult, 0.1, 2.0);
             final_dmg *= resist_mult;
         }
+		
 		spawn_damage_number(owner.x, owner.y, final_dmg);
         hp -= final_dmg;
         last_damage = final_dmg;

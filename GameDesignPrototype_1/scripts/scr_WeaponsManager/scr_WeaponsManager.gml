@@ -99,7 +99,7 @@ function GetWeaponName(_weapon_id) {
 /// @description Create a popup asking player which weapon to replace
 function ShowWeaponSwapPrompt(_player, _new_weapon_struct) {
     // Pause game
-    global.gameSpeed = 0.1;
+    //global.gameSpeed = 0.1;
     
     // Create swap prompt
     global.weapon_swap_prompt = {
@@ -153,7 +153,7 @@ function UpdateWeaponSwapPrompt() {
 /// @function CloseWeaponSwapPrompt()
 function CloseWeaponSwapPrompt() {
     global.weapon_swap_prompt = undefined;
-    global.gameSpeed = 1.0;
+    //global.gameSpeed = 1.0;
 }
 
 /// @function DrawWeaponSwapPrompt()

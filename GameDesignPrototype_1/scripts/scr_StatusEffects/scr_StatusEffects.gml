@@ -109,10 +109,10 @@ function StatusEffectComponent(_owner) constructor {
     static DrawDebug = function() {
         draw_set_color(c_white);
         draw_text(owner.x + 20, owner.y - 40,
-            "🔥" + string(burn_timer) +
-            "  ❄️" + string(freeze_timer) +
-            "  ☠️" + string(poison_timer) +
-            "  ⚡" + string(shock_timer)
+            "burn�" + string(burn_timer) +
+            "freeze️" + string(freeze_timer) +
+            "posion️" + string(poison_timer) +
+            "lightning" + string(shock_timer)
         );
     }
 }

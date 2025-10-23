@@ -64,14 +64,7 @@ function on_level_up() {
     maxHp += 5; // Gain 5 max HP per level
     hp += 5;    // Also heal the 5 HP gained
 }
-// ==========================================
-// PAUSE INPUT
-// ==========================================
-if (keyboard_check_pressed(vk_escape)) {
-    global.pause_game = true;
-    global.gameSpeed = 0;
-    exit;
-}
+
 
 // ==========================================
 // STAT RECALCULATION

@@ -22,8 +22,8 @@ tilemap_id = layer_tilemap_get_id(tile_layer_id);
 // COMPONENTS (matching player)
 // ==========================================
 damage_sys = new DamageComponent(self, 50); // 100 base HP
-knockback = new KnockbackComponent(0.85, 0.1);
-
+knockback  = new KnockbackComponent(0.85, 0.1);
+status     = new StatusEffectComponent(self);
 // Legacy compatibility
 hp = damage_sys.hp;
 maxHp = damage_sys.max_hp;
@@ -115,28 +115,12 @@ controller_step = function(_delta, _player_exists, _player_x, _player_y, _player
     // ==========================================
     // COMPONENT UPDATES
     // ==========================================
-    damage_sys.Update();
+    
+	if (global.gameSpeed <= 0) exit;
+	damage_sys.Update();
     hp = damage_sys.hp;
     
-    // ==========================================
-    // BURNING DAMAGE OVER TIME
-    // ==========================================
-    if (is_burning && burn_timer > 0) {
-        burn_timer = timer_tick(burn_timer);
-        
-        burn_tick_counter += _delta;
-        if (burn_tick_counter >= 30) {
-            burn_tick_counter = 0;
-            damage_sys.TakeDamage(burn_damage_per_tick, noone);
-        }
-        
-        if (burn_timer <= 0) {
-            is_burning = false;
-            burn_tick_counter = 0;
-            image_blend = c_white;
-        }
-    }
-    
+    status.Update();
     // ==========================================
     // DEATH DETECTION - FIXED
     // ==========================================

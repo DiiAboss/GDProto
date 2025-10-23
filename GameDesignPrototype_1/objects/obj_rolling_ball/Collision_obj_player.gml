@@ -13,11 +13,11 @@ if (hitPlayer != noone) {
         //hitPlayer.hp -= damage;
 		hitPlayer.damage_sys.TakeDamage(damage, self);  
         		// Visual feedback - spawn damage number
-        spawn_damage_number(x, y - 16, damage, currentColor, false);
+        
         // Apply knockback (scaled by level)
         var kbDir = point_direction(x, y, hitPlayer.x, hitPlayer.y);
-        hitPlayer.knockbackX = lengthdir_x(knockbackForce, kbDir);
-        hitPlayer.knockbackY = lengthdir_y(knockbackForce, kbDir);
+		
+		hitPlayer.knockback.Apply(kbDir, knockbackForce);
         
         // Bounce off
         myDir = point_direction(hitPlayer.x, hitPlayer.y, x, y);

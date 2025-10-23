@@ -1,5 +1,5 @@
 /// @desc obj_game_manager Create Event - GAMEPLAY ONLY
-
+show_debug_message("GameManager CREATED: " + string(id) + " | room: " + room_get_name(room));
 depth = -999;
 
 
@@ -222,7 +222,7 @@ function HandleGameplayStart() {
     chests_opened = 0;
     playerModsArray = [];
     game_speed = 1.0;
-    global.gameSpeed = game_speed;
+    global.gameSpeed = 1;
     
     CreateEnemyController();
     CreateUIManager();

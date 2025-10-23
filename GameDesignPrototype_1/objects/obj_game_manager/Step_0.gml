@@ -1,15 +1,14 @@
 /// @desc Game Manager Step
-
-ui.update();
-
 pause_manager.Update();
 
 
 score_manager.Update(game_speed_delta());
 time_manager.Update(game_speed_delta());
+//if (global.gameSpeed <= 0) exit;
 
-
-if (instance_exists(obj_exp))
+if (global.gameSpeed > 0)
+{
+	if (instance_exists(obj_exp))
 {
     with (obj_exp)
     {
@@ -60,6 +59,8 @@ if (instance_exists(obj_coin))
         }
     }
 }
+}
+
 // Update weapon swap prompt
 UpdateWeaponSwapPrompt();
 

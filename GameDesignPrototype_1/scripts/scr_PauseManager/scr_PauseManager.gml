@@ -81,12 +81,14 @@ function PauseManager() constructor {
             is_paused = false;
             current_reason = PAUSE_REASON.NONE;
             target_speed = 1.0;
+			show_debug_message("UPDATE PAUSE STATE: nothing paused us")
         } else {
             // Get top of stack (most recent pause)
             var top = pause_stack[array_length(pause_stack) - 1];
             is_paused = true;
             current_reason = top.reason;
             target_speed = top.speed;
+			show_debug_message("UPDATE PAUSE STATE: Is Paused: " + string(target_speed));
         }
     }
     
@@ -96,16 +98,22 @@ function PauseManager() constructor {
         // Smoothly lerp to target speed
         if (current_speed != target_speed) {
             var diff = target_speed - current_speed;
-            
+            show_debug_message("Target_Speed: " + string(target_speed));
             if (abs(diff) < 0.01) {
                 current_speed = target_speed;
             } else {
-                current_speed += diff * speed_transition;
+                current_speed += diff * 0.15;
             }
         }
-        
+        show_debug_message("current_Speed: " + string(current_speed));
         // Update global
         global.gameSpeed = current_speed;
+		
+				if (is_paused) {
+		    if (global.gameSpeed > 0) {
+		        show_debug_message("WARNING: gameSpeed reset after pause_manager.Update()");
+		    }
+}
     }
     
     /// @function IsPaused()
