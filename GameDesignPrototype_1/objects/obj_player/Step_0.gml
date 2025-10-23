@@ -173,9 +173,12 @@ if (weaponCurrent)
 		show_debug_message("AltrFire Pressed");
 	}
 	
-	if (variable_struct_exists(weaponCurrent, "step")) {
-	    weaponCurrent.step(self);
-	}
+        if (variable_struct_exists(weaponCurrent, "step")) {
+            var _weapon_step = weaponCurrent.step;
+            if (is_method(_weapon_step)) {
+                _weapon_step(self);
+            }
+        }
 	
 	UpdateTimingVisuals();
 }
@@ -224,13 +227,15 @@ function AttemptPickup() {
             
             // **SWITCH TO THROWABLE WEAPON**
             previous_weapon_instance = weaponCurrent; // Store current weapon
-            weaponCurrent = global.WeaponStruct.ThrowableItem;
+            weaponCurrent = EnsureWeaponInstance(global.WeaponStruct.ThrowableItem);
             charge_amount = 0;
             
             if (variable_instance_exists(nearest, "OnPickedUp")) {
                 nearest.OnPickedUp(id);
             }
             
+            RefreshPlayerWeaponSynergies(id, weaponCurrent);
+
             show_debug_message("Picked up: " + object_get_name(nearest.object_index));
         }
     }
@@ -268,6 +273,9 @@ function ThrowCarriedObject() {
     carried_object = noone;
     stats.temp_speed_mult = 1.0; // Restore speed
     weaponCurrent = previous_weapon_instance;
+    if (weaponCurrent != undefined) {
+        RefreshPlayerWeaponSynergies(id, weaponCurrent);
+    }
     show_debug_message("Threw object!");
 }
 
@@ -293,6 +301,9 @@ function DropCarriedObject() {
         obj.OnDropped(id);
     }
     weaponCurrent = previous_weapon_instance;
+    if (weaponCurrent != undefined) {
+        RefreshPlayerWeaponSynergies(id, weaponCurrent);
+    }
     carried_object = noone;
     stats.temp_speed_mult = 1.0;
 }
@@ -462,12 +473,16 @@ function HandleWeaponSwitching() {
         }
     }
 	
-	if (keyboard_check_pressed(ord("7"))) {
+        if (keyboard_check_pressed(ord("7"))) {
     if (instance_exists(melee_weapon)) instance_destroy(melee_weapon);
-    new_weapon = global.WeaponStruct.ChainWhip;
+    new_weapon = EnsureWeaponInstance(global.WeaponStruct.ChainWhip);
+    weaponCurrent = new_weapon;
+    weapons[current_weapon_index] = new_weapon;
     melee_weapon = instance_create_depth(x, y, depth-1, obj_chain_whip);
     melee_weapon.owner = id;
+    melee_weapon.weapon_id = weaponCurrent.id;
     weapon_changed = true;
+    RefreshPlayerWeaponSynergies(id, weaponCurrent);
 }
 }
 

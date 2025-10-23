@@ -18,6 +18,9 @@ if (dist <= pickup_range && can_pickup) {
     // Press E to pickup
     if (keyboard_check_pressed(ord("E"))) {
         if (weapon_data != undefined) {
+            weapon_data = EnsureWeaponInstance(weapon_data);
+            self.weapon_data = weapon_data;
+
             var slot = player.current_weapon_index;
             var old_weapon = player.weapons[slot];
             
@@ -39,7 +42,8 @@ if (dist <= pickup_range && can_pickup) {
             
             // Update current weapon reference
             player.weaponCurrent = weapon_data;
-            
+            player.previous_weapon_instance = weapon_data;
+
             // Handle melee weapon switching
             if (weapon_data.type == WeaponType.Melee) {
                 if (instance_exists(player.melee_weapon)) {
@@ -58,6 +62,8 @@ if (dist <= pickup_range && can_pickup) {
                     player.melee_weapon = noone;
                 }
             }
+
+            RefreshPlayerWeaponSynergies(player, weapon_data);
             
             // Visual feedback
             var popup = instance_create_depth(x, y - 40, -9999, obj_floating_text);
