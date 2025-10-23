@@ -543,7 +543,7 @@ global.WeaponStruct =
         if (instance_exists(_self.previous_weapon_instance)) {
             _self.weaponCurrent = _self.previous_weapon_instance;
         } else {
-            _self.weaponCurrent = global.WeaponStruct.Bow; // Default fallback
+            _self.weaponCurrent = EnsureWeaponInstance(global.WeaponStruct.Bow); // Default fallback
         }
         
         return obj;
@@ -600,7 +600,7 @@ global.WeaponStruct =
     if (instance_exists(_self.previous_weapon_instance)) {
         _self.weaponCurrent = _self.previous_weapon_instance;
     } else {
-        _self.weaponCurrent = global.WeaponStruct.Bow;
+        _self.weaponCurrent = EnsureWeaponInstance(global.WeaponStruct.Bow);
     }
     
     return obj;
