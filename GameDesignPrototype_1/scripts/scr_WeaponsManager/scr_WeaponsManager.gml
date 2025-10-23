@@ -5,6 +5,30 @@
 // WEAPON MANAGEMENT FUNCTIONS
 // ==========================================
 
+/// @function WeaponCallbackIsCallable(_callback)
+/// @description Safely determine whether the supplied value can be invoked like a function or method
+/// @param _callback The value to inspect
+function WeaponCallbackIsCallable(_callback) {
+    if (_callback == undefined) return false;
+
+    // Direct method references (struct + function binding)
+    if (is_method(_callback)) {
+        return true;
+    }
+
+    // Standalone script/function references (GMS 2022+)
+    if (function_exists("is_function") && is_function(_callback)) {
+        return true;
+    }
+
+    // Generic callable support for future runtimes
+    if (function_exists("is_callable") && is_callable(_callback)) {
+        return true;
+    }
+
+    return false;
+}
+
 /// @function GiveWeapon(_player, _weapon_id)
 /// @description Attempt to give player a weapon, handle full inventory
 /// @param {Id.Instance} _player The player instance
@@ -42,9 +66,11 @@ function GiveWeapon(_player, _weapon_id) {
 /// @function EquipWeaponToSlot(_player, _weapon_struct, _slot_index)
 /// @description Equip a weapon to a specific slot
 function EquipWeaponToSlot(_player, _weapon_struct, _slot_index) {
+    _weapon_struct = EnsureWeaponInstance(_weapon_struct);
+
     // Store weapon in slot
     _player.weapons[_slot_index] = _weapon_struct;
-    
+
     // If equipping to current slot, update active weapon
     if (_slot_index == _player.current_weapon_index) {
         _player.weaponCurrent = _weapon_struct;
@@ -66,29 +92,47 @@ function EquipWeaponToSlot(_player, _weapon_struct, _slot_index) {
                 _player.melee_weapon.weapon_id = _weapon_struct.id;
             }
         }
+
+        RefreshPlayerWeaponSynergies(_player, _weapon_struct);
     }
 }
 
 /// @function GetWeaponStructById(_weapon_id)
 /// @description Get weapon struct from global.WeaponStruct by ID
 function GetWeaponStructById(_weapon_id) {
+    var base_struct;
     switch (_weapon_id) {
-        case Weapon.Sword: return global.WeaponStruct.Sword;
-        case Weapon.Bow: return global.WeaponStruct.Bow;
-        case Weapon.Dagger: return global.WeaponStruct.Dagger;
-        case Weapon.Boomerang: return global.WeaponStruct.Boomerang;
-        case Weapon.ChargeCannon: return global.WeaponStruct.ChargeCannon;
-        case Weapon.BaseballBat: return global.WeaponStruct.BaseballBat;
-        case Weapon.Holy_Water: return global.WeaponStruct.HolyWater;
-        default: return undefined;
+        case Weapon.Sword: base_struct = global.WeaponStruct.Sword; break;
+        case Weapon.Bow: base_struct = global.WeaponStruct.Bow; break;
+        case Weapon.Dagger: base_struct = global.WeaponStruct.Dagger; break;
+        case Weapon.Boomerang: base_struct = global.WeaponStruct.Boomerang; break;
+        case Weapon.ChargeCannon: base_struct = global.WeaponStruct.ChargeCannon; break;
+        case Weapon.BaseballBat: base_struct = global.WeaponStruct.BaseballBat; break;
+        case Weapon.Holy_Water: base_struct = global.WeaponStruct.HolyWater; break;
+        case Weapon.ChainWhip: base_struct = global.WeaponStruct.ChainWhip; break;
+        case Weapon.ThrowableItem: base_struct = global.WeaponStruct.ThrowableItem; break;
+        default: base_struct = undefined; break;
     }
+
+    if (base_struct == undefined) return undefined;
+    return EnsureWeaponInstance(base_struct);
 }
 
 /// @function GetWeaponName(_weapon_id)
 /// @description Get display name for weapon
 function GetWeaponName(_weapon_id) {
-    var weapon_struct = GetWeaponStructById(_weapon_id);
-    return weapon_struct != undefined ? weapon_struct.name : "Unknown Weapon";
+    switch (_weapon_id) {
+        case Weapon.Sword: return global.WeaponStruct.Sword.name;
+        case Weapon.Bow: return global.WeaponStruct.Bow.name;
+        case Weapon.Dagger: return global.WeaponStruct.Dagger.name;
+        case Weapon.Boomerang: return global.WeaponStruct.Boomerang.name;
+        case Weapon.ChargeCannon: return global.WeaponStruct.ChargeCannon.name;
+        case Weapon.BaseballBat: return global.WeaponStruct.BaseballBat.name;
+        case Weapon.Holy_Water: return global.WeaponStruct.HolyWater.name;
+        case Weapon.ChainWhip: return global.WeaponStruct.ChainWhip.name;
+        case Weapon.ThrowableItem: return global.WeaponStruct.ThrowableItem.name;
+        default: return "Unknown Weapon";
+    }
 }
 
 // ==========================================
@@ -264,7 +308,8 @@ function SwitchToWeaponSlot(_slot_index) {
     if (weapons[_slot_index] == noone) return;
     
     current_weapon_index = _slot_index;
-    weaponCurrent = weapons[_slot_index];
+    weaponCurrent = EnsureWeaponInstance(weapons[_slot_index]);
+    weapons[_slot_index] = weaponCurrent;
     if !(weaponCurrent) return;
     // Handle melee weapon switching
     if (weaponCurrent.type == WeaponType.Melee) {
@@ -284,6 +329,8 @@ function SwitchToWeaponSlot(_slot_index) {
             melee_weapon = noone;
         }
     }
-    
+
+    RefreshPlayerWeaponSynergies(id, weaponCurrent);
+
     show_debug_message("Switched to " + weaponCurrent.name);
 }
