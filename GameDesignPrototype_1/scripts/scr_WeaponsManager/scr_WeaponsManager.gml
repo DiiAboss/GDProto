@@ -260,19 +260,22 @@ function CreateWeaponNotification(_player, _weapon_struct, _action) {
 /// @function SwitchToWeaponSlot(_slot_index)
 /// @description Switch active weapon to specified slot
 function SwitchToWeaponSlot(_slot_index) {
+    // VALIDATE FIRST
     if (_slot_index < 0 || _slot_index >= weapon_slots) return;
     if (weapons[_slot_index] == noone) return;
     
+    // Store previous weapon
+    previous_weapon_instance = weaponCurrent;
+    
+    // Update current weapon
     current_weapon_index = _slot_index;
     weaponCurrent = weapons[_slot_index];
-	
-	// NEW: Update synergy tags for new weapon
+    
+    // Update synergy tags (weapon is guaranteed valid here)
     UpdateWeaponTags(self, _slot_index);
     
     show_debug_message("Switched to weapon. Active synergies: " + string(array_length(active_synergies)));
-	
-	
-    if !(weaponCurrent) return;
+    
     // Handle melee weapon switching
     if (weaponCurrent.type == WeaponType.Melee) {
         if (instance_exists(melee_weapon)) {

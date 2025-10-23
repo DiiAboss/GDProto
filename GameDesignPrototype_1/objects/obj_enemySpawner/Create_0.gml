@@ -23,5 +23,5 @@ y_max = 570;
 spawn_rate_multiplier = 1.0;
 
 // Progressive spawn pool
-current_spawn_pool = [obj_maggot]; // Start with just basic enemy
+current_spawn_pool = [obj_maggot, obj_enemy_2]; // Start with just basic enemy
 spawn_pool_updated = false;

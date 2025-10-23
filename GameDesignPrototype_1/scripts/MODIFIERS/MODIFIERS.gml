@@ -43,7 +43,7 @@ enum PATTERN_TYPE {
     CONDITIONAL,    // When condition met (low health, etc)
     SEQUENCE,       // Follow a pattern [true, false, true, false]
     CHARGE,         // Build up charge
-    COMBO,          // Within time window
+    COMBO,          // Within time window 
 }
 
 enum EFFECT_TYPE {
@@ -62,158 +62,95 @@ enum EFFECT_TYPE {
 global.Modifiers = {};
 
 
-// Fixed TripleRhythmFire modifier
-global.Modifiers.TripleRhythmFire = {
-    name: "Rhythmic Flames",
+// ------------------------------------------
+// ELEMENTAL MODIFIERS
+// ------------------------------------------
+
+global.Modifiers.FireEnchantment = {
+    name: "Fire Enchantment",
+    description: "Projectiles burn enemies",
     triggers: [MOD_TRIGGER.ON_ATTACK],
-    
-    // Store configuration at top level
-    trigger_on: 3,
-    projectile: obj_fireball,
-	
-    // NEW: Tags this modifier adds
+    activation_chance: 100, // Always applies
     synergy_tags: [SYNERGY_TAG.FIRE],
-	
+    
+    burn_duration: 180,
+    burn_damage_per_tick: 2,
+    
     action: function(_entity, _event) {
-        var mod_instance = _event.mod_instance;
-        var mod_template = global.Modifiers[$ mod_instance.template_key];
-        
-        // Initialize counter if it doesn't exist
-        if (!variable_struct_exists(mod_instance, "counter")) {
-            mod_instance.counter = 0;
-        }
-        
-        // Increment and check
-        mod_instance.counter++;
-        
-        // Use template's trigger_on value
-        if (mod_instance.counter >= mod_template.trigger_on) {
-            mod_instance.counter = 0;
-            
-            // Execute effect
-            with (_entity) {
-                // Check if the projectile object exists
-                if (object_exists(mod_template.projectile)) {
-                    var proj = instance_create_depth(
-                        _event.attack_position_x, 
-                        _event.attack_position_y, 
-                        depth - 1, 
-                        mod_template.projectile
-                    );
-                    proj.direction = _event.attack_direction;
-                    proj.speed = 8;
-                    
-                    if (variable_instance_exists(proj, "damage")) {
-                        proj.damage = (_event.damage ?? 10) * 0.5;
-                    }
-                    if (variable_instance_exists(proj, "owner")) {
-                        proj.owner = id;
-                    }
-                }
-            }
+        if (_event.projectile != noone && instance_exists(_event.projectile)) {
+            var stack = _event.stack_level ?? 1;
+            _event.projectile.element_type = ELEMENT.FIRE;
+            _event.projectile.burn_duration = GetStackedValue(burn_duration, stack);
+            _event.projectile.burn_damage = GetStackedValue(burn_damage_per_tick, stack);
         }
     }
 };
 
-// Fixed DoubleLightning modifier
-global.Modifiers.DoubleLightning = {
-    name: "Lightning Strike",
+global.Modifiers.IceEnchantment = {
+    name: "Ice Enchantment",
+    description: "Projectiles freeze enemies",
     triggers: [MOD_TRIGGER.ON_ATTACK],
+    activation_chance: 100,
+    synergy_tags: [SYNERGY_TAG.ICE],
     
-    trigger_on: 2,  // Every 2nd attack
+    slow_duration: 120,
+    slow_amount: 0.5,
     
-	    // NEW: Tags this modifier adds
+    action: function(_entity, _event) {
+        if (_event.projectile != noone && instance_exists(_event.projectile)) {
+            var stack = _event.stack_level ?? 1;
+            _event.projectile.element_type = ELEMENT.ICE;
+            _event.projectile.freeze_duration = GetStackedValue(slow_duration, stack);
+            _event.projectile.slow_multiplier = slow_amount;
+        }
+    }
+};
+
+global.Modifiers.LightningEnchantment = {
+    name: "Lightning Enchantment",
+    description: "Projectiles shock enemies",
+    triggers: [MOD_TRIGGER.ON_ATTACK],
+    activation_chance: 100,
     synergy_tags: [SYNERGY_TAG.LIGHTNING],
-	
+    
+    shock_duration: 90,
+    
     action: function(_entity, _event) {
-        var mod_instance = _event.mod_instance;
-        var mod_template = global.Modifiers[$ mod_instance.template_key];
-        
-        // Initialize counter if it doesn't exist
-        if (!variable_struct_exists(mod_instance, "counter")) {
-            mod_instance.counter = 0;
-        }
-        
-        // Increment and check
-        mod_instance.counter++;
-        
-        if (mod_instance.counter >= mod_template.trigger_on) {
-            mod_instance.counter = 0;
-            
-            // Execute effect
-            with (_entity) {
-                // Different effect based on attack type
-                if (_event.attack_type == AttackType.MELEE) {
-                    // Create lightning strike at sword position
-                    if (object_exists(obj_lightning_strike)) {
-                        var lightning = instance_create_depth(
-                            _event.attack_position_x,
-                            _event.attack_position_y,
-                            depth - 1,
-                            obj_lightning_strike
-                        );
-                        lightning.damage = _event.damage;
-                        lightning.owner = id;
-                    }
-                } else if (_event.attack_type == AttackType.CANNON || _event.attack_type == AttackType.RANGED) {
-                    // Create chain lightning from player
-                    if (object_exists(obj_chain_lightning)) {
-                        var chain = instance_create_depth(
-                            x, y, depth - 1,
-                            obj_chain_lightning
-                        );
-                        chain.damage = (_event.damage ?? 10) * 0.75;
-                        chain.owner = id;
-                        chain.max_bounces = 3;
-                    }
-                }
-            }
+        if (_event.projectile != noone && instance_exists(_event.projectile)) {
+            var stack = _event.stack_level ?? 1;
+            _event.projectile.element_type = ELEMENT.LIGHTNING;
+            _event.projectile.shock_duration = GetStackedValue(shock_duration, stack);
         }
     }
 };
 
-global.Modifiers.SpreadFire = {
-    name: "Spread Fire",
+global.Modifiers.PoisonEnchantment = {
+    name: "Poison Enchantment",
+    description: "Projectiles poison enemies",
     triggers: [MOD_TRIGGER.ON_ATTACK],
+    activation_chance: 100,
+    synergy_tags: [SYNERGY_TAG.POISON],
     
-    extra_projectiles: 4,
-    spread_angle: 15,
-    melee_arc_bonus: 30,
+    poison_duration: 240,
+    poison_damage_per_tick: 1,
     
-	// NEW: Tags this modifier adds
-    synergy_tags: [SYNERGY_TAG.SPLASH],
-	
     action: function(_entity, _event) {
-        var mod_template = global.Modifiers[$ _event.mod_instance.template_key];
-        
-        // FIX: Check if field exists before using it
-        var attack_type = AttackType.UNKNOWN;
-        if (variable_struct_exists(_event, "attack_type")) {
-            attack_type = _event.attack_type;
-        }
-        
-        // MELEE: Increase swing arc
-        if (attack_type == AttackType.MELEE) {
-            with (_entity) {
-                if (instance_exists(melee_weapon)) {
-                    if (!variable_instance_exists(melee_weapon, "swing_arc")) {
-                        melee_weapon.swing_arc = 90;
-                    }
-                    melee_weapon.swing_arc += mod_template.melee_arc_bonus;
-                }
-            }
-        } 
-        // RANGED: Add extra projectiles
-        else if (attack_type == AttackType.RANGED || attack_type == AttackType.CANNON) {
-            _event.projectile_count_bonus += mod_template.extra_projectiles;
+        if (_event.projectile != noone && instance_exists(_event.projectile)) {
+            var stack = _event.stack_level ?? 1;
+            _event.projectile.element_type = ELEMENT.POISON;
+            _event.projectile.poison_duration = GetStackedValue(poison_duration, stack);
+            _event.projectile.poison_damage = GetStackedValue(poison_damage_per_tick, stack);
         }
     }
 };
 
-// Fixed Chain Lightning Modifier
+// ------------------------------------------
+// CHAIN/PROC MODIFIERS
+// ------------------------------------------
+
 global.Modifiers.ChainLightning = {
     name: "Chain Lightning",
-    triggers: [MOD_TRIGGER.ON_ATTACK, MOD_TRIGGER.ON_HIT],
+    triggers: [MOD_TRIGGER.ON_HIT],
     
     // Configuration
     proc_chance: 0.25,      // 25% chance to trigger
@@ -221,10 +158,11 @@ global.Modifiers.ChainLightning = {
     jump_range: 150,        // Range for finding next target
     damage_multiplier: 0.5, // Damage relative to attack damage
     damage_falloff: 0.75,   // 75% damage retained per jump
-    // NEW: Tags this modifier adds
-    synergy_tags: [SYNERGY_TAG.LIGHTNING],
+    synergy_tags: [SYNERGY_TAG.LIGHTNING, SYNERGY_TAG.CHAIN],
+    
     action: function(_entity, _event) {
         var mod_template = global.Modifiers[$ _event.mod_instance.template_key];
+        var stack = _event.stack_level ?? 1;
         
         // Roll for proc chance
         if (random(1) > mod_template.proc_chance) {
@@ -236,312 +174,106 @@ global.Modifiers.ChainLightning = {
         
         // Check if we have a target from ON_HIT
         if (variable_struct_exists(_event, "target") && _event.target != noone) {
-            // ON_HIT provides the target directly
             start_target = _event.target;
         } else {
             // ON_ATTACK needs to find nearest enemy
             with (_entity) {
-                var nearest_dist = 200; // Max range to find initial target
-                
-                // ==========================================
-                // FIXED: Safe field access with fallbacks
-                // ==========================================
-                var check_x = _entity.x; // Default to entity position
+                var nearest_dist = 200;
+                var check_x = _entity.x;
                 var check_y = _entity.y;
                 
-                // Try multiple field name variations
                 if (variable_struct_exists(_event, "attack_position_x")) {
                     check_x = _event.attack_position_x;
                     check_y = _event.attack_position_y;
-                } else if (variable_struct_exists(_event, "hit_x")) {
-                    check_x = _event.hit_x;
-                    check_y = _event.hit_y;
-                } else if (variable_struct_exists(_event, "x")) {
-                    check_x = _event.x;
-                    check_y = _event.y;
                 }
                 
                 with (obj_enemy) {
-                    if (variable_instance_exists(id, "marked_for_death") && marked_for_death) {
-                        continue; // Skip dead enemies
-                    }
-                    
-                    var dist = point_distance(x, y, check_x, check_y);
-                    if (dist < nearest_dist) {
-                        nearest_dist = dist;
+                    if (marked_for_death) continue;
+                    var d = point_distance(x, y, check_x, check_y);
+                    if (d < nearest_dist) {
+                        nearest_dist = d;
                         start_target = id;
                     }
                 }
             }
         }
         
-        // If we found a target, trigger chain lightning
-        if (start_target != noone && instance_exists(start_target)) {
-            // Skip if target is already dead
-            if (variable_instance_exists(start_target, "marked_for_death") && 
-                start_target.marked_for_death) {
-                return;
-            }
-            
-            var lightning_damage = (_event.damage ?? _entity.attack) * mod_template.damage_multiplier;
-            
-            // Call your chain lightning script
-            scr_chain_lightning(
-                _entity,                        // source
-                start_target,                   // first target
-                mod_template.max_jumps,         // max jumps
-                mod_template.jump_range,        // range
-                lightning_damage,               // base damage
-                mod_template.damage_falloff     // falloff
-            );
-        }
+        if (!instance_exists(start_target)) return;
+        
+        // Calculate stacked values
+        var lightning_damage = (_event.damage ?? _entity.attack) * GetStackedValue(mod_template.damage_multiplier, stack);
+        var jumps = floor(GetStackedValue(mod_template.max_jumps, stack));
+        
+        // Call your existing chain lightning script
+        scr_chain_lightning(
+            _entity,
+            start_target,
+            jumps,
+            mod_template.jump_range,
+            lightning_damage,
+            mod_template.damage_falloff
+        );
     }
 };
 
-// Alternative: Lightning that builds up charges then releases
-global.Modifiers.StaticCharge = {
-    name: "Static Charge",
+global.Modifiers.Multishot = {
+    name: "Multishot",
+    description: "Fire 2 additional projectiles",
     triggers: [MOD_TRIGGER.ON_ATTACK],
-        // NEW: Tags this modifier adds
-    synergy_tags: [SYNERGY_TAG.LIGHTNING],
-    // Configuration
-    charges_needed: 5,      // Attacks to build up
-    proc_on_full: true,     // Auto-proc when charged
+    activation_chance: 100,
+    synergy_tags: [SYNERGY_TAG.PIERCING_SHOT],
+    
+    bonus_projectiles: 2,
     
     action: function(_entity, _event) {
-        var mod_instance = _event.mod_instance;
-        var mod_template = global.Modifiers[$ mod_instance.template_key];
-        
-        // Initialize charge counter
-        if (!variable_struct_exists(mod_instance, "charges")) {
-            mod_instance.charges = 0;
-        }
-        
-        // Build charge
-        mod_instance.charges++;
-        
-        // Visual indicator of charge level
-        with (_entity) {
-            // Create sparks or change sprite blend based on charge
-            var charge_ratio = mod_instance.charges / mod_template.charges_needed;
-            if (charge_ratio > 0.5) {
-                // Start showing electric effects
-                if (random(1) < charge_ratio) {
-                    //var spark = instance_create_depth(
-                        //x + random_range(-16, 16),
-                        //y + random_range(-16, 16),
-                        //depth - 1,
-                        //obj_spark_effect
-                    //);
-                }
-            }
-        }
-        
-        // Check if fully charged
-        if (mod_instance.charges >= mod_template.charges_needed) {
-            mod_instance.charges = 0;
-            
-            // Find all enemies in range and chain lightning them
-            var targets = [];
-            with (obj_enemy) {
-                if (point_distance(x, y, _entity.x, _entity.y) < 200) {
-                    array_push(targets, id);
-                }
-            }
-            
-            // Lightning strike on multiple targets
-            if (array_length(targets) > 0) {
-                // Pick random target as start
-                var start_idx = irandom(array_length(targets) - 1);
-                var start_target = targets[start_idx];
-                
-                scr_chain_lightning(
-                    _entity,
-                    start_target,
-                    6,              // More jumps when fully charged
-                    200,            // Longer range
-                    _event.damage * 2,  // Double damage
-                    0.8             // Less falloff
-                );
-                
-                //// Big visual effect
-                //with (_entity) {
-                    //// Create lightning nova effect
-                    //var nova = instance_create_depth(x, y, depth - 1, obj_lightning_nova);
-                    //nova.owner = id;
-                //}
-            }
-        }
+        var stack = _event.stack_level ?? 1;
+        _event.projectile_count_bonus = floor(GetStackedValue(bonus_projectiles, stack));
     }
 };
 
-// Melee-specific lightning modifier
-global.Modifiers.ThunderStrike = {
-    name: "Thunder Strike",
+global.Modifiers.PiercingShot = {
+    name: "Piercing Shot",
+    description: "Projectiles pierce through enemies",
     triggers: [MOD_TRIGGER.ON_ATTACK],
-        // NEW: Tags this modifier adds
-    synergy_tags: [SYNERGY_TAG.LIGHTNING],
-    proc_chance: 0.3,
+    activation_chance: 100,
+    synergy_tags: [SYNERGY_TAG.PIERCING_SHOT],
+    
+    pierce_count: 2,
     
     action: function(_entity, _event) {
-        var mod_template = global.Modifiers[$ _event.mod_instance.template_key];
-        
-        // Only works on melee attacks
-        if (_event.attack_type != AttackType.MELEE) return;
-        
-        // Roll for proc
-        if (random(1) > mod_template.proc_chance) return;
-        
-        // Create lightning at sword impact point
-        with (_entity) {
-            if (instance_exists(melee_weapon)) {
-                // Find enemies hit by sword
-                var hit_list = ds_list_create();
-                var hit_count = instance_place_list(
-                    melee_weapon.x, 
-                    melee_weapon.y, 
-                    obj_enemy, 
-                    hit_list,
-					true
-                );
-                
-                if (hit_count > 0) {
-                    // Start chain from first enemy hit
-                    var first_target = hit_list[| 0];
-                    
-                    scr_chain_lightning(
-                        id,
-                        first_target,
-                        3,
-                        120,
-                        melee_weapon.attack * 0.75,
-                        0.6
-                    );
-                }
-                
-                ds_list_destroy(hit_list);
-            }
+        if (_event.projectile != noone && instance_exists(_event.projectile)) {
+            var stack = _event.stack_level ?? 1;
+            _event.projectile.piercing = true;
+            _event.projectile.pierce_count = floor(GetStackedValue(pierce_count, stack));
         }
     }
 };
 
-// Death Fireworks Modifier - FIXED VERSION
-global.Modifiers.DeathFireworks = {
+// ------------------------------------------
+// CORPSE EXPLOSION MODIFIERS
+// ------------------------------------------
+
+global.Modifiers.CorpseExplosion = {
     name: "Corpse Explosion",
+    description: "25% chance for enemies to explode on death, firing projectiles in all directions",
     triggers: [MOD_TRIGGER.ON_KILL],
-        // NEW: Tags this modifier adds
     synergy_tags: [SYNERGY_TAG.EXPLOSIVE],
-    // Configuration
+    
+    proc_chance: 0.25,           // 100% chance (or make it 0.5 for 50%)
     projectile_count: 8,
     projectile_type: obj_arrow,
     projectile_speed: 6,
     damage_multiplier: 0.3,
-    explosion_delay: 1,
-    
-    // CRITICAL: Prevent chain reactions
-    can_trigger_on_modifier_kills: false, // Don't trigger on explosion kills
-    max_explosions_per_frame: 10,         // Frame-based limiter
-    
-    action: function(_entity, _event) {
-        var mod_template = global.Modifiers[$ _event.mod_instance.template_key];
-        
-        // ==========================================
-        // FAILSAFE 1: Check if kill was from this modifier
-        // ==========================================
-        if (_event.kill_source == "corpse_explosion" || 
-            _event.kill_source == "explosion") {
-            // Don't create explosions from explosion kills (AOE or projectiles)
-            return;
-        }
-        
-        // ==========================================
-        // FAILSAFE 2: Check enemy hasn't already exploded
-        // ==========================================
-        // Get the actual enemy instance if it still exists
-        var enemy_inst = noone;
-        with (obj_enemy) {
-            if (x == _event.enemy_x && y == _event.enemy_y && marked_for_death) {
-                enemy_inst = id;
-                break;
-            }
-        }
-        
-        // If we found the enemy, check if already processed
-        if (instance_exists(enemy_inst)) {
-            if (variable_instance_exists(enemy_inst, "has_exploded")) {
-                if (enemy_inst.has_exploded) {
-                    return; // Already exploded, don't do it again
-                }
-            }
-            enemy_inst.has_exploded = true; // Mark as exploded
-        }
-        
-        // ==========================================
-        // FAILSAFE 3: Global frame limiter
-        // ==========================================
-        if (!variable_global_exists("explosion_count_this_frame")) {
-            global.explosion_count_this_frame = 0;
-            global.explosion_frame_reset = current_time;
-        }
-        
-        // Reset counter if new frame
-        if (current_time != global.explosion_frame_reset) {
-            global.explosion_count_this_frame = 0;
-            global.explosion_frame_reset = current_time;
-        }
-        
-        // Check if we've hit the limit
-        if (global.explosion_count_this_frame >= mod_template.max_explosions_per_frame) {
-            return; // Too many explosions this frame, skip
-        }
-        
-        global.explosion_count_this_frame++;
-        
-        // ==========================================
-        // FAILSAFE 4: Total instance check
-        // ==========================================
-        var total_explosions = instance_number(obj_delayed_explosion);
-        var total_projectiles = instance_number(obj_projectile);
-        
-        if (total_explosions > 20 || total_projectiles > 100) {
-            return; // System overloaded, abort
-        }
-        
-        // ==========================================
-        // CREATE EXPLOSION
-        // ==========================================
-        var death_x = _event.enemy_x;
-        var death_y = _event.enemy_y;
-        
-        with (_entity) {
-            var explosion = instance_create_depth(death_x, death_y, depth - 10, obj_delayed_explosion);
-            explosion.delay = mod_template.explosion_delay;
-            explosion.owner = id;
-            explosion.projectile_count = mod_template.projectile_count;
-            explosion.projectile_type = mod_template.projectile_type;
-            explosion.projectile_speed = mod_template.projectile_speed;
-            explosion.damage = (_event.damage ?? attack) * mod_template.damage_multiplier;
-            explosion.source_entity = id;
-            
-            // CRITICAL: Mark explosion projectiles
-            explosion.from_corpse_explosion = true;
-        }
-    }
-};
-// Poison Death - Different projectile type
-global.Modifiers.PoisonCorpse = {
-    name: "Toxic Explosion",
-    triggers: [MOD_TRIGGER.ON_KILL],
-        // NEW: Tags this modifier adds
-    synergy_tags: [SYNERGY_TAG.EXPLOSIVE, SYNERGY_TAG.POISON],
-    projectile_count: 6,
-    projectile_type: obj_poison_cloud,  // Different projectile
-    projectile_speed: 3,
-    damage_multiplier: 0.2,
     explosion_delay: 10,
     
     action: function(_entity, _event) {
         var mod_template = global.Modifiers[$ _event.mod_instance.template_key];
+        var stack = _event.stack_level ?? 1;
+        
+        // Roll for proc chance
+        if (random(1) > mod_template.proc_chance) {
+            return; // Didn't proc
+        }
         
         var death_x = _event.enemy_x;
         var death_y = _event.enemy_y;
@@ -550,241 +282,214 @@ global.Modifiers.PoisonCorpse = {
             var explosion = instance_create_depth(death_x, death_y, depth - 10, obj_delayed_explosion);
             explosion.delay = mod_template.explosion_delay;
             explosion.owner = id;
-            explosion.projectile_count = mod_template.projectile_count;
+            explosion.projectile_count = floor(GetStackedValue(mod_template.projectile_count, stack));
             explosion.projectile_type = mod_template.projectile_type;
             explosion.projectile_speed = mod_template.projectile_speed;
-            explosion.damage = (_event.damage ?? attack) * mod_template.damage_multiplier;
+            var damage_mult = GetStackedValue(mod_template.damage_multiplier, stack);
+            explosion.damage = (_event.damage ?? attack) * damage_mult;
             explosion.source_entity = id;
-            
-            // Poison-specific: create lingering cloud
-            explosion.create_cloud = true;
+            explosion.from_corpse_explosion = true;
         }
     }
 };
+// ------------------------------------------
+// STAT MODIFIERS (PASSIVE)
+// ------------------------------------------
 
-// Chain Reaction - Kills from explosions can trigger more explosions!
-global.Modifiers.ChainReaction = {
-    name: "Chain Reaction",
-    triggers: [MOD_TRIGGER.ON_KILL],
-        // NEW: Tags this modifier adds
-    synergy_tags: [SYNERGY_TAG.EXPLOSIVE, SYNERGY_TAG.CHAIN],
-    proc_chance: 0.5,  // 50% chance for chain reaction
+global.Modifiers.StrengthBoost = {
+    name: "Strength",
+    description: "+5 damage per stack",
+    triggers: [MOD_TRIGGER.PASSIVE],
+    activation_chance: 100,
+    synergy_tags: [SYNERGY_TAG.STRENGTH],
+    
+    passive_stats: {
+        damage_bonus: 5
+    },
     
     action: function(_entity, _event) {
-        var mod_template = global.Modifiers[$ _event.mod_instance.template_key];
-        
-        // Only chain if this kill was from an explosion
-        if (variable_struct_exists(_event, "kill_source") && _event.kill_source == "explosion") {
-            if (random(1) < mod_template.proc_chance) {
-                // Trigger another explosion
-                var death_x = _event.enemy_x;
-                var death_y = _event.enemy_y;
-                
-                //with (_entity) {
-                    //var explosion = instance_create_depth(death_x, death_y, depth - 10, obj_instant_explosion);
-                    //explosion.damage = _event.damage * 0.75;  // Slightly less damage
-                    //explosion.radius = 100;
-                    //explosion.owner = id;
-                    //explosion.source_entity = id;
-                    //
-                    //// Visual effect
-                    //repeat(20) {
-                        //var spark = instance_create_depth(
-                            //death_x + random_range(-20, 20),
-                            //death_y + random_range(-20, 20),
-                            //depth - 15,
-                            //obj_spark
-                        //);
-                        //spark.direction = random(360);
-                        //spark.speed = random_range(2, 8);
-                    //}
-                //}
-            }
-        }
+        // Stats applied via CalculateCachedStats
     }
 };
 
-// MultiShot adds to projectile count stat
-global.Modifiers.MultiShot = {
-    name: "Multi Shot",
-    triggers: [MOD_TRIGGER.ON_ATTACK],
-    extra_projectiles: 1,
-        // NEW: Tags this modifier adds
-    synergy_tags: [SYNERGY_TAG.CHAIN],
-    action: function(_entity, _event) {
-        if (_event.attack_type != AttackType.RANGED && _event.attack_type != AttackType.CANNON) return;
-        
-        // Only add to bonus count, don't create projectiles
-        _event.projectile_count_bonus += 1;
-    }
-};
-
-
-
-global.Modifiers.BurstFire = {
-    name: "Burst Fire",
-    triggers: [MOD_TRIGGER.ON_ATTACK],
-            // NEW: Tags this modifier adds
-    synergy_tags: [SYNERGY_TAG.CHAIN],
-    burst_count: 3,     // Shots in burst
-    burst_delay: 5,     // Frames between shots
+global.Modifiers.SpeedBoost = {
+    name: "Speed",
+    description: "+0.5 movement speed per stack",
+    triggers: [MOD_TRIGGER.PASSIVE],
+    activation_chance: 100,
+    synergy_tags: [SYNERGY_TAG.SPEED],
+    
+    passive_stats: {
+        speed_bonus: 0.5
+    },
     
     action: function(_entity, _event) {
-        var mod_instance = _event.mod_instance;
-        var mod_template = global.Modifiers[$ mod_instance.template_key];
-        
-        // Only works on ranged
-        if (_event.attack_type != AttackType.RANGED && _event.attack_type != AttackType.CANNON) return;
-        
-        // Initialize burst state
-        if (!variable_struct_exists(mod_instance, "burst_shots_remaining")) {
-            mod_instance.burst_shots_remaining = 0;
-            mod_instance.burst_timer = 0;
-        }
-        
-        // Start a new burst
-        if (mod_instance.burst_shots_remaining == 0) {
-            mod_instance.burst_shots_remaining = mod_template.burst_count - 1; // -1 because original shot already fired
-            mod_instance.burst_timer = mod_template.burst_delay;
-        }
+        // Stats applied via CalculateCachedStats
     }
 };
 
-// Flat attack boost
-global.Modifiers.AttackUp = {
-    name: "Attack Up",
-    triggers: [MOD_TRIGGER.PASSIVE],
-    attack_mult: 1.2, // +20%
-            // NEW: Tags this modifier adds
-    synergy_tags: [SYNERGY_TAG.BLUNT],
-    action: function(_entity, _event) { }
-};
-
-// Flat HP boost
-global.Modifiers.HPUp = {
-    name: "Tough Skin",
-    triggers: [MOD_TRIGGER.PASSIVE],
-    hp_mult: 1.25, // +25% HP
-                // NEW: Tags this modifier adds
-    synergy_tags: [SYNERGY_TAG.ATHLETIC],
-    action: function(_entity, _event) { }
-};
-
-// Speed boost
-global.Modifiers.SpeedUp = {
-    name: "Swift Steps",
-    triggers: [MOD_TRIGGER.PASSIVE],
-    speed_mult: 1.15, // +15%
-                // NEW: Tags this modifier adds
-    synergy_tags: [SYNERGY_TAG.ATHLETIC],
-    action: function(_entity, _event) { }
-};
-
-// Knockback resistance
-global.Modifiers.KnockbackResist = {
-    name: "Heavy Frame",
-    triggers: [MOD_TRIGGER.PASSIVE],
-    kb_mult: 0.8, // -20% knockback taken
-    synergy_tags: [SYNERGY_TAG.ATHLETIC],
-    action: function(_entity, _event) { }
-};
-
-// Glass Cannon
 global.Modifiers.GlassCannon = {
     name: "Glass Cannon",
+    description: "+50% damage, -50% defense",
     triggers: [MOD_TRIGGER.PASSIVE],
-    attack_mult: 1.4, // +40% damage
-    hp_mult: 0.6,     // -40% HP
-    synergy_tags: [SYNERGY_TAG.ATHLETIC],
-    action: function(_entity, _event) { }
-};
-
-// Berserker (bonus damage at low HP)
-global.Modifiers.Berserker = {
-    name: "Berserker",
-    triggers: [MOD_TRIGGER.ON_ATTACK],
-    min_bonus: 1.0,
-    max_bonus: 1.5,
-    synergy_tags: [SYNERGY_TAG.ATHLETIC],
+    activation_chance: 100,
+    synergy_tags: [SYNERGY_TAG.GLASS_CANNON, SYNERGY_TAG.STRENGTH],
+    
+    passive_stats: {
+        damage_mult: 1.5,
+        defense_mult: 0.5
+    },
+    
     action: function(_entity, _event) {
-        var mod_template = global.Modifiers[$ _event.mod_instance.template_key];
-        var hp_ratio = _entity.hp / _entity.hp_max;
-        var dmg_mult = lerp(mod_template.max_bonus, mod_template.min_bonus, hp_ratio);
-        _event.damage *= dmg_mult;
+        // Stats applied via CalculateCachedStats
     }
 };
 
-// Adrenaline Rush (move faster below half HP)
-global.Modifiers.AdrenalineRush = {
-    name: "Adrenaline Rush",
+global.Modifiers.Tank = {
+    name: "Tank",
+    description: "+50 max HP, -20% speed",
     triggers: [MOD_TRIGGER.PASSIVE],
-    hp_threshold: 0.5,
-    speed_mult_low_hp: 1.3,
-    synergy_tags: [SYNERGY_TAG.ATHLETIC],
+    activation_chance: 100,
+    synergy_tags: [SYNERGY_TAG.TANKY, SYNERGY_TAG.WEIGHT],
+    
+    passive_stats: {
+        max_hp_bonus: 50,
+        speed_mult: 0.8
+    },
+    
     action: function(_entity, _event) {
-        if (_entity.hp / _entity.hp_max < 0.5) {
-            _entity.stats.speed *= 1.3;
-        }
+        // Stats applied via CalculateCachedStats
     }
 };
 
-// Lucky Strike (small crit chance)
-global.Modifiers.LuckyStrike = {
-    name: "Lucky Strike",
-    triggers: [MOD_TRIGGER.ON_ATTACK],
-    crit_chance: 0.1,
-    crit_mult: 2.0,
-    synergy_tags: [SYNERGY_TAG.ATHLETIC],
+global.Modifiers.CriticalStrike = {
+    name: "Critical Strike",
+    description: "15% chance for 2x damage",
+    triggers: [MOD_TRIGGER.ON_HIT],
+    proc_chance: 0.15, // 15% chance
+    synergy_tags: [SYNERGY_TAG.CRITICAL],
+    
+    crit_multiplier: 2.0,
+    
     action: function(_entity, _event) {
         var mod_template = global.Modifiers[$ _event.mod_instance.template_key];
-        if (random(1) < mod_template.crit_chance) {
-            _event.damage *= mod_template.crit_mult;
-            // Optionally spawn crit popup
+        var stack = _event.stack_level ?? 1;
+        
+        // Roll for crit
+        if (random(1) > mod_template.proc_chance) return;
+        
+        var crit_mult = GetStackedValue(mod_template.crit_multiplier, stack);
+        
+        // Modify the damage in the event (this will be applied retroactively)
+        _event.damage *= crit_mult;
+        
+        // Visual feedback at hit location
+        if (variable_struct_exists(_event, "target") && instance_exists(_event.target)) {
+            var crit_text = instance_create_depth(
+                _event.target.x, _event.target.y - 20,
+                -9999, obj_floating_text
+            );
+            crit_text.text = "CRIT!";
+            crit_text.color = c_yellow;
+            crit_text.scale = 1.5;
         }
     }
 };
 
-// Second Wind (heal a bit after room clear)
-global.Modifiers.SecondWind = {
-    name: "Second Wind",
-    triggers: [MOD_TRIGGER.ON_ROOM_CLEAR],
-    heal_ratio: 0.1,
-    synergy_tags: [SYNERGY_TAG.ATHLETIC],
+global.Modifiers.Lifesteal = {
+    name: "Lifesteal",
+    description: "Heal 10% of damage dealt",
+    triggers: [MOD_TRIGGER.ON_HIT],
+    synergy_tags: [SYNERGY_TAG.LIFESTEAL],
+    
+    lifesteal_percent: 0.10,
+    
     action: function(_entity, _event) {
-        var mod_template = global.Modifiers[$ _event.mod_instance.template_key];
-        var heal_amount = _entity.hp_max * mod_template.heal_ratio;
-        _entity.hp = clamp(_entity.hp + heal_amount, 0, _entity.hp_max);
-    }
-};
-
-// Critical Focus (stacking crit chance on misses)
-global.Modifiers.CriticalFocus = {
-    name: "Critical Focus",
-    triggers: [MOD_TRIGGER.ON_ATTACK, MOD_TRIGGER.ON_HIT],
-    base_chance: 0.05,
-    stack_gain: 0.02,
-    max_bonus: 0.25,
-    synergy_tags: [SYNERGY_TAG.ATHLETIC],
-    action: function(_entity, _event) {
-        var mod_instance = _event.mod_instance;
-        var mod_template = global.Modifiers[$ mod_instance.template_key];
+        var stack = _event.stack_level ?? 1;
+        var heal_amount = _event.damage * GetStackedValue(lifesteal_percent, stack);
         
-        if (!variable_struct_exists(mod_instance, "bonus_chance")) {
-            mod_instance.bonus_chance = 0;
-        }
-        
-        // On attack, apply crit
-        if (_event.trigger == MOD_TRIGGER.ON_ATTACK) {
-            var total_chance = mod_template.base_chance + mod_instance.bonus_chance;
-            if (random(1) < total_chance) {
-                _event.damage *= 2;
-                mod_instance.bonus_chance = 0;
+        if (instance_exists(_entity)) {
+            // Use the component system
+            if (variable_instance_exists(_entity, "damage_sys")) {
+                _entity.damage_sys.Heal(heal_amount);
+                
+                // Visual feedback
+                spawn_damage_number(_entity.x, _entity.y - 32, floor(heal_amount), c_lime, false);
             }
         }
-        
-        // On hit miss, stack chance
-        if (_event.trigger == MOD_TRIGGER.ON_HIT && !_event.hit_success) {
-            mod_instance.bonus_chance = min(mod_instance.bonus_chance + mod_template.stack_gain, mod_template.max_bonus);
-        }
     }
 };
+
+// ------------------------------------------
+// REGENERATION
+// ------------------------------------------
+
+global.Modifiers.Regeneration = {
+    name: "Regeneration",
+    description: "Heal 1 HP every 3 seconds",
+    triggers: [MOD_TRIGGER.PASSIVE],
+    activation_chance: 100,
+    synergy_tags: [SYNERGY_TAG.REGENERATION],
+    
+    heal_per_tick: 1,
+    tick_rate: 180, // 3 seconds at 60 FPS
+    
+    instance_data: {
+        regen_timer: 0
+    },
+    
+    action: function(_entity, _event) {
+        // This should be handled in a separate update function
+        // Or add to player Step event:
+        /*
+        for (var i = 0; i < array_length(mod_list); i++) {
+            if (mod_list[i].template_key == "Regeneration") {
+                mod_list[i].regen_timer++;
+                if (mod_list[i].regen_timer >= 180) {
+                    hp = min(hp + 1, hp_max);
+                    mod_list[i].regen_timer = 0;
+                }
+            }
+        }
+        */
+    }
+};
+
+// ==========================================
+// SYNERGY TAG REFERENCE
+// ==========================================
+/*
+SYNERGY_TAG.VAMPIRE      - Vampire class tag
+SYNERGY_TAG.HOLY         - Holy Mage class tag
+SYNERGY_TAG.BRUTAL       - Warrior class tag
+SYNERGY_TAG.ATHLETIC     - Baseball Player class tag
+SYNERGY_TAG.ROGUE        - Rogue class tag
+SYNERGY_TAG.MAGE         - Mage class tag
+
+SYNERGY_TAG.MELEE        - Melee weapon type
+SYNERGY_TAG.RANGED       - Ranged weapon type
+SYNERGY_TAG.EXPLOSIVE    - Explosive weapons (grenades, bombs)
+SYNERGY_TAG.THROWABLE    - Throwable items
+SYNERGY_TAG.PIERCING     - Piercing weapons
+SYNERGY_TAG.BLUNT        - Blunt weapons
+
+SYNERGY_TAG.FIRE         - Fire element
+SYNERGY_TAG.ICE          - Ice element
+SYNERGY_TAG.LIGHTNING    - Lightning element
+SYNERGY_TAG.POISON       - Poison element
+
+SYNERGY_TAG.LIFESTEAL    - Lifesteal behavior
+SYNERGY_TAG.CHAIN        - Chain attacks
+SYNERGY_TAG.SPLASH       - Area damage
+SYNERGY_TAG.BOUNCING     - Bouncing projectiles
+SYNERGY_TAG.HOMING       - Homing projectiles
+SYNERGY_TAG.PIERCING_SHOT - Piercing projectiles
+
+SYNERGY_TAG.STRENGTH     - Damage boost
+SYNERGY_TAG.SPEED        - Speed boost
+SYNERGY_TAG.WEIGHT       - Weight/knockback
+SYNERGY_TAG.CRITICAL     - Critical hits
+SYNERGY_TAG.REGENERATION - Health regen
+SYNERGY_TAG.GLASS_CANNON - High risk/reward
+SYNERGY_TAG.TANKY        - High defense
+*/

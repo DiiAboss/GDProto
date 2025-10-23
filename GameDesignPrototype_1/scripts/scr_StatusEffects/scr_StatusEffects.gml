@@ -116,3 +116,85 @@ function StatusEffectComponent(_owner) constructor {
         );
     }
 }
+
+
+/// @function CalculateCachedStats(_entity)
+/// @description Recalculate all passive modifier bonuses and UPDATE player stats
+function CalculateCachedStats(_entity) {
+    if (!instance_exists(_entity)) return;
+    if (!variable_instance_exists(_entity, "mod_list")) return;
+    if (!variable_instance_exists(_entity, "stats")) return;
+    
+    // Initialize base stats if they don't exist (one-time)
+    if (!variable_instance_exists(_entity.stats, "base_attack")) {
+        _entity.stats.base_attack = _entity.stats.attack;
+    }
+    if (!variable_instance_exists(_entity.stats, "base_speed")) {
+        _entity.stats.base_speed = _entity.stats.speed;
+    }
+    if (!variable_instance_exists(_entity.damage_sys, "base_max_hp")) {
+        _entity.damage_sys.base_max_hp = _entity.damage_sys.max_hp;
+    }
+    
+    // Start fresh from base stats
+    var damage_bonus = 0;
+    var damage_mult = 1.0;
+    var speed_bonus = 0;
+    var speed_mult = 1.0;
+    var max_hp_bonus = 0;
+    
+    // Loop through all modifiers
+    for (var i = 0; i < array_length(_entity.mod_list); i++) {
+        var mod_instance = _entity.mod_list[i];
+        if (!mod_instance.active) continue;
+        
+        var mod_template = global.Modifiers[$ mod_instance.template_key];
+        if (mod_template == undefined) continue;
+        
+        var stack = mod_instance.stack_level ?? 1;
+        
+        // Apply passive_stats if they exist
+        if (variable_struct_exists(mod_template, "passive_stats")) {
+            var stats = mod_template.passive_stats;
+            
+            if (variable_struct_exists(stats, "damage_bonus")) {
+                damage_bonus += GetStackedValue(stats.damage_bonus, stack);
+            }
+            if (variable_struct_exists(stats, "damage_mult")) {
+                damage_mult *= GetStackedValue(stats.damage_mult, stack);
+            }
+            if (variable_struct_exists(stats, "speed_bonus")) {
+                speed_bonus += GetStackedValue(stats.speed_bonus, stack);
+            }
+            if (variable_struct_exists(stats, "speed_mult")) {
+                speed_mult *= GetStackedValue(stats.speed_mult, stack);
+            }
+            if (variable_struct_exists(stats, "max_hp_bonus")) {
+                max_hp_bonus += GetStackedValue(stats.max_hp_bonus, stack);
+            }
+        }
+    }
+    
+    // APPLY calculated stats to component system
+    _entity.stats.attack = (_entity.stats.base_attack + damage_bonus) * damage_mult;
+    _entity.stats.speed = (_entity.stats.base_speed + speed_bonus) * speed_mult;
+    _entity.damage_sys.max_hp = _entity.damage_sys.base_max_hp + max_hp_bonus;
+    
+    // Sync legacy variables
+    _entity.attack = _entity.stats.attack;
+    _entity.mySpeed = _entity.stats.speed;
+    _entity.maxHp = _entity.damage_sys.max_hp;
+    _entity.hp_max = _entity.damage_sys.max_hp;
+    
+    // Don't let HP exceed new max
+    _entity.damage_sys.hp = min(_entity.damage_sys.hp, _entity.damage_sys.max_hp);
+    _entity.hp = _entity.damage_sys.hp;
+    
+    show_debug_message("Stats Recalculated: ATK=" + string(floor(_entity.stats.attack)) + 
+                       " SPD=" + string(_entity.stats.speed) + 
+                       " HP=" + string(_entity.damage_sys.max_hp));
+}
+
+
+
+

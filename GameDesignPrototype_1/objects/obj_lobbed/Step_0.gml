@@ -8,7 +8,7 @@ lobStep = lobShot(self, 4, lob_direction, xStart, yStart, targetDistance);
 if (lobStep >= 1) {
     // Create splash effect for Holy Water
     if (sprite_index == spr_holy_water || object_index == obj_holy_water) {
-        CreateHolyWaterSplash(x, y, owner);
+        CreateHolyWaterSplash(x, y, owner, lob_direction);
     }
     
     // Create knockback area

@@ -3,5 +3,5 @@
 // Inherit the parent event
 event_inherited();
 
-spawner_timer = 200;
-spawn_pool = [obj_maggot, obj_maggot_2];
+sprite = spr_enemy_2;
+can_fall = false;
