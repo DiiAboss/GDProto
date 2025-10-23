@@ -13,15 +13,15 @@
 // TAG DEFINITIONS
 // ==========================================
 enum SYNERGY_TAG {
-    // Character Identity Tags (permanent)
+    // Character Identity Tags
     VAMPIRE,
     HOLY,
     BRUTAL,
     ATHLETIC,
     ROGUE,
-	MAGE,  // NEW - for Holy Mage
+    MAGE,
     
-    // Weapon Type Tags (permanent)
+    // Weapon Type Tags
     MELEE,
     RANGED,
     EXPLOSIVE,
@@ -29,13 +29,13 @@ enum SYNERGY_TAG {
     PIERCING,
     BLUNT,
     
-    // Elemental Tags (can be temporary from mods)
+    // Elemental Tags
     FIRE,
     ICE,
     LIGHTNING,
     POISON,
     
-    // Behavior Tags (from mods or class abilities)
+    // Behavior Tags
     LIFESTEAL,
     CHAIN,
     SPLASH,
@@ -43,15 +43,24 @@ enum SYNERGY_TAG {
     HOMING,
     PIERCING_SHOT,
     
-    // Synergy Result Tags (detected combinations)
+    // NEW: Stat Modifier Tags
+    STRENGTH,      // Increases damage
+    SPEED,         // Increases movement/attack speed
+    WEIGHT,        // Increases knockback/throw distance
+    CRITICAL,      // Critical hit chance/damage
+    REGENERATION,  // Health regen
+    GLASS_CANNON,  // High damage, low defense
+    TANKY,         // High defense, slower
+    
+    // Synergy Result Tags
     BURNING_LIFESTEAL,
     HOLY_EXPLOSION,
     FASTBALL,
     BLOOD_TRAIL,
     FROZEN_EXPLOSION,
     STEAM_CLOUD,
-	HOMING_THROW,      // NEW - Mage + Throwable
-    POWER_THROW        // NEW - Baseball Player + Throwable
+    HOMING_THROW,
+    POWER_THROW
 }
 
 // ==========================================
@@ -404,10 +413,10 @@ function ApplySynergyBehavior(_projectile, _combined_tags, _detected_synergies, 
                 
             case SYNERGY_TAG.POWER_THROW:
                 // Baseball player power throw
-                _projectile.speed *= 2.0;  // 2x throw speed
+                _projectile.speed *= 1.1;  // 2x throw speed
                 _projectile.damage *= 1.5;  // 1.5x damage
                 if (variable_instance_exists(_projectile, "targetDistance")) {
-                    _projectile.targetDistance *= 1.5;  // Goes further
+                    _projectile.targetDistance *= 1;  // Goes further
                 }
                 _projectile.visual_effect = "speed_lines";  // Visual indicator
                 break;
@@ -648,6 +657,14 @@ function GetTagName(_tag_enum) {
         case SYNERGY_TAG.BLOOD_TRAIL: return "BLOOD_TRAIL";
         case SYNERGY_TAG.FROZEN_EXPLOSION: return "FROZEN_EXPLOSION";
         case SYNERGY_TAG.STEAM_CLOUD: return "STEAM_CLOUD";
+		
+		case SYNERGY_TAG.STRENGTH: return "STRENGTH";
+case SYNERGY_TAG.SPEED: return "SPEED";
+case SYNERGY_TAG.WEIGHT: return "WEIGHT";
+case SYNERGY_TAG.CRITICAL: return "CRITICAL";
+case SYNERGY_TAG.REGENERATION: return "REGENERATION";
+case SYNERGY_TAG.GLASS_CANNON: return "GLASS_CANNON";
+case SYNERGY_TAG.TANKY: return "TANKY";
         
         default: return "UNKNOWN_TAG_" + string(_tag_enum);
     }

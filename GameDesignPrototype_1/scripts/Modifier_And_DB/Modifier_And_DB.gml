@@ -111,11 +111,15 @@ function TriggerModifiers(_entity, _trigger, _event_data) {
         
         if (mod_template == undefined) continue;
         
+        // Add stack level to event data
         _event_data.mod_instance = mod_instance;
+        _event_data.stack_level = mod_instance.stack_level ?? 1;
+        
+        // Just run the action - let each modifier handle its own proc chance
         mod_template.action(_entity, _event_data);
     }
     
-    // FIX: Check if field exists before using it
+    // Handle bonus projectiles
     if (_trigger == MOD_TRIGGER.ON_ATTACK) {
         if (variable_struct_exists(_event_data, "projectile_count_bonus") && 
             _event_data.projectile_count_bonus > 0) {
@@ -136,21 +140,40 @@ function AddModifier(_entity, _modifier_key) {
         return noone;
     }
     
-     var mod_template = global.Modifiers[$ _modifier_key];
+    var mod_template = global.Modifiers[$ _modifier_key];
     
-    // NEW: Add synergy tags from modifier
-    if (variable_struct_exists(mod_template, "synergy_tags")) {
-        for (var i = 0; i < array_length(mod_template.synergy_tags); i++) {
-            AddModifierTag(_entity, mod_template.synergy_tags[i]);
+    // NEW: Check if entity already has this modifier (for stacking)
+    var existing_index = -1;
+    for (var i = 0; i < array_length(_entity.mod_list); i++) {
+        if (_entity.mod_list[i].template_key == _modifier_key) {
+            existing_index = i;
+            break;
         }
     }
-
+    
+    // NEW: If modifier exists, STACK IT
+    if (existing_index != -1) {
+        if (!variable_struct_exists(_entity.mod_list[existing_index], "stack_level")) {
+            _entity.mod_list[existing_index].stack_level = 1;
+        }
+        _entity.mod_list[existing_index].stack_level++;
+        
+        show_debug_message("STACKED " + _modifier_key + " to level " + string(_entity.mod_list[existing_index].stack_level));
+        
+        // Recalculate passive stats
+        if (instance_exists(_entity) && object_is_ancestor(_entity.object_index, obj_player)) {
+            CalculateCachedStats(_entity);
+        }
+        
+        return _entity.mod_list[existing_index];
+    }
     
     // Create instance
     var mod_instance = {
         template_key: _modifier_key,
         counter: 0,
-        active: true
+        active: true,
+        stack_level: 1  // NEW: Add stack level
     };
     
     array_push(_entity.mod_list, mod_instance);
@@ -167,9 +190,22 @@ function AddModifier(_entity, _modifier_key) {
         array_push(_entity.mod_cache[$ trigger_str], mod_instance);
     }
     
+    // NEW: Add synergy tags
+    if (variable_struct_exists(mod_template, "synergy_tags")) {
+        for (var i = 0; i < array_length(mod_template.synergy_tags); i++) {
+            AddModifierTag(_entity, mod_template.synergy_tags[i]);
+        }
+    }
+    
+    // NEW: Recalculate passive stats
+    if (instance_exists(_entity) && object_is_ancestor(_entity.object_index, obj_player)) {
+        CalculateCachedStats(_entity);
+    }
+    
     show_debug_message("Added modifier: " + _modifier_key);
     return mod_instance;
 }
+
 
 
 function ApplyStatModifiers(_self, _mods)
@@ -451,4 +487,55 @@ function EventData(_data = []) {
     if (!variable_struct_exists(_event, "target"))      _event.target      = noone;
     if (!variable_struct_exists(_event, "damage"))      _event.damage      = 0;
     return _event;
+}
+
+/// @function CreateModifierInstance(_template_key, _stack_level)
+function CreateModifierInstance(_template_key, _stack_level = 1) {
+    var template = global.Modifiers[$ _template_key];
+    
+    return {
+        template_key: _template_key,
+        stack_level: _stack_level,
+        name: template.name,
+        triggers: template.triggers,
+        
+        // NEW: Activation chance (100 = always, 10 = 10% chance)
+        activation_chance: template.activation_chance ?? 100,
+        
+        // NEW: Synergy tags this modifier provides
+        synergy_tags: template.synergy_tags ?? [],
+        
+        // Track activation statistics
+        activation_attempts: 0,
+        successful_activations: 0
+    };
+}
+
+/// @function GetStackedValue(_base_value, _stack_level)
+/// @description Calculate value with diminishing returns per stack
+/// Stack 1: base_value (100%)
+/// Stack 2: base_value * 1.5 (150%)
+/// Stack 3: base_value * 1.75 (175%)
+/// Stack 4: base_value * 1.875 (187.5%)
+/// Each stack adds 50% of the previous bonus
+function GetStackedValue(_base_value, _stack_level) {
+    if (_stack_level <= 1) return _base_value;
+    
+    var total = _base_value;
+    var bonus = _base_value * 0.5; // 50% bonus for second stack
+    
+    for (var i = 2; i <= _stack_level; i++) {
+        total += bonus;
+        bonus *= 0.5; // Diminishing returns
+    }
+    
+    return total;
+}
+
+/// @function ShouldModifierActivate(_activation_chance)
+/// @description Check if modifier should activate based on chance
+/// @param {real} _activation_chance - Percentage chance (0-100)
+function ShouldModifierActivate(_activation_chance) {
+    if (_activation_chance >= 100) return true;
+    return (random(100) < _activation_chance);
 }

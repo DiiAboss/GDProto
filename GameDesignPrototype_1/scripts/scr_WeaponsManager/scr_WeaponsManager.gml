@@ -304,9 +304,14 @@ function CreateWeaponNotification(_player, _weapon_struct, _action) {
 /// @function SwitchToWeaponSlot(_slot_index)
 /// @description Switch active weapon to specified slot
 function SwitchToWeaponSlot(_slot_index) {
+    // VALIDATE FIRST
     if (_slot_index < 0 || _slot_index >= weapon_slots) return;
     if (weapons[_slot_index] == noone) return;
     
+    // Store previous weapon
+    previous_weapon_instance = weaponCurrent;
+    
+    // Update current weapon
     current_weapon_index = _slot_index;
     weaponCurrent = EnsureWeaponInstance(weapons[_slot_index]);
     weapons[_slot_index] = weaponCurrent;

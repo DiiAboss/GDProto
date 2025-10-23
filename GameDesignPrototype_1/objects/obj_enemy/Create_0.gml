@@ -32,7 +32,7 @@ maxHp = damage_sys.max_hp;
 moveSpeed = 2;
 myDir = 0;
 
-
+can_fall = true;
 scored_this_death = false;    // Prevents double-scoring
 total_damage_taken = 0;       // Track actual damage for overkill
 
@@ -271,6 +271,8 @@ if (knockbackCooldown <= 0 && abs(knockbackX) < 1 && abs(knockbackY) < 1 && _pla
     var tile_ahead = tilemap_get_at_pixel(tilemap_id, next_check_x, next_check_y);
     var is_pit_ahead = (tile_ahead > 446 || tile_ahead == 0);
     
+	if (!can_fall) is_pit_ahead = false;
+	
     if (is_pit_ahead) {
         // PIT DETECTED - Find alternative direction
         var try_angles = [45, -45, 90, -90, 135, -135];
@@ -312,7 +314,7 @@ if (knockbackCooldown <= 0 && abs(knockbackX) < 1 && abs(knockbackY) < 1 && _pla
 // ==========================================
 // PIT FALL CHECK (Only During Knockback or Already Falling)
 // ==========================================
-if (!is_falling) {
+if (!is_falling && can_fall) {
     // Only check for pit fall if being knocked back OR moving fast
     var is_being_knocked = (abs(knockbackX) > knockbackThreshold || abs(knockbackY) > knockbackThreshold);
     
