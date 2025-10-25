@@ -1,14 +1,25 @@
 #region Weapon Structure
+/// ------------------------------------------------------------
+/// Module: WeaponStruct.gml
+/// Purpose: Centralized weapon definitions and per‑weapon behavior hooks.
+/// How it fits: Gameplay calls `primary_attack` / `secondary_attack` / `step`
+/// on the currently equipped weapon entry. Each entry encapsulates:
+///  - metadata (name/id/type)
+///  - data needed for spawning (projectile_struct/melee_object_type)
+///  - combo/cooldown state (lives inside the struct for self‑contained logic)
+///  - event dispatch to the mod system via CreateAttackEvent/TriggerModifiers
+/// ------------------------------------------------------------
 global.WeaponStruct =
 {
 	Bow: {
+        // --- Bow: Single, straight projectile; modifiers can fan/split, etc.
         name: "Bow",
         id: Weapon.Bow,
         type: WeaponType.Range,
-        projectile_struct: global.Projectile_.Arrow,
-        default_element: ELEMENT.PHYSICAL,
-		synergy_tags: InitializeWeaponTags(Weapon.Bow),
-
+        projectile_struct: global.Projectile_.Arrow, // Template for arrow stats
+        
+        /// Fires an arrow in `_direction`. Returns projectile instance.
+        /// Flow: spawn → raise ON_ATTACK (RANGED) → modifiers mutate `_attack`.
         primary_attack: function(_self, _direction, _range, _projectile_struct) {
             var _attack = Shoot_Projectile(_self, _direction, _self, _range, _projectile_struct, obj_arrow);
             
@@ -25,6 +36,7 @@ global.WeaponStruct =
             return _attack;
         },
         
+        /// Alternative toss arc (lob); good for arcing shots over cover.
         secondary_attack: function(_self, _direction, _range, _projectile_struct) {
            
 			
@@ -159,33 +171,37 @@ global.WeaponStruct =
 },
     
     Sword: {
+        // --- Sword: Melee with 3‑hit combo; per‑swing timing and scaling.
         name: "Sword",
         id: Weapon.Sword,
         type: WeaponType.Melee,
-        projectile_struct: undefined,
-        melee_object_type: obj_sword,
-        default_element: ELEMENT.PHYSICAL,
-		synergy_tags: InitializeWeaponTags(Weapon.Sword),
-
+        projectile_struct: undefined,       // Melee uses hitbox object
+        melee_object_type: obj_sword,       // Swing hitbox instance type
+        
+        // Combo state stored in the weapon so it persists across owners if needed
         combo_count: 0,
         max_combo: 3,
-        combo_timer: 0,
-        combo_window: 30,
-        attack_cooldown: 0,
+        combo_timer: 0,          // Time left to chain to next hit
+        combo_window: 30,        // Frames allowed between hits to keep chain
+        attack_cooldown: 0,      // Frames until next swing allowed
         
+        // Per‑hit timings and multipliers
         combo_attacks: [
             {duration: 25, damage_mult: 1.0, knockback_mult: 1.0},
             {duration: 30, damage_mult: 1.2, knockback_mult: 1.1},
             {duration: 40, damage_mult: 1.5, knockback_mult: 1.3}
         ],
         
+        /// Executes one combo swing; advances combo & emits ON_ATTACK (MELEE).
+        /// Returns active melee hitbox (if present) for further tracking.
         primary_attack: function(_self, _direction, _range, _projectile_struct) {
-            if (attack_cooldown > 0) return noone;
-            if (combo_timer <= 0) combo_count = 0;
+            if (attack_cooldown > 0) return noone; // Still recovering
+            if (combo_timer <= 0) combo_count = 0; // Chain expired → restart
             
             var attack_data = combo_attacks[combo_count];
             var melee_attack = _self.attack * attack_data.damage_mult;
             
+            // Program the swing hitbox with scaled damage/knockback, mark swing start
             if (instance_exists(_self.melee_weapon)) {
                 _self.melee_weapon.attack = melee_attack;
                 _self.melee_weapon.knockbackForce = 24 * attack_data.knockback_mult;
@@ -193,11 +209,13 @@ global.WeaponStruct =
                 _self.melee_weapon.current_combo_hit = combo_count;
             }
             
+            // Lockout & combo bookkeeping
             attack_cooldown = attack_data.duration;
             var current_hit = combo_count;
             combo_count = (combo_count + 1) % max_combo;
             combo_timer = combo_window;
             
+            // Notify modifier system with context (damage & combo index)
             var attack_event = CreateAttackEvent(_self, AttackType.MELEE, _direction, noone);
             attack_event.damage = melee_attack;
             attack_event.combo_hit = current_hit;
@@ -207,8 +225,10 @@ global.WeaponStruct =
             return _self.melee_weapon;
         },
         
+        /// Reserved for alternates (e.g., guard, dash slash); empty for now.
         secondary_attack: function(_self, _direction, _range, _projectile_struct) {},
         
+        /// Per‑frame timer maintenance (cooldown/combo window).
         step: function(_self) {
             if (attack_cooldown > 0) attack_cooldown = timer_tick(attack_cooldown);
             if (combo_timer > 0) combo_timer = timer_tick(combo_timer);
@@ -216,10 +236,11 @@ global.WeaponStruct =
     },
     
     Dagger: {
+        // --- Dagger: Fast 3‑hit chain; final hit lunges; has a throw alt.
         name: "Dagger",
         id: Weapon.Dagger,
         type: WeaponType.Melee,
-        projectile_struct: global.Projectile_.Knife,
+        projectile_struct: global.Projectile_.Knife, // Used by secondary throw
         melee_object_type: obj_dagger,
         default_element: ELEMENT.PHYSICAL,
 		synergy_tags: InitializeWeaponTags(Weapon.Dagger),
@@ -227,21 +248,24 @@ global.WeaponStruct =
         combo_count: 0,
         max_combo: 3,
         combo_timer: 0,
-        combo_window: 25,
+        combo_window: 25,      // Tighter window than sword
         attack_cooldown: 0,
         
+        // Faster swings; last hit performs a lunge and hits hardest
         combo_attacks: [
             {duration: 18, damage_mult: 0.8, knockback_mult: 0.7, lunge: false},
             {duration: 20, damage_mult: 0.9, knockback_mult: 0.8, lunge: false},
             {duration: 28, damage_mult: 1.5, knockback_mult: 1.5, lunge: true, lunge_power: 15}
         ],
         
+        /// Fast stab / lunge chain; informs modifiers with combo index.
         primary_attack: function(_self, _direction, _range, _projectile_struct) {
             if (attack_cooldown > 0) return noone;
             if (combo_timer <= 0) combo_count = 0;
             
             var attack_data = combo_attacks[combo_count];
             
+            // Conditional lunge on finisher—applies self movement via knockback fields
             if (attack_data.lunge) {
                 _self.knockbackX = lengthdir_x(attack_data.lunge_power, _direction);
                 _self.knockbackY = lengthdir_y(attack_data.lunge_power, _direction);
@@ -270,18 +294,19 @@ global.WeaponStruct =
             return _self.melee_weapon;
         },
         
+        /// Throws a knife projectile straight ahead; informs modifiers (RANGED).
         secondary_attack: function(_self, _direction, _range, _projectile_struct) {
             if (attack_cooldown > 0) return noone;
             
             var proj = instance_create_depth(_self.x, _self.y, _self.depth - 1, obj_knife);
             proj.direction = _direction;
             proj.speed = 12;
-            proj.damage = _self.attack * 0.6;
+            proj.damage = _self.attack * 0.6; // Weaker than melee stabs
             proj.owner = _self.id;
             proj.image_angle = _direction;
             
             var attack_event = CreateAttackEvent(_self, AttackType.RANGED, _direction, proj);
-            attack_event.projectile_count_bonus = 2; // 3 total knives
+            attack_event.projectile_count_bonus = 2; // Example: modifiers can spawn +2 clones
             
 			// NEW: Apply synergy behaviors to projectile
 		    if (variable_instance_exists(_self, "active_combined_tags")) {
@@ -294,121 +319,84 @@ global.WeaponStruct =
             return proj;
         },
         
+        /// Local timer maintenance for dagger pacing.
         step: function(_self) {
             if (attack_cooldown > 0) attack_cooldown--;
             if (combo_timer > 0) combo_timer--;
         }
     },
-	HolyWater: {
-        name: "Holy_Water",
-        id: Weapon.Holy_Water,
-        type: WeaponType.Range,
-        projectile_struct: global.Projectile_.Holy_Water,
-        default_element: ELEMENT.PHYSICAL,
-		synergy_tags: InitializeWeaponTags(Weapon.Holy_Water),
 
-       primary_attack: function(_self, _direction, _range, _projectile_struct) {
-		    var proj = Lob_Projectile(_self, _direction, _range, projectile_struct.object);
-		    
-		    // NEW: Apply synergies to projectile
-		    if (variable_instance_exists(_self, "active_combined_tags") && 
-		        variable_instance_exists(_self, "active_synergies")) {
-		        ApplySynergyBehavior(proj, _self.active_combined_tags, _self.active_synergies, _self);
-		    }
-		    
-		    // Existing modifier trigger
-		    var attack_event = CreateAttackEvent(_self, AttackType.RANGED, _direction, proj);
-		    TriggerModifiers(_self, MOD_TRIGGER.ON_ATTACK, attack_event);
-		    
-		    return proj;
-		},
+    BaseballBat: {
+        // --- Baseball Bat: Heavy, slow arcs; big knockback; 3‑hit chain.
+        name: "Baseball Bat",
+        id: Weapon.BaseballBat,
+        type: WeaponType.Melee,
+        projectile_struct: undefined,
+        melee_object_type: obj_baseball_bat,
         
+        combo_count: 0,
+        max_combo: 3,
+        combo_timer: 0,
+        combo_window: 35,      // Long chain window for weighty timing
+        attack_cooldown: 0,
+        
+        combo_attacks: [
+            {duration: 30, damage_mult: 1.2, knockback_mult: 1.5},  // Slower, harder
+            {duration: 32, damage_mult: 1.4, knockback_mult: 1.7},
+            {duration: 40, damage_mult: 2.0, knockback_mult: 2.5}   // Grand‑slam finisher
+        ],
+        
+        /// Big arc swing; escalates damage/KB across the chain.
+        primary_attack: function(_self, _direction, _range, _projectile_struct) {
+            if (attack_cooldown > 0) return noone;
+            if (combo_timer <= 0) combo_count = 0;
+            
+            var attack_data = combo_attacks[combo_count];
+            var melee_attack = _self.attack * attack_data.damage_mult;
+            
+            if (instance_exists(_self.melee_weapon)) {
+                _self.melee_weapon.attack = melee_attack;
+                _self.melee_weapon.knockbackForce = 80 * attack_data.knockback_mult; // Strong KB
+                _self.melee_weapon.startSwing = true;
+                _self.melee_weapon.current_combo_hit = combo_count;
+            }
+            
+            attack_cooldown = attack_data.duration;
+            var current_hit = combo_count;
+            combo_count = (combo_count + 1) % max_combo;
+            combo_timer = combo_window;
+            
+            var attack_event = CreateAttackEvent(_self, AttackType.MELEE, _direction, noone);
+            attack_event.damage = melee_attack;
+            attack_event.combo_hit = current_hit;
+            
+            TriggerModifiers(_self, MOD_TRIGGER.ON_ATTACK, attack_event);
+            
+            return _self.melee_weapon;
+        },
+        
+        /// Reserved: e.g., charged smash or quick bunt.
         secondary_attack: function(_self, _direction, _range, _projectile_struct) {
-            var _attack = Lob_Projectile(_self, _direction, _range, projectile_struct.object);
-			
-			
-			// NEW: Apply synergies to projectile
-		    if (variable_instance_exists(_self, "active_combined_tags") && 
-		        variable_instance_exists(_self, "active_synergies")) {
-		        ApplySynergyBehavior(_attack, _self.active_combined_tags, _self.active_synergies, _self);
-		    }
-		    
-		    // Existing modifier trigger
-		    var attack_event = CreateAttackEvent(_self, AttackType.RANGED, _direction, _attack);
-		    TriggerModifiers(_self, MOD_TRIGGER.ON_ATTACK, attack_event);
-			
-            return _attack;
+            // Could add a charged swing or bunt
+        },
+        
+        /// Timer upkeep for heavy weapon pacing.
+        step: function(_self) {
+            if (attack_cooldown > 0) attack_cooldown--;
+            if (combo_timer > 0) combo_timer--;
         }
     },
-    
-	BaseballBat: {
-    name: "Baseball Bat",
-    id: Weapon.BaseballBat,
-    type: WeaponType.Melee,
-    projectile_struct: undefined,
-    melee_object_type: obj_baseball_bat,
-	synergy_tags: InitializeWeaponTags(Weapon.BaseballBat),    
-
-    combo_count: 0,
-    max_combo: 3,
-    combo_timer: 0,
-    combo_window: 35,
-    attack_cooldown: 0,
-    
-    combo_attacks: [
-        {duration: 30, damage_mult: 1.2, knockback_mult: 1.5},  // Slower but harder hits
-        {duration: 32, damage_mult: 1.4, knockback_mult: 1.7},
-        {duration: 40, damage_mult: 2.0, knockback_mult: 2.5}   // Grand slam finisher
-    ],
-    
-    primary_attack: function(_self, _direction, _range, _projectile_struct) {
-        if (attack_cooldown > 0) return noone;
-        if (combo_timer <= 0) combo_count = 0;
-        
-        var attack_data = combo_attacks[combo_count];
-        var melee_attack = _self.attack * attack_data.damage_mult;
-        
-        if (instance_exists(_self.melee_weapon)) {
-            _self.melee_weapon.attack = melee_attack;
-            _self.melee_weapon.knockbackForce = 32 * attack_data.knockback_mult; // Higher base knockback
-            _self.melee_weapon.startSwing = true;
-            _self.melee_weapon.current_combo_hit = combo_count;
-        }
-        
-        attack_cooldown = attack_data.duration;
-        var current_hit = combo_count;
-        combo_count = (combo_count + 1) % max_combo;
-        combo_timer = combo_window;
-        
-        var attack_event = CreateAttackEvent(_self, AttackType.MELEE, _direction, noone);
-        attack_event.damage = melee_attack;
-        attack_event.combo_hit = current_hit;
-        
-        TriggerModifiers(_self, MOD_TRIGGER.ON_ATTACK, attack_event);
-        
-        return _self.melee_weapon;
-    },
-    
-    secondary_attack: function(_self, _direction, _range, _projectile_struct) {
-        // Could add a charged swing or bunt
-    },
-    
-    step: function(_self) {
-        if (attack_cooldown > 0) attack_cooldown--;
-        if (combo_timer > 0) combo_timer--;
-    }
-},
 	
     Boomerang: {
+        // --- Boomerang: Single instance with return logic (handled by obj).
         name: "Boomerang",
 		id: Weapon.Boomerang,
         type: WeaponType.Range,
-        projectile_struct: global.Projectile_.Boomerang,  // Add this
+        projectile_struct: global.Projectile_.Boomerang,  // Template reference
         cooldown: 0,
-        cooldown_max: 60,
-        default_element: ELEMENT.PHYSICAL,
-		synergy_tags: InitializeWeaponTags(Weapon.Boomerang),
-
+        cooldown_max: 60,  // One throw per second @60fps
+        
+        /// Spawns boomerang object and starts cooldown; modifiers may add copies.
         primary_attack: function(_self, _direction, _range, _projectile_struct) {
             if (cooldown > 0) return noone;
             
@@ -425,39 +413,42 @@ global.WeaponStruct =
             return _b;
         },
         
+        /// No alternate by default (room for recall/early return, etc.).
         secondary_attack: function(_self, _direction, _range, _projectile_struct) {
             // No secondary for now
         },
         
+        /// Simple cooldown tick.
         step: function(_self) {
             if (cooldown > 0) cooldown--;
         }
     },
 	
 	ChargeCannon: {
+        // --- Charge Cannon: Hold to charge (secondary/step), fire scales damage.
         name: "Charge Cannon",
 		id: Weapon.ChargeCannon,
         description: "Hold right-click to charge, left-click to fire",
         type: WeaponType.Range,
         projectile_struct: global.Projectile_.Cannonball,
-        default_element: ELEMENT.PHYSICAL,
-		synergy_tags: InitializeWeaponTags(Weapon.ChargeCannon),
-
-        // Charge properties
-        min_charge: 0.2,
-        charge_rate: 0.015,
         
-        // Knockback to player on fire
+        // Charge curve (handled by owner outside or in step)
+        min_charge: 0.2,     // Minimum to allow fire
+        charge_rate: 0.015,  // Suggested per‑frame accumulation when charging
+        
+        // Optional self recoil on fire
         self_knockback: true,
         self_knockback_force: 25,
         
+        /// Fires a charge‑scaled cannonball; reports ON_ATTACK (CANNON) with
+        /// damage & charge in event for modifier chains.
         primary_attack: function(_self, _direction, _range, _projectile_struct) {
             // Only fire if charged enough
             if (_self.charge_amount < min_charge) return noone;
             
             var charge_mult = _self.charge_amount;
             
-            // Create cannonball
+            // Create cannonball (generic projectile base expected by systems)
             var proj = instance_create_depth(
                 _self.x, 
                 _self.y, 
@@ -465,23 +456,21 @@ global.WeaponStruct =
                 obj_projectile
             );
             
-            // Scale by charge
+            // Scale ballistics/visuals by charge
             proj.direction = _direction;
             proj.speed = lerp(10, 20, charge_mult);
             proj.damage = _self.attack * lerp(1, 3, charge_mult);
             proj.owner = _self.id;
             proj.image_angle = _direction;
-            
-            // Visual scaling
             proj.image_xscale = lerp(1, 2.5, charge_mult);
             proj.image_yscale = lerp(1, 2.5, charge_mult);
             
-            // Knockback power for projectile
+            // Optional per‑projectile knockback hook
             if (variable_instance_exists(proj, "knockback_power")) {
                 proj.knockback_power = lerp(10, 50, charge_mult);
             }
             
-            // Launch player backwards
+            // Recoil the player if enabled
             if (self_knockback) {
                 var recoil = self_knockback_force * charge_mult;
                 _self.knockbackX = lengthdir_x(-recoil, _direction);
@@ -492,31 +481,33 @@ global.WeaponStruct =
             
             var attack_event = CreateAttackEvent(_self, AttackType.CANNON, _direction, proj);
 		attack_event.damage = proj.damage; // Override with charged damage
-		attack_event.charge_amount = charge_mult; // Add charge info for modifiers
+		attack_event.charge_amount = charge_mult; // Provide charge info
             
             TriggerModifiers(_self, MOD_TRIGGER.ON_ATTACK, attack_event);
             
-            // Reset charge
+            // Reset charge state on fire
             _self.charge_amount = 0;
             _self.is_charging = false;
             
             return proj;
         },
         
+        /// Charging is handled outside or in `step`; alt fire reserved for future.
         secondary_attack: function(_self, _direction, _range, _projectile_struct) {
             // Secondary is just the charging mechanic (handled in step)
             // Could add alternate fire mode here if desired
         },
         
+        /// Maintains post‑shot recoil state/effects (owner side).
         step: function(_self) {
-            // Update cannonball state
+            // Update cannonballing state on owner (movement/FX gates)
             if (_self.isCannonBalling) {
-                // Check if we've slowed down enough
+                // End recoil when slowed enough
                 if (abs(_self.knockbackX) < 2 && abs(_self.knockbackY) < 2) {
                     _self.isCannonBalling = false;
                 }
                 
-                // Trail effect while cannonballing
+                // Placeholder for trail/afterimage while blasting backward
                 if (current_time % 2 == 0) {
                     // Create afterimage or particle
                 }

@@ -1,21 +1,31 @@
 // ===== EXPANDED TRAIT SYSTEM =====
+// Module role: separates authoring (traits) from runtime weapon behavior.
+// Flow overview:
+//  - CharacterTraits: per‑actor sliders (body, style, affinities, resources) +
+//    a handling metric used by weapons.
+//  - WeaponTraits: static authoring for each weapon archetype (mass, range,
+//    base stats, combo scaffolding, affinity hooks, transformation thresholds).
+//  - WeaponModificationSystem: 3 tiers that convert (character, weapon) into
+//    concrete stats/behaviors + optional transformation label. Call
+//    getFullModifications() at equip/attack begin; then applyToInstance().
+// Notes: 
 
 function CharacterTraits(_id) constructor {
     id = _id;
     
     // Physical (affects weapon handling)
-    strength = 5;       // 0-10: Raw power
-    weight = 5;         // 0-10: Body mass
-    size = 5;           // 0-10: Physical size (1=tiny, 10=giant)
-    balance = 5;        // 0-10: Stability and recoil control
+    strength = 5;       // 0-10: Raw power → carries/hefts heavier weapons
+    weight = 5;         // 0-10: Body mass → passive recoil sink
+    size = 5;           // 0-10: Physical size → leverage/reach convenience
+    balance = 5;        // 0-10: Stability → converts recoil into control
     
     // Combat Style (affects attack patterns)
-    technique = 5;      // 0-10: Precision vs wild
-    rhythm = 5;         // 0-10: Fast vs slow preference
-    brutality = 5;      // 0-10: Power move preference
-    finesse = 5;        // 0-10: Combo chain preference
+    technique = 5;      // 0-10: Form/precision → structured patterns unlock
+    rhythm = 5;         // 0-10: Tempo preference → multiplicative atk speed
+    brutality = 5;      // 0-10: Bias toward heavy hits in combos
+    finesse = 5;        // 0-10: Bias toward light chains/openers
     
-    // Affinities (0-10 each)
+    // Affinities (0-10 each) — multiplied with weapon compatibility later
     affinities = {
         holy: 0,
         chaos: 0,
@@ -24,51 +34,53 @@ function CharacterTraits(_id) constructor {
         shadow: 0
     };
     
-    // Special Resources (what they can throw/shoot)
+    // Special Resources (what they can throw/shoot) — drives projectile mods
     resourceType = "none";     // "daggers", "holy_water", "bombs", etc
     resourceCount = 0;
-    resourceRegen = 0;          // Per second
+    resourceRegen = 0;          // Per second; external system should tick
     
     // Derived calculations
+    // Handling: single scalar used across mods to gate speed/damage/recoil.
+    // Higher values mean the character makes the weapon feel lighter.
     getHandlingRating = function(_weaponWeight) {
         // How well can they handle this weapon weight?
-        var strengthRatio = strength / max(1, _weaponWeight);
+        var strengthRatio = strength / max(1, _weaponWeight); // prevent div0
         var sizeBonus = size * 0.1; // Bigger = better leverage
-        var balanceBonus = balance * 0.1;
-        return strengthRatio + sizeBonus + balanceBonus;
+        var balanceBonus = balance * 0.1; // Stability aids control
+        return strengthRatio + sizeBonus + balanceBonus; // ~0.0..3.0 typical
     }
 }
 
 function WeaponTraits(_id) constructor {
     id = _id;
-    weaponObject = obj_sword;
+    weaponObject = obj_sword;  // Default spawn object for this weapon archetype
     
-    // Physical properties
-    weightClass = 5;        // 0-10: How heavy
-    lengthClass = 5;        // 0-10: How long/unwieldy
-    minStrength = 0;        // Absolute minimum to lift
-    optimalStrength = 5;    // Best performance
+    // Physical properties — paired with CharacterTraits for handling
+    weightClass = 5;        // 0-10: How heavy (feeds handling)
+    lengthClass = 5;        // 0-10: How long/unwieldy (future aim tax)
+    minStrength = 0;        // Absolute minimum to lift (validate elsewhere)
+    optimalStrength = 5;    // Where performance peaks (design hint)
     
-    // Base stats
+    // Base stats — Tier 1 starts from these
     baseDamage = 10;
     baseKnockback = 10;
     baseRecoil = 0;
     baseRange = 32;
     
-    // Combo structure
+    // Combo structure — Tier 2 may mutate/extend this pattern
     baseComboPattern = ["light", "light", "heavy"];
     maxComboLength = 3;
-    allowComboMods = true;      // Can character modify combo?
-    allowProjectileMod = false;  // Can character change projectiles?
+    allowComboMods = true;       // Can character traits alter sequencing?
+    allowProjectileMod = false;  // Allow resource‑based projectile swaps?
     
-    // Transformation thresholds
+    // Transformation thresholds — Tier 3 uses handling against these bands
     transformations = {
-        tooHeavy: 0.3,      // Handling rating below this = drag on ground
-        tooLight: 2.5,      // Handling above this = one-handed flourish
-        perfect: 1.0        // Exact match = awakened mode
+        tooHeavy: 0.3,      // Below → dragging/struggle moveset
+        tooLight: 2.5,      // Above → flourish/one‑handed antics
+        perfect: 1.0        // Near → awakened potential if affinity matches
     };
     
-    // Affinity compatibility
+    // Affinity compatibility — multiplied with character affinities
     affinityCompatibility = {
         holy: 0,
         chaos: 0,
@@ -79,10 +91,15 @@ function WeaponTraits(_id) constructor {
 }
 
 // ===== THREE-TIER MODIFICATION SYSTEM =====
+// Tier intent:
+//  1) Numeric scaling: universal, fast, always applies.
+//  2) Behavioral shaping: conditional tweaks to combos/projectiles/effects.
+//  3) Transformations: extreme matches/mismatches swap the entire feel.
 
 function WeaponModificationSystem() constructor {
     
     // TIER 1: Always happens - basic stat scaling
+    // Converts raw stats + handling into practical numbers for this pairing.
     applyTier1Mods = function(_weapon, _character) {
         var mods = {
             damage: _weapon.baseDamage,
@@ -92,7 +109,8 @@ function WeaponModificationSystem() constructor {
             range: _weapon.baseRange
         };
         
-        // Handling affects everything
+        // Handling affects everything: too heavy → slower/weaker + more recoil,
+        // too light → faster but less impact. Middle band scales smoothly.
         var handling = _character.getHandlingRating(_weapon.weightClass);
         
         if (handling < 0.5) {
@@ -107,13 +125,13 @@ function WeaponModificationSystem() constructor {
         } else if (handling > 2.0) {
             // Very light for them
             mods.attackSpeed *= 1.5;
-            mods.damage *= 0.9; // Less impact
+            mods.damage *= 0.9; // Less impact on hit
         }
         
-        // Rhythm affects attack speed
+        // Rhythm biases tempo across the board (0..10 → x0.5..x1.5)
         mods.attackSpeed *= (0.5 + _character.rhythm / 10);
         
-        // Balance affects recoil
+        // Balance + body mass cancel recoil; never below zero
         var recoilReduction = _character.balance * 2 + _character.weight * 1.5;
         mods.recoil = max(0, mods.recoil - recoilReduction);
         
@@ -121,6 +139,7 @@ function WeaponModificationSystem() constructor {
     };
     
     // TIER 2: Conditional - behavior modifications
+    // Mutates combo pattern, projectile type, and attaches effect tags.
     applyTier2Mods = function(_weapon, _character, _tier1Mods) {
         var mods = {
             comboPattern: _weapon.baseComboPattern,
@@ -131,58 +150,55 @@ function WeaponModificationSystem() constructor {
         
         // === COMBO MODIFICATIONS ===
         if (_weapon.allowComboMods) {
-            // Finesse characters add light attacks
+            // Finesse front‑loads lights; rogues may end with a throw
             if (_character.finesse > 7) {
                 array_insert(mods.comboPattern, 0, "light");
-                
-                // Rogue-type gets dagger throw finisher
                 if (_character.resourceType == "daggers") {
                     mods.specialFinisher = "dagger_throw";
                 }
             }
             
-            // Brutal characters add heavy attacks
+            // Brutality appends heavies; big bodies unlock a slam finisher
             if (_character.brutality > 7) {
                 array_push(mods.comboPattern, "heavy");
-                
-                // Big character gets ground slam finisher
                 if (_character.size > 7) {
                     mods.specialFinisher = "ground_slam";
                 }
             }
             
-            // Technical characters get precise patterns
+            // High technique enforces an alternating precision cadence
             if (_character.technique > 7) {
-                // Perfect alternating pattern
                 mods.comboPattern = ["light", "heavy", "light", "heavy"];
                 mods.specialFinisher = "precision_strike";
             }
         }
         
         // === PROJECTILE MODIFICATIONS ===
+        // Character resources can retheme a weapon’s projectile output.
         if (_weapon.allowProjectileMod && _character.resourceType != "none") {
             mods.projectileType = _character.resourceType;
             
-            // Special combinations
+            // Example: special cases for a cannon archetype
             if (_weapon.id == "cannon") {
                 switch(_character.resourceType) {
                     case "daggers":
                         mods.projectileType = "dagger_spread";
-                        _tier1Mods.recoil *= 1.5; // Rogue can't handle cannon recoil
+                        _tier1Mods.recoil *= 1.5; // Rogue struggles with kick
                         break;
                     case "holy_water":
                         mods.projectileType = "holy_blast";
-                        _tier1Mods.recoil *= 1.8; // Priest really can't handle it
+                        _tier1Mods.recoil *= 1.8; // Cleric fares worse
                         break;
                     case "bombs":
                         mods.projectileType = "cluster_bomb";
-                        _tier1Mods.recoil *= 0.8; // Demolition expert handles it better
+                        _tier1Mods.recoil *= 0.8; // Demolitionist absorbs
                         break;
                 }
             }
         }
         
         // === AFFINITY EFFECTS ===
+        // Pick a single dominant synergy by multiplying char vs weapon values.
         var strongestAffinity = "";
         var strongestValue = 0;
         
@@ -198,10 +214,9 @@ function WeaponModificationSystem() constructor {
             }
         }
         
-        if (strongestValue > 20) { // Strong affinity match
+        if (strongestValue > 20) { // Threshold: strong match only
             array_push(mods.attackEffects, strongestAffinity + "_infusion");
-            
-            // Specific affinity bonuses
+            // Thematic extras per school
             switch(strongestAffinity) {
                 case "holy":
                     array_push(mods.attackEffects, "healing_aura");
@@ -219,6 +234,8 @@ function WeaponModificationSystem() constructor {
     };
     
     // TIER 3: Extreme cases - complete transformation
+    // When handling is far out of band—or perfectly matched with affinity—
+    // the moveset identity changes. Outputs a label for VFX/logic hooks.
     applyTier3Transformation = function(_weapon, _character, _tier1Mods, _tier2Mods) {
         var handling = _character.getHandlingRating(_weapon.weightClass);
         var transform = "none";
@@ -227,13 +244,13 @@ function WeaponModificationSystem() constructor {
         if (handling < _weapon.transformations.tooHeavy) {
             transform = "dragging";
             
-            // Completely different moveset
+            // Different moveset: slow drags into a slam, high payoff
             _tier2Mods.comboPattern = ["drag", "drag", "slam"];
             _tier2Mods.specialFinisher = "exhausted_collapse";
             _tier1Mods.attackSpeed = 0.3;
-            _tier1Mods.damage *= 1.5; // But hits hard when it connects
+            _tier1Mods.damage *= 1.5; // Big when it lands
             
-            // Comedy factor
+            // Tiny wielders enter slapstick mode
             if (_character.size < 3) {
                 transform = "comedy_drag";
                 _tier2Mods.attackEffects = ["sparks_trail", "struggle_sounds"];
@@ -244,7 +261,7 @@ function WeaponModificationSystem() constructor {
         else if (handling > _weapon.transformations.tooLight) {
             transform = "flourish";
             
-            // Weapon becomes one-handed, fancy moves
+            // One‑handed flourishy string, very fast sequencing
             _tier2Mods.comboPattern = ["spin", "spin", "toss", "catch", "strike"];
             _tier2Mods.specialFinisher = "juggle_finish";
             _tier1Mods.attackSpeed = 2.0;
@@ -252,7 +269,7 @@ function WeaponModificationSystem() constructor {
         
         // === PERFECT MATCH TRANSFORMATION ===
         else if (abs(handling - _weapon.transformations.perfect) < 0.1) {
-            // Check for perfect affinity match too
+            // Perfect handling *and* strong affinity unlocks awakened state
             var perfectAffinity = false;
             var affinities = variable_struct_get_names(_character.affinities);
             
@@ -267,7 +284,7 @@ function WeaponModificationSystem() constructor {
             }
             
             if (perfectAffinity) {
-                // Weapon achieves ultimate form
+                // Ultimate dial‑up: all numbers and pattern converge
                 _tier1Mods.damage *= 2;
                 _tier1Mods.knockback *= 1.5;
                 _tier2Mods.comboPattern = ["ultimate", "ultimate", "ultimate"];
@@ -277,14 +294,14 @@ function WeaponModificationSystem() constructor {
         }
         
         // === COMEDY COMBINATIONS ===
-        // Tiny character with explosion weapon
+        // Tiny character + high recoil → physics gag
         if (_character.size <= 2 && _weapon.baseRecoil > 20) {
             transform = "rocket_jump";
             array_push(_tier2Mods.attackEffects, "self_launch");
-            _tier1Mods.recoil = 50; // Launches them backward hilariously
+            _tier1Mods.recoil = 50; // Forces backward impulse
         }
         
-        // Clumsy character with precision weapon
+        // Low technique + rapier archetype → chaotic but lucky crit
         if (_character.technique <= 2 && _weapon.id == "rapier") {
             transform = "accidental_genius";
             _tier2Mods.comboPattern = ["fumble", "trip", "accidentally_crit"];
@@ -294,6 +311,8 @@ function WeaponModificationSystem() constructor {
     };
     
     // Main function to get all modifications
+    // Returns a packaged result (stats/behaviors/transformation) with an
+    // applyToInstance() helper for wiring to a spawned weapon/melee object.
     getFullModifications = function(_weapon, _character) {
         // Apply all three tiers
         var tier1 = applyTier1Mods(_weapon, _character);
@@ -313,7 +332,7 @@ function WeaponModificationSystem() constructor {
                 _instance.comboPattern = behaviors.comboPattern;
                 _instance.transformation = transformation;
                 
-                // Store for special attack handling
+                // Store for special attack handling (finishers/effect tags)
                 _instance.specialFinisher = behaviors.specialFinisher;
                 _instance.attackEffects = behaviors.attackEffects;
             }
@@ -321,11 +340,11 @@ function WeaponModificationSystem() constructor {
     };
 }
 
-
+// Example authoring helper to visualize system extremes in tools/tests.
 function createExampleCharacters() {
     var chars = {};
     
-    // Tiny rogue
+    // Tiny rogue — excels at finesse, throws daggers, light body = low recoil
     var rogue = new CharacterTraits("rogue");
     rogue.strength = 3;
     rogue.weight = 2;
@@ -337,7 +356,7 @@ function createExampleCharacters() {
     rogue.resourceCount = 20;
     chars.rogue = rogue;
     
-    // Heavy priest
+    // Heavy priest — slow rhythm, strong holy affinity, supports cannon combos
     var priest = new CharacterTraits("priest");
     priest.strength = 4;
     priest.weight = 5;
@@ -348,7 +367,7 @@ function createExampleCharacters() {
     priest.resourceType = "holy_water";
     chars.priest = priest;
     
-    // Tiny chaos goblin
+    // Tiny chaos goblin — poor control, high chaos synergy, random throwables
     var goblin = new CharacterTraits("goblin");
     goblin.strength = 2;
     goblin.weight = 1;

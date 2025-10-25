@@ -1,7 +1,27 @@
 /// scr_ui_system.gml
+/// ------------------------------------------------------------
+/// Module: UI System
+/// Role in the larger game:
+///  - Central HUD and feedback layer rendered in GUI space.
+///  - Pulls minimal data from the player (hp/exp/level/weapons/mods) and
+///    converts it into readable, scalable UI.
+///  - Badge pipeline: game logic raises an enum type → UIManager.show_badge()
+///    computes rewards, updates player/score, and queues a floating panel.
+///  - `update()` advances score lerp and badge lifetimes; `draw()` composes
+///    the full HUD each frame. Keep update/draw calls in a controller object
+///    inside the Draw GUI event for clarity.
+/// Notes:
+///  - `player = obj_player` stores the object index; `update()` resolves an
+///    instance the first time. If multiple players exist, pass a reference in.
+///  - Totem HUD and score multiplier hooks assume external systems provide
+///    GetActiveTotemCount(), global.TotemDefinitions.*, and GetScoreMultiplier().
+///  - All positions scale by `ui_scale` for easy DPI tuning.
+/// ------------------------------------------------------------
 
 #region UI Enums
 
+/// Classification of moment‑to‑moment achievements that the HUD can display.
+/// Used as the contract between gameplay events and `show_badge()`.
 enum UI_BADGE_TYPE {
     DOUBLE_KILL,
     TRIPLE_KILL,
@@ -19,96 +39,77 @@ enum UI_BADGE_TYPE {
 
 #region UI Manager Constructor
 
+/// UIManager: owns HUD layout, stateful animations, and badge queue.
+/// Instantiate once (e.g., in a GUI controller). Call update() then draw().
 function UIManager() constructor {
-    // Positioning
+    // --- Virtual canvas and global scale ----------------------
     screen_width = display_get_gui_width();
     screen_height = display_get_gui_height();
     center_x = screen_width / 2;
-    
-    // UI SCALE - Adjust this value to resize entire UI
-    ui_scale = 1.0;
-    
-    // Top left corner - HP/XP/Level
-    top_left_x = 15 * ui_scale;
-    top_left_y = 15 * ui_scale;
-    
-	// Modifier icons (bottom center)
-	modifier_icon_size = 40 * ui_scale;
-	modifier_icon_spacing = 10 * ui_scale;
-	modifier_icon_y = screen_height - 50 * ui_scale;
-		
-    // HP/Level/XP (top left corner)
-    level_x = top_left_x;
-    level_y = top_left_y;
-    level_width = 50 * ui_scale;
-    level_height = 35 * ui_scale;
-    
-    hp_x = level_x + level_width + 10 * ui_scale;
-    hp_y = level_y;
-    hp_width = 200 * ui_scale;
-    hp_height = 35 * ui_scale;
-    
-    exp_bar_x = level_x;
-    exp_bar_y = level_y + level_height + 8 * ui_scale;
-    exp_bar_width = level_width + hp_width + 10 * ui_scale;
-    exp_bar_height = 24 * ui_scale;
-    
-    // Weapons (right side, above mouse buttons)
-    weapon_size = 60 * ui_scale;
-    weapon_vertical_spacing = 10 * ui_scale;
-    weapon_x = screen_width - weapon_size - 30 * ui_scale;
-    weapon_y = screen_height - 200 * ui_scale; // Adjust this to position above mouse buttons
-    
+
+    // Single knob to proportionally scale the entire HUD
+    ui_scale = 1.3;
+
+    // --- Top bar metrics (score + exp + HP) -------------------
+    top_bar_height = 80 * ui_scale;
+    top_margin = 25 * ui_scale;
+
     // Score (top center)
-    score_y = 20 * ui_scale;
-    
-    // Time/Score box (top right)
-    time_box_width = 200 * ui_scale;
-    time_box_height = 80 * ui_scale;
-    time_box_x = screen_width - time_box_width - 20 * ui_scale;
-    time_box_y = 20 * ui_scale;
-    
-    // Gold (bottom left)
-    gold_x = 30 * ui_scale;
-    gold_y = screen_height - 60 * ui_scale;
-    
-    // Modifiers box (bottom center)
-    mod_box_width = 400 * ui_scale;
-    mod_box_height = 60 * ui_scale;
-    mod_box_x = (screen_width - mod_box_width) / 2;
-    mod_box_y = screen_height - mod_box_height - 20 * ui_scale;
-    max_visible_mods = 10;
-    
-    // Mouse buttons (bottom right)
-    mouse_button_size = 50 * ui_scale;
-    mouse_button_spacing = 15 * ui_scale;
-    mouse_button_x = screen_width - (mouse_button_size * 2) - mouse_button_spacing - 30 * ui_scale;
-    mouse_button_y = screen_height - mouse_button_size - 30 * ui_scale;
-    
-    // Badge system (below HP/XP area)
+    score_y = top_margin;
+
+    // EXP bar (full width, below score)
+    exp_bar_y = top_margin + 35 * ui_scale;
+    exp_bar_margin = 20 * ui_scale; // Margin from screen edges
+    exp_bar_height = 24 * ui_scale;
+
+    // HP (top left)
+    hp_x = 25 * ui_scale;
+    hp_y = top_margin;
+
+    // --- Bottom bar (weapons left, modifiers right) -----------
+    bottom_bar_height = 110 * ui_scale;
+    bottom_margin = screen_height - (90 * ui_scale);
+
+    // Weapons (3 slots, large)
+    weapon_x = 30 * ui_scale;
+    weapon_y = bottom_margin;
+    weapon_size = 70 * ui_scale;
+    weapon_spacing = 85 * ui_scale;
+
+    // Modifiers (icons, right‑aligned, with overflow counter)
+    mod_start_x = screen_width - (30 * ui_scale);
+    mod_y = bottom_margin;
+    mod_size = 45 * ui_scale;
+    mod_spacing = 55 * ui_scale;
+    max_visible_mods = 10; // Render cap; show overflow as +N
+
+    // --- Badge stack (floating panels that rise/fade) ---------
     badges = [];
     badge_start_x = 40 * ui_scale;
-    badge_start_y = exp_bar_y + exp_bar_height + 40 * ui_scale;
-    badge_spacing = 70 * ui_scale;
-    badge_float_speed = 1.2 * ui_scale;
-    badge_fade_start_y = badge_start_y + (200 * ui_scale);
-    
-    // Score animation
-    displayed_score = 0;
-    target_score = 0;
-    score_lerp_speed = 0.15;
-    
-    // Player reference
-    player = obj_player;
-    
-    /// @method update()
+    badge_start_y = top_bar_height + (30 * ui_scale);
+    badge_spacing = 70 * ui_scale;          // vertical spacing between badges
+    badge_float_speed = 1.2 * ui_scale;     // rise per update()
+    badge_fade_start_y = badge_start_y - (150 * ui_scale); // begin fading
+
+    // --- Score animation (non‑blocking, cosmetic) -------------
+    displayed_score = 0;     // What we render
+    target_score = 0;        // Truth
+    score_lerp_speed = 0.15; // Smoothing factor per update
+
+    // --- Data source ------------------------------------------
+    player = obj_player;     // Object index; resolved to instance in update()
+
+    /// update():
+    ///  - Resolves player instance (lazy).
+    ///  - Smoothly animates score towards target.
+    ///  - Advances badge float/fade and prunes finished entries.
     static update = function() {
         if (!instance_exists(player)) {
             player = instance_find(obj_player, 0);
             if (!instance_exists(player)) return;
         }
-        
-        // Smooth score counting
+
+        // Score lerp gives responsive but readable increments on big gains
         if (displayed_score != target_score) {
             var diff = target_score - displayed_score;
             if (abs(diff) < 10) {
@@ -117,59 +118,258 @@ function UIManager() constructor {
                 displayed_score += diff * score_lerp_speed;
             }
         }
-        
-        // Update badges
+
+        // Badge life cycle: float upward, then fade, then remove
         for (var i = array_length(badges) - 1; i >= 0; i--) {
             var badge = badges[i];
-            
-            badge.y_offset += badge_float_speed;
+
+            badge.y_offset -= badge_float_speed;
             var current_y = badge_start_y + (i * badge_spacing) + badge.y_offset;
-            
-            if (current_y > badge_fade_start_y) {
-                var fade_range = 150 * ui_scale;
-                var fade_progress = (current_y - badge_fade_start_y) / fade_range;
+
+            // Start fading once above threshold; fully remove when invisible
+            if (current_y < badge_fade_start_y) {
+                var fade_range = badge_fade_start_y - (badge_fade_start_y - (150 * ui_scale));
+                var fade_progress = (badge_fade_start_y - current_y) / fade_range;
                 badge.alpha = max(0, 1 - fade_progress);
             }
-            
-            if (badge.alpha <= 0 || current_y > screen_height) {
+
+            if (badge.alpha <= 0 || current_y < -50) {
                 array_delete(badges, i, 1);
             }
         }
     }
-    
-    /// @method draw()
-static draw = function() {
-    if (!instance_exists(player)) return;
-    
-    draw_set_font(fnt_default);
-    
-    // Draw UI elements
-    draw_weapons();
-    draw_level_hp_xp();
-    draw_score();
-    draw_time_box();
-    draw_style_stats();     // NEW
-    draw_combo_meter();     // NEW (optional)
-    draw_gold();
-    draw_collected_modifiers();  // NEW
-    draw_mouse_buttons();
-    draw_badges();
-    draw_totems();
-}
 
-    
-    /// @method draw_weapons()
+    /// draw():
+    ///  - Composes bars, counters, badges, weapons, modifiers, and totem HUD.
+    ///  - Must be called in Draw GUI to match `display_get_gui_*` coordinates.
+    static draw = function() {
+        if (!instance_exists(player)) return;
+
+        // Layering baseline (semi‑transparent rails for readability)
+        draw_black_bars();
+
+        draw_set_font(fnt_default);
+
+        // Top content cluster
+        draw_score();
+        draw_hp();
+        draw_exp_bar();
+
+        // Floating achievement panels
+        draw_badges();
+
+        // Bottom content cluster
+        draw_weapons();
+        draw_modifiers();
+
+        // --- Totem HUD (optional subsystem hook) ---------------
+        var active_count = GetActiveTotemCount();
+        if (active_count == 0) exit; // Skip when nothing to show
+
+        var hud_x = 20;
+        var hud_y = 100;
+        var icon_size = 32;
+        var spacing = 40;
+
+        draw_set_font(fnt_default);
+        draw_set_halign(fa_left);
+        draw_set_valign(fa_top);
+        draw_set_color(c_white);
+        draw_text(hud_x, hud_y, "Active Totems:");
+
+        var index = 0;
+
+        // Minimal iconography per active totem (color + initial letter)
+        if (global.TotemDefinitions.Chaos.active) {
+            draw_set_color(c_red);
+            draw_circle(hud_x + index * spacing, hud_y + 20, icon_size / 2, false);
+            draw_set_color(c_white);
+            draw_text(hud_x + index * spacing - 8, hud_y + 30, "C");
+            index++;
+        }
+        if (global.TotemDefinitions.Horde.active) {
+            draw_set_color(c_orange);
+            draw_circle(hud_x + index * spacing, hud_y + 20, icon_size / 2, false);
+            draw_set_color(c_white);
+            draw_text(hud_x + index * spacing - 8, hud_y + 30, "H");
+            index++;
+        }
+        if (global.TotemDefinitions.Champion.active) {
+            draw_set_color(c_purple);
+            draw_circle(hud_x + index * spacing, hud_y + 20, icon_size / 2, false);
+            draw_set_color(c_white);
+            draw_text(hud_x + index * spacing - 8, hud_y + 30, "C");
+            index++;
+        }
+        if (global.TotemDefinitions.Greed.active) {
+            draw_set_color(c_yellow);
+            draw_circle(hud_x + index * spacing, hud_y + 20, icon_size / 2, false);
+            draw_set_color(c_white);
+            draw_text(hud_x + index * spacing - 8, hud_y + 30, "G");
+            index++;
+        }
+        if (global.TotemDefinitions.Fury.active) {
+            draw_set_color(c_fuchsia);
+            draw_circle(hud_x + index * spacing, hud_y + 20, icon_size / 2, false);
+            draw_set_color(c_white);
+            draw_text(hud_x + index * spacing - 8, hud_y + 30, "F");
+            index++;
+        }
+
+        // Global score multiplier readout (external system)
+        var multiplier = GetScoreMultiplier();
+        draw_set_color(c_yellow);
+        draw_text(hud_x, hud_y + 60, "Score Multiplier: " + string(multiplier) + "x");
+    }
+
+    /// draw_black_bars():
+    ///  - Provides dark rails (top/bottom) to ensure HUD legibility regardless
+    ///    of scene brightness; includes borders to visually anchor the HUD.
+    static draw_black_bars = function() {
+        draw_set_color(c_black);
+        draw_set_alpha(0.7);
+
+        // Top bar
+        draw_rectangle(0, 0, screen_width, top_bar_height, false);
+
+        // Bottom bar
+        draw_rectangle(0, screen_height - bottom_bar_height, screen_width, screen_height, false);
+
+        draw_set_alpha(1);
+
+        // Borders for separation
+        draw_set_color(c_dkgray);
+        draw_line_width(0, top_bar_height, screen_width, top_bar_height, 3 * ui_scale);
+        draw_line_width(0, screen_height - bottom_bar_height, screen_width, screen_height - bottom_bar_height, 3 * ui_scale);
+
+        draw_set_color(c_white);
+    }
+
+    /// draw_score():
+    ///  - Centered scoreboard with subtle shadow and global `ui_scale`.
+    ///  - Uses `displayed_score` to smooth large jumps for better readability.
+    static draw_score = function() {
+        draw_set_halign(fa_center);
+        draw_set_valign(fa_top);
+        draw_set_color(c_white);
+
+        var score_text = "SCORE: " + string_format(floor(displayed_score), 6, 0);
+        score_text = string_replace_all(score_text, " ", "0");
+
+        // Shadow pass
+        draw_set_alpha(0.3);
+        draw_text_transformed(center_x + 2, score_y + 2, score_text, ui_scale, ui_scale, 0);
+        draw_set_alpha(1);
+
+        // Main pass
+        draw_set_font(fnt_large);
+        draw_text_transformed(center_x, score_y, score_text, ui_scale, ui_scale, 0);
+        draw_set_font(fnt_default);
+    }
+
+    /// draw_hp():
+    ///  - Top‑left health readout with color coding by percentage.
+    ///  - Avoids bars to keep the top rail minimal.
+    static draw_hp = function() {
+        draw_set_halign(fa_left);
+        draw_set_valign(fa_top);
+
+        var hp_percent = player.hp / player.maxHp;
+        var hp_color = c_white;
+        if (hp_percent < 0.3) {
+            hp_color = c_red;
+        } else if (hp_percent < 0.6) {
+            hp_color = c_orange;
+        }
+
+        draw_set_color(hp_color);
+        var hp_text = "HP: " + string(floor(player.hp)) + "/" + string(player.maxHp);
+        draw_text_transformed(hp_x, hp_y, hp_text, ui_scale, ui_scale, 0);
+    }
+
+    /// draw_exp_bar():
+    ///  - Full‑width progress bar below the score with level tag centered.
+    ///  - Pulls `experience_points` and `exp_to_next_level` from player.
+    static draw_exp_bar = function() {
+        var bar_x = exp_bar_margin;
+        var bar_width = screen_width - (exp_bar_margin * 2);
+        var bar_y = exp_bar_y;
+
+        var exp_percent = 0;
+        if (player.exp_to_next_level > 0) {
+            exp_percent = (player.experience_points / player.exp_to_next_level) * 100;
+        }
+
+        // Background panel for contrast
+        draw_set_color(c_black);
+        draw_set_alpha(0.7);
+        draw_rectangle(bar_x - 2, bar_y - 2, bar_x + bar_width + 2, bar_y + exp_bar_height + 2, false);
+        draw_set_alpha(1);
+
+        // Empty fill
+        draw_set_color(c_dkgray);
+        draw_rectangle(bar_x, bar_y, bar_x + bar_width, bar_y + exp_bar_height, false);
+
+        // Progress fill + highlight
+        var fill_width = (bar_width * exp_percent) / 100;
+        draw_set_color(c_orange);
+        draw_rectangle(bar_x, bar_y, bar_x + fill_width, bar_y + exp_bar_height, false);
+        draw_set_color(c_yellow);
+        draw_set_alpha(0.5);
+        draw_rectangle(bar_x, bar_y, bar_x + fill_width, bar_y + exp_bar_height / 2, false);
+        draw_set_alpha(1);
+
+        // Outline
+        draw_set_color(c_white);
+        draw_rectangle(bar_x, bar_y, bar_x + bar_width, bar_y + exp_bar_height, true);
+
+        // Centered level label with stroke for legibility
+        draw_set_halign(fa_center);
+        draw_set_valign(fa_middle);
+        var level_text = "LV " + string(player.player_level);
+        var text_x = bar_x + bar_width / 2;
+        var text_y = bar_y + exp_bar_height / 2;
+
+        draw_set_color(c_black);
+        for (var ox = -1; ox <= 1; ox++) {
+            for (var oy = -1; oy <= 1; oy++) {
+                if (ox != 0 || oy != 0) {
+                    draw_text_transformed(text_x + ox, text_y + oy, level_text, ui_scale, ui_scale, 0);
+                }
+            }
+        }
+        draw_set_color(c_aqua);
+        draw_text_transformed(text_x, text_y, level_text, ui_scale, ui_scale, 0);
+    }
+
+    /// draw_weapons():
+    ///  - Renders three weapon slots, highlighting the active one.
+    ///  - Designed for iconography; current implementation shows slot index.
     static draw_weapons = function() {
         draw_set_halign(fa_center);
         draw_set_valign(fa_middle);
-        
-        // Draw 2 weapon slots stacked vertically
-        for (var i = 0; i < 2; i++) {
-            var draw_x = weapon_x;
-            var draw_y = weapon_y - (i * (weapon_size + weapon_vertical_spacing));
-            
-            // Slot background
+
+        for (var i = 0; i < 3; i++) {
+            var draw_x = weapon_x + (i * weapon_spacing);
+            var draw_y = weapon_y;
+
             var is_active = (i == player.current_weapon_index);
+            draw_set_color(is_active ? c_yellow : c_dkgray);
+            draw_set_alpha(0.5);
+            draw_rectangle(draw_x, draw_y, draw_x + weapon_size, draw_y + weapon_size, false);
+            draw_set_alpha(1);
+
+            draw_set_color(is_active ? c_white : c_gray);
+            draw_rectangle(draw_x, draw_y, draw_x + weapon_size, draw_y + weapon_size, true);
+
+            if (is_active) {
+                draw_set_color(c_yellow);
+                draw_set_alpha(0.3);
+                draw_rectangle(draw_x - 4, draw_y - 4, draw_x + weapon_size + 4, draw_y + weapon_size + 4, false);
+                draw_set_alpha(1);
+            }
+
+            // Placeholder iconography (numbered). Swap with sprites later.
             draw_set_color(c_white);
             draw_set_alpha(1);
             draw_circle(draw_x + weapon_size / 2, draw_y + weapon_size / 2, weapon_size / 2, true);
@@ -179,307 +379,75 @@ static draw = function() {
                 draw_set_color(c_black);
                 draw_circle(draw_x + weapon_size / 2, draw_y + weapon_size / 2, weapon_size / 2, false);
             }
-            
-            // Weapon text
-            draw_set_color(is_active ? c_white : c_dkgray);
-            var weapon_name = "weapon";
-            if (i == 1) weapon_name = "weapon 2";
-            draw_text(draw_x + weapon_size / 2, draw_y + weapon_size / 2, weapon_name);
+            draw_text_transformed(draw_x + weapon_size / 2, draw_y + weapon_size / 2, weapon_name, ui_scale * 1.2, ui_scale * 1.2, 0);
+
+            // Slot key legend
+            draw_set_color(c_ltgray);
+            draw_text_transformed(draw_x + weapon_size / 2, draw_y + weapon_size + (12 * ui_scale), string(i + 1), ui_scale * 0.7, ui_scale * 0.7, 0);
         }
         
         draw_set_alpha(1);
     }
-    
-    /// @method draw_level_hp_xp()
-    static draw_level_hp_xp = function() {
-        // Level box
-        draw_set_color(c_white);
-        draw_rectangle(level_x, level_y, level_x + level_width, level_y + level_height, true);
-        
+
+    /// draw_modifiers():
+    ///  - Right‑aligned ring of active modifier icons (M placeholder).
+    ///  - Shows overflow count if more than `max_visible_mods`.
+    static draw_modifiers = function() {
+        if (!variable_instance_exists(player, "mod_list")) return;
+
+        var active_count = array_length(player.mod_list);
+        if (active_count == 0) return;
+
         draw_set_halign(fa_center);
         draw_set_valign(fa_middle);
-        draw_set_color(c_white);
-        draw_text(level_x + level_width / 2, level_y + level_height / 2 - 8, string(player.player_level));
-        
-        draw_set_halign(fa_center);
-        draw_text(level_x + level_width / 2, level_y + level_height / 2 + 8, "LV");
-        
-        // HP box
-        draw_set_color(c_white);
-        draw_rectangle(hp_x, hp_y, hp_x + hp_width, hp_y + hp_height, true);
-        
-        draw_set_halign(fa_left);
-        draw_set_valign(fa_middle);
-        var hp_text = "HP/MaxHp";
-        if (instance_exists(player)) {
-            hp_text = string(floor(player.hp)) + "/" + string(player.maxHp);
-        }
-        draw_text(hp_x + 10, hp_y + hp_height / 2, hp_text);
-        
-        // XP bar
-        draw_set_color(c_white);
-        draw_rectangle(exp_bar_x, exp_bar_y, exp_bar_x + exp_bar_width, exp_bar_y + exp_bar_height, true);
-        
-        // XP fill
-        var exp_percent = 0;
-        if (player.exp_to_next_level > 0) {
-            exp_percent = player.experience_points / player.exp_to_next_level;
-        }
-        
-        draw_set_color(c_lime);
-        var fill_width = exp_bar_width * exp_percent;
-        draw_rectangle(exp_bar_x + 2, exp_bar_y + 2, exp_bar_x + fill_width - 2, exp_bar_y + exp_bar_height - 2, false);
-        
-        // XP label
-        draw_set_halign(fa_left);
-        draw_set_valign(fa_middle);
-        draw_set_color(c_white);
-        draw_text(exp_bar_x + 10, exp_bar_y + exp_bar_height / 2, "XP");
-        
-        // Experience Bar label
-        draw_set_halign(fa_center);
-        draw_set_color(c_black);
-        draw_text(exp_bar_x + exp_bar_width / 2, exp_bar_y + exp_bar_height / 2, "Experience Bar");
-    }
-    
-	
-/// @method draw_collected_modifiers()
-static draw_collected_modifiers = function() {
-    if (!instance_exists(player)) return;
-    if (array_length(player.mod_list) == 0) return;
-    
-    var total_width = (array_length(player.mod_list) * modifier_icon_size) + 
-                      ((array_length(player.mod_list) - 1) * modifier_icon_spacing);
-    var start_x = center_x - (total_width / 2);
-    
-    for (var i = 0; i < array_length(player.mod_list); i++) {
-        var _mod = player.mod_list[i];
-        
-        // Call the global function properly
-        var mod_sprite = -1;
-        if (instance_exists(obj_game_manager)) {
-            mod_sprite = obj_game_manager.GetModifierSprite(_mod.template_key);
-        }
-        
-        var draw_x = start_x + (i * (modifier_icon_size + modifier_icon_spacing)) + (modifier_icon_size / 2);
-        var draw_y = modifier_icon_y;
-        
-        // Draw the modifier sprite
-        if (sprite_exists(mod_sprite) && mod_sprite != -1) {
-            draw_sprite_ext(
-                mod_sprite,
-                0,
-                draw_x,
-                draw_y,
-                modifier_icon_size / sprite_get_width(mod_sprite),
-                modifier_icon_size / sprite_get_height(mod_sprite),
-                0,
-                c_white,
-                1
-            );
-        } else {
-            // Fallback circle if sprite missing
+
+        var visible_count = min(active_count, max_visible_mods);
+        for (var i = 0; i < visible_count; i++) {
+            var draw_x = mod_start_x - (i * mod_spacing);
+            var draw_y = mod_y + mod_size / 2;
+
             draw_set_color(c_dkgray);
-            draw_circle(draw_x, draw_y, modifier_icon_size / 2, false);
+            draw_set_alpha(0.5);
+            draw_circle(draw_x - mod_size / 2, draw_y, mod_size / 2, false);
+            draw_set_alpha(1);
+
+            draw_set_color(c_orange);
+            draw_circle(draw_x - mod_size / 2, draw_y, mod_size / 2, true);
+
             draw_set_color(c_white);
             draw_circle(draw_x, draw_y, modifier_icon_size / 2, true);
         }
-    }
-    
-    draw_set_color(c_white);
-}
-	
-	
-    /// @method draw_score()
-static draw_score = function() {
-    // Get score from game manager
-    if (!instance_exists(obj_game_manager)) return;
-    
-    draw_set_halign(fa_center);
-    draw_set_valign(fa_top);
-    draw_set_color(c_white);
-    
-    // Get current score from manager
-    target_score = obj_game_manager.score_manager.GetScore();
-    
-    // Smooth counting animation
-    if (displayed_score != target_score) {
-        var diff = target_score - displayed_score;
-        if (abs(diff) < 10) {
-            displayed_score = target_score;
-        } else {
-            displayed_score += diff * score_lerp_speed;
+
+        if (active_count > max_visible_mods) {
+            var overflow_x = mod_start_x - (max_visible_mods * mod_spacing);
+            var overflow_y = mod_y + mod_size / 2;
+            draw_set_halign(fa_center);
+            draw_set_color(c_yellow);
+            draw_text_transformed(overflow_x - mod_size, overflow_y, "+" + string(active_count - max_visible_mods), ui_scale * 0.6, ui_scale * 0.6, 0);
         }
     }
-    
-    // Format score with leading zeros
-    var score_text = "SCORE: " + string_format(floor(displayed_score), 6, 0);
-    score_text = string_replace_all(score_text, " ", "0");
-    
-    draw_set_font(fnt_large);
-    draw_text(center_x, score_y, score_text);
-    
-    // Draw combo multiplier below score
-    var combo = obj_game_manager.score_manager.GetComboMultiplier();
-    if (combo > 1.0) {
-        draw_set_font(fnt_default);
-        draw_set_color(c_yellow);
-        
-        var combo_text = "COMBO x" + string_format(combo, 1, 1);
-        draw_text(center_x, score_y + 35, combo_text);
-        
-        draw_set_color(c_white);
-    }
-    
-    draw_set_font(fnt_default);
-}
-    
-    /// @method draw_time_box()
-static draw_time_box = function() {
-    // Get time from game manager
-    if (!instance_exists(obj_game_manager)) return;
-    
-    // Box outline
-    draw_set_color(c_white);
-    draw_rectangle(time_box_x, time_box_y, 
-                   time_box_x + time_box_width, 
-                   time_box_y + time_box_height, true);
-    
-    // Title
-    draw_set_halign(fa_center);
-    draw_set_valign(fa_top);
-    draw_set_font(fnt_default);
-    draw_text(time_box_x + time_box_width / 2, time_box_y + 10, "TIME SURVIVED");
-    
-    // Get formatted time from manager
-    var time_string = obj_game_manager.time_manager.GetFormattedTime();
-    
-    // Display time (large)
-    draw_set_font(fnt_large);
-    draw_text(time_box_x + time_box_width / 2, time_box_y + 35, time_string);
-    
-    draw_set_font(fnt_default);
-    draw_set_color(c_white);
-}
-	
-	/// @method draw_style_stats()
-static draw_style_stats = function() {
-    // Draw style kill stats in corner
-    if (!instance_exists(obj_game_manager)) return;
-    
-    var stats = obj_game_manager.score_manager.GetStyleStats();
-    
-    // Only show if player has style kills
-    if (stats.perfect_timing_kills == 0 && 
-        stats.chain_kills == 0 && 
-        stats.overkill_kills == 0) return;
-    
-    var stats_x = screen_width - 150;
-    var stats_y = 100;
-    
-    draw_set_halign(fa_left);
-    draw_set_valign(fa_top);
-    draw_set_font(fnt_default);
-    
-    // Title
-    draw_set_color(c_yellow);
-    draw_text(stats_x, stats_y, "STYLE KILLS");
-    stats_y += 20;
-    
-    // Perfect timing kills
-    if (stats.perfect_timing_kills > 0) {
-        draw_set_color(c_yellow);
-        draw_text(stats_x, stats_y, "Perfect: " + string(stats.perfect_timing_kills));
-        stats_y += 15;
-    }
-    
-    // Overkill kills
-    if (stats.overkill_kills > 0) {
-        draw_set_color(c_red);
-        draw_text(stats_x, stats_y, "Overkill: " + string(stats.overkill_kills));
-        stats_y += 15;
-    }
-    
-    // Chain kills
-    if (stats.chain_kills > 0) {
-        draw_set_color(c_aqua);
-        draw_text(stats_x, stats_y, "Chains: " + string(stats.chain_kills));
-        stats_y += 15;
-    }
-    
-    // Highest chain
-    if (stats.highest_chain > 1) {
-        draw_set_color(c_lime);
-        draw_text(stats_x, stats_y, "Best Chain: x" + string(stats.highest_chain));
-        stats_y += 15;
-    }
-    
-    draw_set_color(c_white);
-}
-    
-    /// @method draw_gold()
-    static draw_gold = function() {
-        draw_set_halign(fa_left);
-        draw_set_valign(fa_middle);
-        
-        // Circle background
-        draw_set_color(c_white);
-        draw_circle(gold_x + 25, gold_y, 30, true);
-        
-        // GOLD text
-        draw_set_color(c_white);
-        draw_text(gold_x + 60, gold_y, "GOLD");
-    }
-    
-    /// @method draw_modifiers_box()
-    static draw_modifiers_box = function() {
-        // Box outline
-        draw_set_color(c_white);
-        draw_rectangle(mod_box_x, mod_box_y, mod_box_x + mod_box_width, mod_box_y + mod_box_height, true);
-        
-        // Modifiers label
-        draw_set_halign(fa_center);
-        draw_set_valign(fa_middle);
-        draw_text(mod_box_x + mod_box_width / 2, mod_box_y + mod_box_height / 2, "Modifiers");
-    }
-    
-    /// @method draw_mouse_buttons()
-    static draw_mouse_buttons = function() {
-        draw_set_halign(fa_center);
-        draw_set_valign(fa_top);
-        draw_set_color(c_white);
-        
-        // RMB / LMB label
-        draw_text(mouse_button_x + mouse_button_size + mouse_button_spacing / 2, mouse_button_y - 25, "RMB / LMB");
-        
-        // Left button
-        draw_roundrect(mouse_button_x, mouse_button_y, 
-                      mouse_button_x + mouse_button_size, mouse_button_y + mouse_button_size, true);
-        
-        // Right button
-        draw_roundrect(mouse_button_x + mouse_button_size + mouse_button_spacing, mouse_button_y,
-                      mouse_button_x + (mouse_button_size * 2) + mouse_button_spacing, mouse_button_y + mouse_button_size, true);
-    }
-    
-    /// @method draw_badges()
+
+    /// draw_badges():
+    ///  - Renders the badge queue as floating, fading panels with optional
+    ///    reward text (EXP/GOLD). Order in array defines stacking.
     static draw_badges = function() {
         draw_set_halign(fa_left);
         draw_set_valign(fa_top);
         draw_set_font(fnt_large);
-        
+
         for (var i = 0; i < array_length(badges); i++) {
             var badge = badges[i];
-            
+
             var draw_x = badge_start_x;
             var draw_y = badge_start_y + (i * badge_spacing) + badge.y_offset;
-            
+
             draw_set_alpha(badge.alpha);
-            
+
             var text_width = string_width(badge.text) * ui_scale;
             var text_height = string_height(badge.text) * ui_scale;
             var panel_padding = 20 * ui_scale;
-            
-            // Background panel
+
+            // Panel background for contrast
             draw_set_color(c_black);
             draw_rectangle(
                 draw_x - panel_padding,
@@ -488,8 +456,8 @@ static draw_style_stats = function() {
                 draw_y + text_height + panel_padding,
                 false
             );
-            
-            // Border
+
+            // Accented border using badge color
             draw_set_color(badge.color);
             draw_set_alpha(badge.alpha * 0.8);
             draw_rectangle(
@@ -500,12 +468,12 @@ static draw_style_stats = function() {
                 true
             );
             draw_set_alpha(badge.alpha);
-            
-            // Text
+
+            // Title text
             draw_set_color(badge.color);
             draw_text_transformed(draw_x, draw_y, badge.text, ui_scale, ui_scale, 0);
-            
-            // Reward text
+
+            // Optional rewards line below title
             if (badge.show_reward) {
                 draw_set_color(c_yellow);
                 draw_set_alpha(badge.alpha * 0.9);
@@ -515,83 +483,18 @@ static draw_style_stats = function() {
                 draw_set_font(fnt_large);
             }
         }
-        
+
         draw_set_alpha(1);
         draw_set_font(fnt_default);
     }
-    
-    /// @method draw_totems()
-    static draw_totems = function() {
-        var active_count = GetActiveTotemCount();
-        if (active_count == 0) return;
-        
-        var hud_x = 20;
-        var hud_y = 100;
-        var icon_size = 32;
-        var spacing = 40;
-        
-        draw_set_font(fnt_default);
-        draw_set_halign(fa_left);
-        draw_set_valign(fa_top);
-        draw_set_color(c_white);
-        
-        draw_text(hud_x, hud_y, "Active Totems:");
-        
-        var index = 0;
-        
-        // Draw each active totem icon
-        if (global.TotemDefinitions.Chaos.active) {
-            draw_set_color(c_red);
-            draw_circle(hud_x + index * spacing, hud_y + 20, icon_size / 2, false);
-            draw_set_color(c_white);
-            draw_text(hud_x + index * spacing - 8, hud_y + 30, "C");
-            index++;
-        }
-        
-        if (global.TotemDefinitions.Horde.active) {
-            draw_set_color(c_orange);
-            draw_circle(hud_x + index * spacing, hud_y + 20, icon_size / 2, false);
-            draw_set_color(c_white);
-            draw_text(hud_x + index * spacing - 8, hud_y + 30, "H");
-            index++;
-        }
-        
-        if (global.TotemDefinitions.Champion.active) {
-            draw_set_color(c_purple);
-            draw_circle(hud_x + index * spacing, hud_y + 20, icon_size / 2, false);
-            draw_set_color(c_white);
-            draw_text(hud_x + index * spacing - 8, hud_y + 30, "C");
-            index++;
-        }
-        
-        if (global.TotemDefinitions.Greed.active) {
-            draw_set_color(c_yellow);
-            draw_circle(hud_x + index * spacing, hud_y + 20, icon_size / 2, false);
-            draw_set_color(c_white);
-            draw_text(hud_x + index * spacing - 8, hud_y + 30, "G");
-            index++;
-        }
-        
-        if (global.TotemDefinitions.Fury.active) {
-            draw_set_color(c_fuchsia);
-            draw_circle(hud_x + index * spacing, hud_y + 20, icon_size / 2, false);
-            draw_set_color(c_white);
-            draw_text(hud_x + index * spacing - 8, hud_y + 30, "F");
-            index++;
-        }
-        
-        // Score multiplier
-        var multiplier = GetScoreMultiplier();
-        draw_set_color(c_yellow);
-        draw_text(hud_x, hud_y + 60, "Score Multiplier: " + string(multiplier) + "x");
-    }
-    
-    /// @method add_score(amount)
+
+    /// add_score(amount): queues target score change; `update()` animates it.
     static add_score = function(_amount) {
         target_score += _amount;
     }
-    
-    /// @method get_badge_rewards(type)
+
+    /// get_badge_rewards(type): central tuning table.
+    /// Returns [EXP, GOLD, SCORE] to apply when showing a badge.
     static get_badge_rewards = function(_type) {
         switch (_type) {
             case UI_BADGE_TYPE.DOUBLE_KILL:
@@ -618,12 +521,15 @@ static draw_style_stats = function() {
                 return [10, 5, 100];
         }
     }
-    
-    /// @method show_badge(type)
+
+    /// show_badge(type):
+    ///  - Maps enum to styled text/color.
+    ///  - Applies rewards to the player and score.
+    ///  - Enqueues a badge entry with fade/float state for `update()` and `draw()`.
     static show_badge = function(_type) {
         var badge_text = "";
         var badge_color = c_yellow;
-        
+
         switch (_type) {
             case UI_BADGE_TYPE.DOUBLE_KILL:
                 badge_text = "DOUBLE KILL!";
@@ -666,23 +572,23 @@ static draw_style_stats = function() {
                 badge_color = c_orange;
                 break;
         }
-        
+
         var rewards = get_badge_rewards(_type);
         var exp_reward = rewards[0];
         var coin_reward = rewards[1];
         var score_bonus = rewards[2];
-        
+
         if (instance_exists(player)) {
             player.experience_points += exp_reward;
             player.gold += coin_reward;
             add_score(score_bonus);
         }
-        
+
         array_push(badges, {
             text: badge_text,
             color: badge_color,
-            alpha: 1.0,
-            y_offset: 0,
+            alpha: 1.0,      // start fully opaque
+            y_offset: 0,     // float offset, decreases over time
             show_reward: true,
             exp_reward: exp_reward,
             coin_reward: coin_reward
