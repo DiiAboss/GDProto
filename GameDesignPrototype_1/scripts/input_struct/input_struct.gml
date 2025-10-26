@@ -245,99 +245,62 @@ enum INPUT
 /// Higher‑level code uses InputMap fields; Update reads from here.
 /// Rebinds can be implemented by mutating these tables at runtime.
 /// ------------------------------------------------------------
-global.InputType =
-{
-    cKeyboard: 
-    {
+global.InputType = {
+    cKeyboard: {
         ID:    INPUT.KEYBOARD,
         Name:  "Keyboard",
 
         // Movement (WASD)
-        Up:         ord("W"),
-        Left:       ord("A"),
-        Down:       ord("S"),
-        Right:      ord("D"),
+        Up:    ord("W"),
+        Left:  ord("A"),
+        Down:  ord("S"),
+        Right: ord("D"),
 
-        // Mouse buttons for fire/alt (held + edges share same code here)
-        Fire:       mb_left,
-        FirePress:  mb_left,
-        Alt:        mb_right,
-        AltPress:   mb_right,
+        // Mouse buttons
+        Fire:      mb_left,
+        FirePress: mb_left,
+        Alt:       mb_right,
+        AltPress:  mb_right,
 
         // Gameplay actions
-        Action:     vk_space,
-        Back:       ord("F"),
-        Reload:     ord("R"),
-        SwapDown:   -1,        // Not mapped on keyboard by default
-        SwapUp:     -1,        // Mouse wheel used instead in Update
+        Action:   vk_space,
+        Back:     ord("F"),
+        Reload:   ord("R"),
+        SwapDown: -1,
+        SwapUp:   -1,
         
         // Meta / UI
-        Escape:     vk_escape,
-        Enter:      vk_enter,
-        OpenInv:    ord("I")
+        Escape: vk_escape,
+        Enter:  vk_enter,
+        OpenInv: ord("I")
     },
 
-    cGamepad:
-    {
-        ID: INPUT.GAMEPAD,
+    cGamepad: {
+        ID:   INPUT.GAMEPAD,
         Name: "Controller",
 
         // Movement (DPAD)
-        Up:         gp_padu,
-        Left:       gp_padl,
-        Down:       gp_padd,
-        Right:      gp_padr,
+        Up:    gp_padu,
+        Left:  gp_padl,
+        Down:  gp_padd,
+        Right: gp_padr,
 
         // Shoulder buttons for firing
-        Fire:       gp_shoulderrb,
-        FirePress:  gp_shoulderrb,
-        Alt:        gp_shoulderlb,
-        AltPress:   gp_shoulderlb,
+        Fire:      gp_shoulderrb,
+        FirePress: gp_shoulderrb,
+        Alt:       gp_shoulderlb,
+        AltPress:  gp_shoulderlb,
 
         // Face buttons for actions
-        Action:     gp_face1,
-        Back:       gp_face2,
-        Reload:     gp_face3,
-        SwapUp:     gp_face4,
-        SwapDown:   -1,        // Not mapped on pad by default
+        Action:  gp_face1,
+        Back:    gp_face2,
+        Reload:  gp_face3,
+        SwapUp:  gp_face4,
+        SwapDown: -1,
         
         // Meta / UI
-        Escape:     gp_start,
-        Enter:      gp_start,
-        OpenInv:    gp_select
+        Escape: gp_start,
+        Enter:  gp_start,
+        OpenInv: gp_select
     }
-}
-
-
-		OpenInv:	ord("I")
-	},
-
-	cGamepad:
-	{
-		ID: INPUT.GAMEPAD,
-		Name: "Controller",
-	
-		Up:			gp_padu,
-		Left:		gp_padl,
-		Down:		gp_padd,
-		Right:		gp_padr,
-	
-	
-		Fire:		gp_shoulderrb,
-		FirePress:  gp_shoulderrb,
-		Alt:		gp_shoulderlb,
-		AltPress:   gp_shoulderlb,
-	
-		Action:		gp_face1,
-		Back:		gp_face2,
-		Reload:		gp_face3,
-		SwapUp:		gp_face4,
-		SwapDown:   -1,
-		
-		Escape:		gp_start,
-		Enter:      gp_start,
-		
-		OpenInv:	gp_select
-
-	}
-}
+};
