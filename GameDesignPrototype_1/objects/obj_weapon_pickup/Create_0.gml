@@ -2,7 +2,7 @@
 /// @description Weapon pickup on ground
 
 // Weapon data - set by spawner
-weapon_data = undefined; // Will hold the weapon struct
+weapon_data = noone; // Will hold the weapon struct
 weapon_name = "Mystery Weapon";
 weapon_sprite = spr_knife; // Default sprite
 

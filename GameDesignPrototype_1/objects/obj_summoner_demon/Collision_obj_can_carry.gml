@@ -6,8 +6,9 @@ if (!other.is_projectile) exit;
 // Apply extra damage from thrown objects
 var actual_damage = other.damage * thrown_resistance;
 
+
 //takeDamage(self, actual_damage, other);
-damage_sys.TakeDamage(actual_damage, other.owner)
+damage_sys.TakeDamage(actual_damage, obj_player)
 hitFlashTimer = 5;
 
 // Show CRIT damage for thrown objects!

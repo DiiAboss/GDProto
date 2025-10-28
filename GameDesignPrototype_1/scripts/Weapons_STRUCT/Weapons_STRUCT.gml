@@ -44,7 +44,7 @@ global.WeaponStruct =
     name: "Chain Whip",
     id: Weapon.ChainWhip, // Add to your Weapon enum
     type: WeaponType.Melee,
-    projectile_struct: undefined, // Not using projectile struct
+    projectile_struct: noone, // Not using projectile struct
     melee_object_type: obj_chain_whip,
     default_element: ELEMENT.PHYSICAL,
 	synergy_tags: InitializeWeaponTags(Weapon.ChainWhip),
@@ -162,7 +162,7 @@ global.WeaponStruct =
         name: "Sword",
         id: Weapon.Sword,
         type: WeaponType.Melee,
-        projectile_struct: undefined,
+        projectile_struct: noone,
         melee_object_type: obj_sword,
         default_element: ELEMENT.PHYSICAL,
 		synergy_tags: InitializeWeaponTags(Weapon.Sword),
@@ -345,7 +345,7 @@ global.WeaponStruct =
     name: "Baseball Bat",
     id: Weapon.BaseballBat,
     type: WeaponType.Melee,
-    projectile_struct: undefined,
+    projectile_struct: noone,
     melee_object_type: obj_baseball_bat,
 	synergy_tags: InitializeWeaponTags(Weapon.BaseballBat),    
 

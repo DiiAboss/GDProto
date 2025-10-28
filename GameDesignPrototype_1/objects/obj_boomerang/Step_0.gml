@@ -42,4 +42,12 @@ else { // RETURN
     }
 }
 
+if (rotation > 360)
+{
+	rotation++;
+}
+else {
+rotation = 0;
+}
+
 image_angle = direction;

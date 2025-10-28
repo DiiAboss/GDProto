@@ -120,7 +120,7 @@ function SelectionPopup(_x, _y, _options, _onSelect) constructor {
         if (can_finish) {
             if (keyboard_check_pressed(vk_anykey) || mouse_check_button_pressed(mb_left)) {
                 finished = true;
-                if (variable_global_exists("selection_popup")) global.selection_popup = undefined;
+                if (variable_global_exists("selection_popup")) global.selection_popup = noone;
             }
         }
 
@@ -174,7 +174,7 @@ function SelectionPopup(_x, _y, _options, _onSelect) constructor {
 
         // description
         var desc_opt = confirmed ? options[selected] : (hover >= 0 ? options[hover] : options[selected]);
-        if (desc_opt != undefined && alpha > 0.01) {
+        if (desc_opt != noone && alpha > 0.01) {
             draw_set_alpha(alpha);
             draw_set_color(c_white);
             draw_set_font(fnt_default);

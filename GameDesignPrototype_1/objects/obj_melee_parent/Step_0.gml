@@ -192,7 +192,10 @@ if (instance_exists(owner)) {
             ds_list_add(hitList, hit);
             
             var knockbackDir = point_direction(owner.x, owner.y, hit.x, hit.y);
+			
             
+			
+			
             var resistance = 1.0;
             if (variable_instance_exists(hit, "hit_resistance")) {
                 resistance = hit.hit_resistance;
@@ -230,6 +233,14 @@ if (instance_exists(owner)) {
             show_debug_message("Final force: " + string(kbForce));
             show_debug_message("Object weight: " + string(hit.weight));
             show_debug_message("Hit carriable object: " + object_get_name(hit.object_index));
+			
+			AwardStylePoints("MELEE HIT", 2, 1);
+			// Track streaks
+			melee_streak++;
+			if (melee_streak >= 5) {
+			    AwardStylePoints("MELEE MASTER", 10, 1);
+				melee_streak = 0;
+			}
         }
     }
 } else {

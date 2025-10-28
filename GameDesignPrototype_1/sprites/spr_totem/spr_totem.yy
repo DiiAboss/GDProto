@@ -1,11 +1,11 @@
 {
   "$GMSprite":"",
   "%Name":"spr_totem",
-  "bboxMode":0,
+  "bboxMode":2,
   "bbox_bottom":31,
   "bbox_left":11,
   "bbox_right":21,
-  "bbox_top":3,
+  "bbox_top":24,
   "collisionKind":1,
   "collisionTolerance":0,
   "DynamicTexturePage":false,

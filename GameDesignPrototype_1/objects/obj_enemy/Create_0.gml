@@ -18,6 +18,8 @@ tile_layer = "Tiles_2";
 tile_layer_id = layer_get_id(tile_layer);
 tilemap_id = layer_tilemap_get_id(tile_layer_id);
 
+chance_to_spawn_chest = 1;
+
 // ==========================================
 // COMPONENTS (matching player)
 // ==========================================
@@ -69,7 +71,7 @@ impactDamageMultiplier = 0.1;
 maxImpactDamage = 999;
 wallHitCooldown = 0;
 hasHitWall = false;
-killed_by_modifier = undefined;  // Tracks if killed by modifier (prevents chain reactions)
+killed_by_modifier = noone;  // Tracks if killed by modifier (prevents chain reactions)
 // Wall bounce
 bounceDampening = 1.1;
 minBounceSpeed = 0;
@@ -167,7 +169,15 @@ controller_step = function(_delta, _player_exists, _player_x, _player_y, _player
             );
             
             TriggerModifiers(_player_instance, MOD_TRIGGER.ON_KILL, kill_event);
-        }
+        	
+			if (!is_falling)
+		{
+			if (irandom(100)) <= chance_to_spawn_chest
+		{
+			instance_create_depth(x, y, depth, obj_chest);
+		}
+		}
+		}
         
         return; // Exit early, controller will handle dead enemies separately
     }
@@ -384,7 +394,7 @@ if (is_falling) {
             _exp.direction = irandom(359);
             _exp.speed = 3;
         }
-        
+        AwardStylePoints("PIT KILL", 30, 1);
         marked_for_death = true;
         hp = 0;
     }

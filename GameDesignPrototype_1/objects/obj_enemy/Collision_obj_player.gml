@@ -16,7 +16,6 @@ if (overlap > 0) {
     }
 }
 
-// Handle cannonball momentum transfer
 if (hitPlayer.isCannonBalling) {
     var playerSpeed = point_distance(0, 0, hitPlayer.knockbackX, hitPlayer.knockbackY);
     if (playerSpeed > 10) {
@@ -28,8 +27,7 @@ if (hitPlayer.isCannonBalling) {
         knockbackCooldown = 10;
         
         var impactDamage = round(playerSpeed * 2);
-        //takeDamage(self, impactDamage, hitPlayer);
-		hitPlayer.damage_sys.TakeDamage(impactDamage, self)
+        DealDamage(self, impactDamage, hitPlayer);
         
         hitPlayer.knockbackX *= 0.5;
         hitPlayer.knockbackY *= 0.5;

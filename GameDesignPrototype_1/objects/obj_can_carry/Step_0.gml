@@ -120,6 +120,7 @@ if (is_projectile) {
     var enemy = instance_place(x, y, obj_enemy);
     if (enemy != noone && !enemy.marked_for_death) {
         HandleProjectileHit(enemy);
+		AwardStylePoints("PROJECTILE HIT", 10, 1);
     }
 }
     }
@@ -261,6 +262,8 @@ function HandleProjectileHit(_enemy = noone) {
         var damage_source = variable_instance_exists(id, "owner") ? owner : id;
         _enemy.damage_sys.TakeDamage(damage, damage_source);
         
+		if ((_enemy.damage_sys.hp - damage) < 0) AwardStylePoints("THROW KILL", 200, 1);
+		
         // Apply knockback
         var kb_dir = point_direction(xprevious, yprevious, x, y);
         _enemy.knockbackX = lengthdir_x(damage * 0.5, kb_dir);
@@ -302,10 +305,10 @@ function HandleProjectileHit(_enemy = noone) {
 
 /// @function SpawnImpactParticles(count, [direction])
 /// @description Spawn particle burst on impact
-function SpawnImpactParticles(_count, _dir = undefined) {
+function SpawnImpactParticles(_count, _dir = noone) {
     repeat(_count) {
         var p = instance_create_depth(x, y, depth - 1, obj_particle);
-        if (_dir != undefined) {
+        if (_dir != noone) {
             p.direction = _dir + random_range(-30, 30);
         } else {
             p.direction = random(360);

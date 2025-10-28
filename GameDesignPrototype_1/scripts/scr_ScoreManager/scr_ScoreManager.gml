@@ -24,7 +24,8 @@ function ScoreManager() constructor {
     
     // Core score
     current_score = 0;
-    
+    display_manager = new ScoreDisplayManager();
+	
     // Combo system
     combo_multiplier = 1.0;
     combo_timer = 0;
@@ -60,12 +61,12 @@ function ScoreManager() constructor {
     /// @param {real} _base_amount Base score value
     /// @param {struct} _style_bonuses Optional struct with style bonus data
     /// @returns {real} Total score added
-    static AddScore = function(_base_amount, _style_bonuses = undefined) {
+    static AddScore = function(_base_amount, _style_bonuses = noone) {
         var base_score = _base_amount;
         var style_score = 0;
         
         // Calculate style bonuses
-        if (_style_bonuses != undefined) {
+        if (_style_bonuses != noone) {
             style_score = CalculateStyleScore(_style_bonuses);
         }
         
@@ -140,7 +141,11 @@ function ScoreManager() constructor {
         show_debug_message("Base score: " + string(base_score));
         
         // Build style bonuses struct
-        var style_bonuses = {};
+        var style_bonuses = {
+		    perfect_timing: false,
+		    overkill_mult: 0,
+		    chain_count: 0
+		};
         
         // Check perfect timing (safely)
         if (instance_exists(_player_ref)) {
@@ -184,6 +189,35 @@ function ScoreManager() constructor {
         // Add score
         var score_awarded = AddScore(base_score, style_bonuses);
         
+		
+		
+		
+		// CREATE VISUAL EVENTS
+	    var display = obj_game_manager.score_display; // Reference to display manager
+	    
+	    // Base kill event
+	    var kill_name = "KILL";
+	    if (variable_instance_exists(_enemy, "enemy_type")) {
+	        kill_name = _enemy.enemy_type + " KILL";
+	    }
+	    display.AddComboEvent(kill_name, base_score, 1);
+	    
+	    // Perfect timing
+	    if (style_bonuses.perfect_timing) {
+	        display.AddComboEvent("PERFECT", 20, 1);
+	    }
+	    
+	    // Overkill
+	    if (style_bonuses.overkill_mult > 0) {
+	        display.AddComboEvent("OVERKILL", 5, style_bonuses.overkill_mult);
+	    }
+	    
+	    // Chain kills
+	    if (style_bonuses.chain_count > 1) {
+	        display.AddComboEvent("CHAIN", 10, style_bonuses.chain_count);
+	    }
+		
+		
         show_debug_message("Score awarded: " + string(score_awarded));
         show_debug_message("Total score now: " + string(current_score));
         

@@ -1,6 +1,6 @@
 /// @description Totem in world - now handles purchase interaction
 totem_type = TotemType.CHAOS; // Set by spawner
-totem_data = undefined; // Will be set
+totem_data = noone; // Will be set
 
 // Interaction
 can_interact = true;
@@ -16,6 +16,8 @@ totem_data = GetTotemByType(totem_type);
 
 particle_timer = 0;
 
-chaos_spawn_timer = 0;
+chaos_spawn_timer = 180;
 
 active = false;
+
+depth = -y;

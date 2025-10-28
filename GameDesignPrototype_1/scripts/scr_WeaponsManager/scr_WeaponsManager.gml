@@ -12,7 +12,7 @@
 function GiveWeapon(_player, _weapon_id) {
     var weapon_struct = GetWeaponStructById(_weapon_id);
     
-    if (weapon_struct == undefined) {
+    if (weapon_struct == noone) {
         show_debug_message("ERROR: Invalid weapon ID: " + string(_weapon_id));
         return false;
     }
@@ -80,7 +80,7 @@ function GetWeaponStructById(_weapon_id) {
         case Weapon.ChargeCannon: return global.WeaponStruct.ChargeCannon;
         case Weapon.BaseballBat: return global.WeaponStruct.BaseballBat;
         case Weapon.Holy_Water: return global.WeaponStruct.HolyWater;
-        default: return undefined;
+        default: return noone;
     }
 }
 
@@ -88,7 +88,7 @@ function GetWeaponStructById(_weapon_id) {
 /// @description Get display name for weapon
 function GetWeaponName(_weapon_id) {
     var weapon_struct = GetWeaponStructById(_weapon_id);
-    return weapon_struct != undefined ? weapon_struct.name : "Unknown Weapon";
+    return weapon_struct != noone ? weapon_struct.name : "Unknown Weapon";
 }
 
 // ==========================================
@@ -114,7 +114,7 @@ function ShowWeaponSwapPrompt(_player, _new_weapon_struct) {
 /// @description Handle input for weapon swap prompt (call in obj_game_manager Step)
 function UpdateWeaponSwapPrompt() {
     if (!variable_global_exists("weapon_swap_prompt")) return;
-    if (global.weapon_swap_prompt == undefined || !global.weapon_swap_prompt.active) return;
+    if (global.weapon_swap_prompt == noone || !global.weapon_swap_prompt.active) return;
     
     var prompt = global.weapon_swap_prompt;
     
@@ -152,7 +152,7 @@ function UpdateWeaponSwapPrompt() {
 
 /// @function CloseWeaponSwapPrompt()
 function CloseWeaponSwapPrompt() {
-    global.weapon_swap_prompt = undefined;
+    global.weapon_swap_prompt = noone;
     //global.gameSpeed = 1.0;
 }
 
@@ -160,7 +160,7 @@ function CloseWeaponSwapPrompt() {
 /// @description Draw the swap prompt GUI (call in obj_game_manager Draw GUI)
 function DrawWeaponSwapPrompt() {
     if (!variable_global_exists("weapon_swap_prompt")) return;
-    if (global.weapon_swap_prompt == undefined || !global.weapon_swap_prompt.active) return;
+    if (global.weapon_swap_prompt == noone || !global.weapon_swap_prompt.active) return;
     
     var prompt = global.weapon_swap_prompt;
     var gui_w = display_get_gui_width();
@@ -261,8 +261,16 @@ function CreateWeaponNotification(_player, _weapon_struct, _action) {
 /// @description Switch active weapon to specified slot
 function SwitchToWeaponSlot(_slot_index) {
     // VALIDATE FIRST
-    if (_slot_index < 0 || _slot_index >= weapon_slots) return;
-    if (weapons[_slot_index] == noone) return;
+    if (_slot_index < 0 || _slot_index >= weapon_slots) {
+        show_debug_message("Invalid slot index: " + string(_slot_index));
+        return;
+    }
+    
+    // Check if slot has a weapon (not noone or noone)
+    if (weapons[_slot_index] == noone) {
+        show_debug_message("No weapon in slot " + string(_slot_index));
+        return;
+    }
     
     // Store previous weapon
     previous_weapon_instance = weaponCurrent;
@@ -270,11 +278,15 @@ function SwitchToWeaponSlot(_slot_index) {
     // Update current weapon
     current_weapon_index = _slot_index;
     weaponCurrent = weapons[_slot_index];
-    
+    // Check if enemies nearby
+	var enemies_near = collision_circle(x, y, 200, obj_enemy, false, true);
+	if (enemies_near) {
+	    obj_player.switch_near_enemy = 20;
+	}
     // Update synergy tags (weapon is guaranteed valid here)
     UpdateWeaponTags(self, _slot_index);
     
-    show_debug_message("Switched to weapon. Active synergies: " + string(array_length(active_synergies)));
+    show_debug_message("Switched to weapon: " + weaponCurrent.name);
     
     // Handle melee weapon switching
     if (weaponCurrent.type == WeaponType.Melee) {
@@ -294,6 +306,4 @@ function SwitchToWeaponSlot(_slot_index) {
             melee_weapon = noone;
         }
     }
-    
-    show_debug_message("Switched to " + weaponCurrent.name);
 }

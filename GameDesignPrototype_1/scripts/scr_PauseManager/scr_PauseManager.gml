@@ -95,6 +95,10 @@ function PauseManager() constructor {
     /// @function Update()
     /// @description Call every frame to update game speed
     static Update = function() {
+		
+		
+		
+		
         // Smoothly lerp to target speed
         if (current_speed != target_speed) {
             var diff = target_speed - current_speed;
@@ -105,6 +109,14 @@ function PauseManager() constructor {
                 current_speed += diff * 0.15;
             }
         }
+		
+		
+		if (obj_main_controller.menu_state == MENU_STATE.GAME_OVER)
+		{
+			current_speed = 0;
+			global.is_paused = true;
+		}
+		
         //show_debug_message("current_Speed: " + string(current_speed));
         // Update global
         global.gameSpeed = current_speed;

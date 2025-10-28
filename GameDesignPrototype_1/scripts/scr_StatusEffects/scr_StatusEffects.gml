@@ -149,7 +149,7 @@ function CalculateCachedStats(_entity) {
         if (!mod_instance.active) continue;
         
         var mod_template = global.Modifiers[$ mod_instance.template_key];
-        if (mod_template == undefined) continue;
+        if (mod_template == noone) continue;
         
         var stack = mod_instance.stack_level ?? 1;
         

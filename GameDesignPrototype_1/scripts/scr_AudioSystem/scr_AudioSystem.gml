@@ -62,7 +62,7 @@ function AudioSystem() constructor {
         duration: 0,
         timer: 0,
         callback: noone,
-        callback_args: undefined
+        callback_args: noone
     };
     
     // Crossfade properties
@@ -175,7 +175,7 @@ function AudioSystem() constructor {
     };
     
     /// @function FadeMusic(_target_volume, _duration, _type, _callback, _callback_args)
-    static FadeMusic = function(_target_volume, _duration, _type = FADE_TYPE.SMOOTH, _callback = noone, _callback_args = undefined) {
+    static FadeMusic = function(_target_volume, _duration, _type = FADE_TYPE.SMOOTH, _callback = noone, _callback_args = noone) {
         if (current_music == noone) return;
         
         fade_data.active = true;
@@ -318,8 +318,8 @@ function AudioSystem() constructor {
     };
     
     /// @function StopAmbient(_sound_id)
-    static StopAmbient = function(_sound_id = undefined) {
-        if (_sound_id == undefined) {
+    static StopAmbient = function(_sound_id = noone) {
+        if (_sound_id == noone) {
             // Stop all ambient sounds
             for (var i = 0; i < array_length(ambient_sounds); i++) {
                 audio_stop_sound(ambient_sounds[i].sound_id);
@@ -481,7 +481,7 @@ function AudioSystem() constructor {
             
             // Execute callback
             if (is_callable(fade_data.callback)) {
-                if (fade_data.callback_args != undefined) {
+                if (fade_data.callback_args != noone) {
                     fade_data.callback(fade_data.callback_args);
                 } else {
                     fade_data.callback();

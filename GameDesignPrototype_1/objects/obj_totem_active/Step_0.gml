@@ -22,7 +22,7 @@ if (dist <= interaction_range && !active) {
             ApplyTotemEffect(totem_type);
             
             repeat(20) {
-                var p = instance_create_depth(x, y, depth - 1, obj_particle);
+                var p = instance_create_depth(x, y-32, depth - 1, obj_particle);
                 p.direction = random(360);
                 p.speed = random_range(2, 6);
                 p.image_blend = totem_data.color;
@@ -44,7 +44,7 @@ if (active && totem_type == TotemType.CHAOS) {
     chaos_spawn_timer--;
     
     if (chaos_spawn_timer <= 0) {
-        var ball = instance_create_depth(x, y, 0, obj_rolling_ball);
+        var ball = instance_create_depth(x, y-32, 0, obj_rolling_ball);
         ball.myDir = irandom(359);
         chaos_spawn_timer = 180;
     }

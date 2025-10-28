@@ -1,7 +1,8 @@
 /// @description Enemy Spawner with progressive difficulty
-spawner_timer = 300;
-summon_timer = 60;
 
+summon_timer = 60;
+spawner_timer_max = 600;
+spawner_timer = spawner_timer_max;
 nextX = 0;
 nextY = 0;
 

@@ -67,18 +67,18 @@ if (state == ChestState.MOVING_CENTER || state == ChestState.BURSTING || state =
         );
     }
     
-    // Draw main chest sprite
-    draw_sprite_ext(
-        sprite_index, 
-        image_index, 
-        current_x, 
-        current_y, 
-        current_scale, 
-        current_scale, 
-        0, 
-        c_white, 
-        image_alpha
-    );
+    //// Draw main chest sprite
+    //draw_sprite_ext(
+        //sprite_index, 
+        //image_index, 
+        //current_x, 
+        //current_y, 
+        //current_scale, 
+        //current_scale, 
+        //0, 
+        //c_white, 
+        //image_alpha
+    //);
     
     // Extra burst effect during BURSTING state
     if (state == ChestState.BURSTING && burst_timer < 15) {

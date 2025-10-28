@@ -6,7 +6,7 @@ function get_mod_by_id(_id) {
             return obj_game_manager.allMods[i];
         }
     }
-    return undefined;
+    return noone;
 }
 
 
@@ -99,7 +99,7 @@ function TriggerModifiers(_entity, _trigger, _event_data) {
     var trigger_str = string(_trigger);
     var trigger_mods = _entity.mod_cache[$ trigger_str];
     
-    if (trigger_mods == undefined || array_length(trigger_mods) == 0) return;
+    if (trigger_mods == noone || array_length(trigger_mods) == 0) return;
     
     // Run all modifiers that respond to this trigger
     for (var i = 0; i < array_length(trigger_mods); i++) {
@@ -109,7 +109,7 @@ function TriggerModifiers(_entity, _trigger, _event_data) {
         
         var mod_template = global.Modifiers[$ mod_instance.template_key];
         
-        if (mod_template == undefined) continue;
+        if (mod_template == noone) continue;
         
         // Add stack level to event data
         _event_data.mod_instance = mod_instance;

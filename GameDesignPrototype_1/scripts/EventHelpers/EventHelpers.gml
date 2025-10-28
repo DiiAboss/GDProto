@@ -3,7 +3,7 @@
 /// @function CreateAttackEvent(_entity, _attack_type, _direction, _projectile)
 function CreateAttackEvent(_entity, _attack_type, _direction, _projectile = noone) {
     // SAFETY: Ensure attack_type exists with fallback
-    if (_attack_type == undefined || _attack_type == noone) {
+    if (_attack_type == noone || _attack_type == noone) {
         _attack_type = AttackType.UNKNOWN;
     }
     
@@ -93,7 +93,7 @@ function CreateKillEvent(_entity, _enemy_x, _enemy_y, _damage, _kill_source = "d
         // Kill info
         damage: _damage,
         kill_source: _kill_source,                // Now accepts parameter
-        enemy_type: _enemy_type,                  // Now accepts parameter (was using undefined object_index)
+        enemy_type: _enemy_type,                  // Now accepts parameter (was using noone object_index)
         
         // Attack info
         attack_type: AttackType.UNKNOWN,

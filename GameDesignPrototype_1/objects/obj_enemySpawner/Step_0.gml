@@ -16,7 +16,7 @@ if (spawner_timer > 0) {
     if (!spawn_search_active) {
         spawn_search_active = true;
         spawn_total_attempts = 0;
-        summon_timer = 60;
+        summon_timer = 120;
     }
 }
 
@@ -87,19 +87,23 @@ if (!spawn_search_active && summon_timer > 0) {
             // Progressive enemy unlocks
             if (game_time < 60) {
                 // 0-60 seconds: Basic enemies only
-                current_spawn_pool = [obj_enemy, obj_maggot, obj_enemy_2, obj_enemy_bird]; // Weight basic enemy
+                current_spawn_pool = [obj_enemy, obj_maggot, obj_enemy_bird]; // Weight basic enemy
+				spawner_timer_max = 600;
             }
             else if (game_time < 90) {
                 // 60-90 seconds: Add triangles and flies
                 current_spawn_pool = [obj_enemy, obj_maggot, obj_enemy_triangle, obj_enemy_fly, obj_enemy_2, obj_enemy_bird];
+				spawner_timer_max = 500;
             }
             else if (game_time < 120) {
                 // 90-120 seconds: Add dashers
                 current_spawn_pool = [obj_enemy, obj_enemy_triangle, obj_enemy_fly, obj_enemy_dasher, obj_enemy_2, obj_enemy_bird];
+				spawner_timer_max = 400;
             }
             else {
                 // 120+ seconds: Everything including bombers
-                current_spawn_pool = [obj_enemy, obj_enemy_triangle, obj_enemy_fly, obj_enemy_dasher, obj_enemy_bomber, obj_enemy_2, obj_enemy_bird];
+                current_spawn_pool = [obj_enemy, obj_enemy_triangle, obj_enemy_fly, obj_enemy_dasher, obj_enemy_bomber, obj_enemy_2, obj_enemy_bird, obj_miniboss_berserker];
+				spawner_timer_max = 300;
             }
         }
         
@@ -116,6 +120,6 @@ if (!spawn_search_active && summon_timer > 0) {
             }
         }
         
-        spawner_timer = 300;
+        spawner_timer = spawner_timer_max;
     }
 }

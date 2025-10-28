@@ -40,6 +40,9 @@ stats = new StatsComponent(
     5
 );
 
+
+switch_near_enemy = 0;
+
 knockback = new KnockbackComponent(0.85, 0.1);
 invincibility = new InvincibilityComponent(30, 4);
 damage_sys = new DamageComponent(self, stats.hp_max);
@@ -61,7 +64,22 @@ maxHp		 = damage_sys.max_hp;
 mySpeed		 = stats.speed;
 base_speed	 = stats.base_speed;
 
+// ==========================================
+// SCORING & TIMING VARIABLES
+// ==========================================
+// Attack timing for style points
+last_timing_quality = "normal";
+attack_timing_window = 0;
+perfect_timing_threshold = 10;  // Frames for perfect timing
 
+// Combo tracking
+current_combo_count = 0;
+combo_decay_timer = 0;
+
+// Style tracking
+dodge_count = 0;
+last_dodge_time = 0;
+environmental_kills = 0;
 
 // ==========================================
 // INPUT & MOVEMENT
@@ -86,8 +104,8 @@ weapons = array_create(weapon_slots, noone);
 current_weapon_index = 0;
 
 // Give starting weapon
-//weapons[1] = global.WeaponStruct.Dagger; // Or whatever starting weapon
-weapons[1] = undefined;
+
+weapons[1] = noone;
 weapons[0] = global.WeaponStruct.Dagger; // Or whatever starting weapon
 weaponCurrent = weapons[0];
 
@@ -98,6 +116,7 @@ previous_weapon_instance = weaponCurrent;
 charge_amount = 0;
 is_charging = false;
 isCannonBalling = false;
+just_hit = 0;
 
 // ==========================================
 // PROGRESSION SYSTEM - INITIALIZATION

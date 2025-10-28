@@ -61,7 +61,7 @@ switch (phase) {
     if (menu_wait_timer > 60 && (keyboard_check_pressed(vk_enter) || 
         keyboard_check_pressed(vk_space) || 
         keyboard_check_pressed(vk_escape))) {
-        	AddHighscore(obj_main_controller.highscore_table, final_score, string(final_time));
+        	//AddHighscore(obj_main_controller.highscore_table, obj_game_manager.score_manager.GetScore(), string(final_time));
         
         	// Unpause 
 			obj_game_manager.pause_manager.Resume(PAUSE_REASON.GAME_OVER);

@@ -124,7 +124,10 @@ HandleWeaponSwitching();
 var _hasMoved = movement.Update(input, scale_movement(mySpeed));
 image_speed = scale_animation(_hasMoved ? 0.4 : 0.2);
 currentSprite = SpriteHandler.UpdateSpriteByAimDirection(currentSprite, mouseDirection);
-
+// Track timing window between attacks
+if (attack_timing_window > 0) {
+    attack_timing_window-=game_speed_delta();
+}
 // ==========================================
 // CHARGE WEAPON
 // ==========================================
@@ -147,25 +150,27 @@ if (weaponCurrent)
 	// ==========================================
 	// WEAPON ATTACKS
 	// ==========================================
+	// When player attacks (in your FirePress section)
 	if (input.FirePress) {
-	    var timing_quality = EvaluateAttackTiming();
-	    var timing_mult = ApplyTimingBonus(timing_quality);
-	    
-	    var attack_result = weaponCurrent.primary_attack(self, mouseDirection, mouseDistance, weaponCurrent.projectile_struct);
-	    
-	    if (attack_result != noone) {
-	        if (weaponCurrent.type == WeaponType.Melee && instance_exists(attack_result)) {
-	            attack_result.attack *= timing_mult;
-	            if (timing_quality == "perfect") {
-	                attack_result.is_perfect_attack = true;
-	            }
-	        }
-	        else if (weaponCurrent.type == WeaponType.Range && instance_exists(attack_result)) {
-	            if (variable_instance_exists(attack_result, "damage")) {
-	                attack_result.damage *= timing_mult;
-	            }
-	        }
+	    // Evaluate timing
+	    if (attack_timing_window > 0 && attack_timing_window <= perfect_timing_threshold) {
+	        last_timing_quality = "perfect";
+	    } else if (attack_timing_window > 0 && attack_timing_window <= perfect_timing_threshold * 2) {
+	        last_timing_quality = "good";
+	    } else {
+	        last_timing_quality = "normal";
 	    }
+	    
+	    // Reset window for next attack
+	    attack_timing_window = 60; // 1 second window
+	 
+		
+	    // Your existing attack code...
+	    var attack_result = weaponCurrent.primary_attack(self, mouseDirection, mouseDistance, weaponCurrent.projectile_struct);
+		if (attack_result && switch_near_enemy > 0)
+		{
+			AwardStylePoints("WEAPON SWAP", 5, 1);
+		}
 	}
 	
 	if (input.AltPress) {
@@ -183,7 +188,12 @@ if (weaponCurrent)
 
 status.Update();
 
+if (switch_near_enemy > 0)
+{
+	switch_near_enemy -= game_speed_delta();
+}
 
+	
 
 
 /// @func HandleCarrying()
@@ -361,13 +371,16 @@ if (keyboard_check_pressed(vk_f5)) camera.set_zoom(1.0);
 
 /// @func CheckDamage()
 function CheckDamage() {
+	
+	
+	if (just_hit > 0) just_hit--;
     // ===== ENEMY CONTACT =====
     var enemy = instance_place(x, y, obj_enemy);
     if (enemy != noone && !enemy.marked_for_death && !knockback.IsActive()) {
         // Apply damage and activate invincibility
         damage_sys.TakeDamage(enemy.damage, enemy);
         invincibility.Activate();
-        
+        just_hit = 30;
         // Knockback from enemy
         var kbDir = point_direction(enemy.x, enemy.y, x, y);
         knockback.Apply(kbDir, enemy.knockbackForce);
@@ -609,4 +622,20 @@ if (keyboard_check_pressed(ord("3"))) {
 }
 if (keyboard_check_pressed(ord("4"))) {
     status.ApplyStatusEffect(ELEMENT.LIGHTNING, {duration: 90});
+}
+
+
+if (keyboard_check_pressed(vk_f9)) {
+    show_debug_message("=== WEAPON SLOTS DEBUG ===");
+    show_debug_message("Total slots: " + string(weapon_slots));
+    show_debug_message("Current weapon index: " + string(current_weapon_index));
+    
+    for (var i = 0; i < weapon_slots; i++) {
+        var w = weapons[i];
+        var _status = "EMPTY";
+        if (w != noone) {
+            _status = w.name;
+        }
+        show_debug_message("Slot " + string(i) + ": " + _status);
+    }
 }
