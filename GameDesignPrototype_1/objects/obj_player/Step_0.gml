@@ -193,7 +193,11 @@ if (switch_near_enemy > 0)
 	switch_near_enemy -= game_speed_delta();
 }
 
-	
+
+if (keyboard_check_pressed(ord("F")))
+{
+    instance_create_depth(x, y, depth, obj_split_projectile);
+}
 
 
 /// @func HandleCarrying()

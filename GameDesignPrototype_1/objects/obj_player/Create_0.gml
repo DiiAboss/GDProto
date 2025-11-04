@@ -1,5 +1,8 @@
 /// @desc Player Create Event - Fully Component-based
 
+crosshair = instance_create_depth(x, y, depth, obj_crosshair);
+
+
 // ==========================================
 // CHARACTER CLASS SETUP
 // ==========================================
