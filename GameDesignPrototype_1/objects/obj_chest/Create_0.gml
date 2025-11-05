@@ -3,9 +3,9 @@
 // ==========================================
 
 // Configuration
-chest_type = choose(ChestType.MINI, ChestType.MINI, ChestType.MINI, ChestType.GOLD);
+chest_type = ChestType.MINI;
 interactable = true;
-interact_range = 32;
+interact_range = 64;
 
 // State
 state = ChestState.IDLE;

@@ -65,14 +65,14 @@ function GetTotemByType(_type) {
         case TotemType.CHAMPION: return global.TotemDefinitions.Champion;
         case TotemType.GREED: return global.TotemDefinitions.Greed;
         case TotemType.FURY: return global.TotemDefinitions.Fury;
-        default: return noone;
+        default: return undefined;
     }
 }
 
 /// @func ActivateTotem(_type, _player)
 function ActivateTotem(_type, _player) {
     var totem_data = GetTotemByType(_type);
-    if (totem_data == noone) return false;
+    if (totem_data == undefined) return false;
     
     // Check if already active
     if (totem_data.active) {

@@ -147,80 +147,48 @@ static draw = function() {
     draw_weapons();
     draw_level_hp_xp();
     draw_score();
-    //draw_time_box();
-    //draw_style_stats();     // NEW
-    //draw_combo_meter();     // NEW (optional)
+    draw_time_box();
+    draw_style_stats();     // NEW
+    draw_combo_meter();     // NEW (optional)
     draw_gold();
     draw_collected_modifiers();  // NEW
-    //draw_mouse_buttons();
+    draw_mouse_buttons();
     draw_badges();
     draw_totems();
 }
 
     
+    /// @method draw_weapons()
     static draw_weapons = function() {
-    if (!instance_exists(player)) return;
-    
-    // Bottom right position
-    var wx = screen_width - 100;
-    var wy = screen_height - 200;
-    
-    for (var i = 0; i < player.weapon_slots; i++) {
-        var slot_y = wy + (i * 80);
+        draw_set_halign(fa_center);
+        draw_set_valign(fa_middle);
         
-        // Slot background
-        draw_set_alpha(0.5);
-        draw_set_color(c_black);
-        draw_rectangle(wx - 10, slot_y - 10, wx + 70, slot_y + 70, false);
-        
-        // Current weapon highlight
-        if (i == player.current_weapon_index) {
+        // Draw 2 weapon slots stacked vertically
+        for (var i = 0; i < 2; i++) {
+            var draw_x = weapon_x;
+            var draw_y = weapon_y - (i * (weapon_size + weapon_vertical_spacing));
+            
+            // Slot background
+            var is_active = (i == player.current_weapon_index);
+            draw_set_color(c_white);
             draw_set_alpha(1);
-            draw_set_color(c_yellow);
-            draw_rectangle(wx - 12, slot_y - 12, wx + 72, slot_y + 72, true);
-            draw_rectangle(wx - 11, slot_y - 11, wx + 71, slot_y + 71, true);
+            draw_circle(draw_x + weapon_size / 2, draw_y + weapon_size / 2, weapon_size / 2, true);
+            
+            // Active indicator
+            if (is_active) {
+                draw_set_color(c_black);
+                draw_circle(draw_x + weapon_size / 2, draw_y + weapon_size / 2, weapon_size / 2, false);
+            }
+            
+            // Weapon text
+            draw_set_color(is_active ? c_white : c_dkgray);
+            var weapon_name = "weapon";
+            if (i == 1) weapon_name = "weapon 2";
+            draw_text(draw_x + weapon_size / 2, draw_y + weapon_size / 2, weapon_name);
         }
         
         draw_set_alpha(1);
-        
-        if (player.weapons[i] != noone && player.weapons[i] != undefined) {
-            var weapon = player.weapons[i];
-            var spr = -1;
-            
-            // Get sprite
-            switch(weapon.id) {
-                case Weapon.Bow: spr = spr_crossbow; break;
-                case Weapon.BaseballBat: spr = spr_way_better_bat; break;
-                case Weapon.Sword: spr = spr_sword; break;
-                case Weapon.Dagger: spr = spr_dagger; break;
-                case Weapon.Holy_Water: spr = spr_holy_water; break;
-                case Weapon.ChainWhip: spr = spr_knife; break;
-                default: spr = spr_knife; break;
-            }
-            
-            // Draw sprite
-            if (sprite_exists(spr)) {
-                var scale = 60 / max(sprite_get_width(spr), sprite_get_height(spr));
-                draw_sprite_ext(spr, 0, wx + 35, slot_y + 35, scale, scale, 0, c_white, 1);
-            }
-            
-            // Slot number
-            draw_set_color(c_white);
-            draw_set_halign(fa_center);
-            draw_text(wx - 25, slot_y + 25, string(i + 1));
-        } else {
-            // Empty slot
-            draw_set_alpha(0.3);
-            draw_set_color(c_gray);
-            draw_set_halign(fa_center);
-            draw_text(wx + 35, slot_y + 25, "EMPTY");
-            draw_text(wx - 25, slot_y + 25, string(i + 1));
-        }
     }
-    
-    draw_set_alpha(1);
-    draw_set_halign(fa_left);
-}
     
     /// @method draw_level_hp_xp()
     static draw_level_hp_xp = function() {
@@ -322,39 +290,48 @@ static draw_collected_modifiers = function() {
 }
 	
 	
+    /// @method draw_score()
 static draw_score = function() {
-    if (!instance_exists(player)) return;
+    // Get score from game manager
+    if (!instance_exists(obj_game_manager)) return;
     
-    var center_x = screen_width / 2;
-    
-    // Background panel for visibility
-    draw_set_alpha(0.7);
-    draw_set_color(c_black);
-    draw_rectangle(center_x - 150, 10, center_x + 150, 90, false);
-    draw_set_alpha(1);
-    
-    // SCORE
     draw_set_halign(fa_center);
     draw_set_valign(fa_top);
     draw_set_color(c_white);
-    draw_text_transformed(center_x, 15, "SCORE", 1.25, 1.25, 0);
     
-    // Get actual score from game manager
-    var current_score = 0;
-    if (instance_exists(obj_game_manager)) {
-        current_score = obj_game_manager.score_manager.current_score;
+    // Get current score from manager
+    target_score = obj_game_manager.score_manager.GetScore();
+    
+    // Smooth counting animation
+    if (displayed_score != target_score) {
+        var diff = target_score - displayed_score;
+        if (abs(diff) < 10) {
+            displayed_score = target_score;
+        } else {
+            displayed_score += diff * score_lerp_speed;
+        }
     }
-    draw_text_transformed(center_x, 35, string(floor(current_score)), 2, 2, 0);
     
-    // TIME below score
-    if (instance_exists(obj_game_manager)) {
-        draw_set_color(c_gray);
-        draw_text_transformed(center_x, 65, obj_game_manager.time_manager.GetFormattedTime(), 1.5, 1.5, 0);
+    // Format score with leading zeros
+    var score_text = "SCORE: " + string_format(floor(displayed_score), 6, 0);
+    score_text = string_replace_all(score_text, " ", "0");
+    
+    draw_set_font(fnt_large);
+    draw_text(center_x, score_y, score_text);
+    
+    // Draw combo multiplier below score
+    var combo = obj_game_manager.score_manager.GetComboMultiplier();
+    if (combo > 1.0) {
+        draw_set_font(fnt_default);
+        draw_set_color(c_yellow);
+        
+        var combo_text = "COMBO x" + string_format(combo, 1, 1);
+        draw_text(center_x, score_y + 35, combo_text);
+        
+        draw_set_color(c_white);
     }
     
-    // Reset alignment
-    draw_set_halign(fa_left);
-    draw_set_valign(fa_top);
+    draw_set_font(fnt_default);
 }
     
     /// @method draw_time_box()

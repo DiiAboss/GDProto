@@ -18,8 +18,6 @@ tile_layer = "Tiles_2";
 tile_layer_id = layer_get_id(tile_layer);
 tilemap_id = layer_tilemap_get_id(tile_layer_id);
 
-chance_to_spawn_chest = 1;
-
 // ==========================================
 // COMPONENTS (matching player)
 // ==========================================
@@ -34,7 +32,7 @@ maxHp = damage_sys.max_hp;
 moveSpeed = 2;
 myDir = 0;
 
-can_fall = true;
+
 scored_this_death = false;    // Prevents double-scoring
 total_damage_taken = 0;       // Track actual damage for overkill
 
@@ -71,7 +69,7 @@ impactDamageMultiplier = 0.1;
 maxImpactDamage = 999;
 wallHitCooldown = 0;
 hasHitWall = false;
-killed_by_modifier = noone;  // Tracks if killed by modifier (prevents chain reactions)
+killed_by_modifier = undefined;  // Tracks if killed by modifier (prevents chain reactions)
 // Wall bounce
 bounceDampening = 1.1;
 minBounceSpeed = 0;
@@ -169,15 +167,7 @@ controller_step = function(_delta, _player_exists, _player_x, _player_y, _player
             );
             
             TriggerModifiers(_player_instance, MOD_TRIGGER.ON_KILL, kill_event);
-        	
-			if (!is_falling)
-		{
-			if (irandom(100)) <= chance_to_spawn_chest
-		{
-			instance_create_depth(x, y, depth, obj_chest);
-		}
-		}
-		}
+        }
         
         return; // Exit early, controller will handle dead enemies separately
     }
@@ -281,8 +271,6 @@ if (knockbackCooldown <= 0 && abs(knockbackX) < 1 && abs(knockbackY) < 1 && _pla
     var tile_ahead = tilemap_get_at_pixel(tilemap_id, next_check_x, next_check_y);
     var is_pit_ahead = (tile_ahead > 446 || tile_ahead == 0);
     
-	if (!can_fall) is_pit_ahead = false;
-	
     if (is_pit_ahead) {
         // PIT DETECTED - Find alternative direction
         var try_angles = [45, -45, 90, -90, 135, -135];
@@ -324,7 +312,7 @@ if (knockbackCooldown <= 0 && abs(knockbackX) < 1 && abs(knockbackY) < 1 && _pla
 // ==========================================
 // PIT FALL CHECK (Only During Knockback or Already Falling)
 // ==========================================
-if (!is_falling && can_fall) {
+if (!is_falling) {
     // Only check for pit fall if being knocked back OR moving fast
     var is_being_knocked = (abs(knockbackX) > knockbackThreshold || abs(knockbackY) > knockbackThreshold);
     
@@ -394,7 +382,7 @@ if (is_falling) {
             _exp.direction = irandom(359);
             _exp.speed = 3;
         }
-        AwardStylePoints("PIT KILL", 30, 1);
+        
         marked_for_death = true;
         hp = 0;
     }

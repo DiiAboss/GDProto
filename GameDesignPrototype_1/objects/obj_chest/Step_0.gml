@@ -38,8 +38,8 @@ switch (state) {
         
     case ChestState.OPENING:
         // Just visual effects - game manager handles timing
-        current_scale = lerp(current_scale, base_scale * 1.5, 0);
-        glow_intensity = lerp(glow_intensity, 1.5, 0);
+        current_scale = lerp(current_scale, base_scale * 1.5, 0.1);
+        glow_intensity = lerp(glow_intensity, 1.5, 0.1);
         
         // After a short delay, show rewards
         // (or let game_manager tell us when via a trigger)
@@ -55,9 +55,8 @@ switch (state) {
         break;
         
     case ChestState.SHOWING_REWARDS:
-		glow_intensity = 0;
         // Wait for popup to finish
-        if (!variable_global_exists("chest_popup") || global.chest_popup == noone) {
+        if (!variable_global_exists("chest_popup") || global.chest_popup == undefined) {
             CloseChest();
         }
         break;
@@ -66,7 +65,7 @@ switch (state) {
         // Fade out
         image_alpha = lerp(image_alpha, 0, 0.2);
         current_scale = lerp(current_scale, 0, 0.2);
-        glow_intensity = 0;
+        glow_intensity = lerp(glow_intensity, 0, 0.25);
         
         if (!variable_instance_exists(id, "close_timer")) {
             close_timer = 0;

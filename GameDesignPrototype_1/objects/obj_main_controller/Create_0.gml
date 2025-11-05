@@ -15,12 +15,15 @@ enum MENU_STATE {
     GAME_OVER
 }
 
-// In Create event
-selected_character_class = CharacterClass.WARRIOR; // Instance variable instead of global
+
 menu_state = MENU_STATE.MAIN;
 selected_option = 0;
-menu_options = ["START", "SETTINGS", "EXIT"];
+
+menu_options	 = ["START", "SETTINGS", "EXIT"];
 settings_options = ["SFX Volume", "Music Volume", "Screen Shake", "Back"];
+
+
+
 
 // Pause menu options
 pause_options = ["RESUME", "CONTROLS", "STATS", "QUIT TO MENU"];
@@ -31,9 +34,6 @@ show_pause_menu = false;
 
 // Character selection
 selected_class = 0;
-
-// Initialize global variables
-global.selected_class = CharacterClass.WARRIOR; // Default selection
 
 class_options = [
     global.Player_Class.Warrior,
@@ -52,9 +52,9 @@ global.WeaponSynergies = {};
 InitWeaponSynergySystem();
 
 // Popup references
-global.selection_popup	  = noone;
-global.chest_popup		  = noone;
-global.weapon_swap_prompt = noone;
+global.selection_popup	  = undefined;
+global.chest_popup		  = undefined;
+global.weapon_swap_prompt = undefined;
 
 // ==========================================
 // VISUAL
@@ -92,10 +92,9 @@ final_time  = "";
 // HIGHSCORES (for future)
 // ==========================================
 highscore_table = [];
-show_highscores_in_death = false;
-made_highscore = false;
-highscore_rank = -1;
-highscore_added = false;
+
+sequence = layer_sequence_create("Instances", room_width * 0.5, room_height * 0.6, Sequence1);
+layer_sequence_play(sequence);
 
 
 
@@ -393,11 +392,9 @@ function DrawDeathSequence(_w, _h, _cx, _cy) {
     if (death_fade_alpha > 0) {
         drawAlphaRectangle(0, 0, _w, _h, death_fade_alpha);
     }
+    draw_sprite_ext(spr_vh_dead, 0, _cx, _cy, 3, 3, 0, c_white, death_fade_alpha);
     
-    // Player death sprite
-    draw_sprite_ext(spr_vh_dead, 0, _cx, _cy - 50, 3, 3, 0, c_white, death_fade_alpha);
-    
-    // Stats display
+	// Stats display
     if (death_phase >= 2 && death_stats_alpha > 0) {
         draw_set_alpha(death_stats_alpha);
         draw_set_halign(fa_center);
@@ -406,69 +403,24 @@ function DrawDeathSequence(_w, _h, _cx, _cy) {
         
         // Title
         draw_set_font(fnt_large);
-        draw_text(_cx, _cy - 180, "GAME OVER");
+        draw_text(_cx, _cy - 120, "GAME OVER");
         
         draw_set_font(fnt_default);
         
-        // Score with highlight if new highscore
-        if (made_highscore) {
-            // Pulsing effect for new highscore
-            var pulse = 0.8 + sin(current_time * 0.01) * 0.2;
-            draw_set_color(merge_color(c_yellow, c_white, pulse));
-            draw_text(_cx, _cy - 120, "NEW HIGHSCORE!");
-            draw_set_color(c_yellow);
-            draw_text(_cx, _cy - 100, "RANK #" + string(highscore_rank));
-        }
-        
-        draw_set_color(c_white);
+        // Score
         var score_text = "FINAL SCORE: " + string(final_score);
-        draw_text(_cx, _cy - 60, score_text);
+        draw_text(_cx, _cy - 40, score_text);
         
         // Time
         var time_text = "TIME SURVIVED: " + final_time;
-        draw_text(_cx, _cy - 30, time_text);
+        draw_text(_cx, _cy, time_text);
         
-        // Style stats (if available)
-        if (instance_exists(obj_game_manager)) {
-            var stats = obj_game_manager.score_manager.GetStyleStats();
-            draw_set_color(c_gray);
-            draw_set_font(fnt_small);
-            
-            var stat_y = _cy + 10;
-            if (stats.perfect_timing_kills > 0) {
-                draw_text(_cx, stat_y, "Perfect Kills: " + string(stats.perfect_timing_kills));
-                stat_y += 20;
-            }
-            if (stats.highest_chain > 1) {
-                draw_text(_cx, stat_y, "Best Chain: x" + string(stats.highest_chain));
-                stat_y += 20;
-            }
-            if (stats.highest_combo > 1) {
-                draw_text(_cx, stat_y, "Best Combo: x" + string_format(stats.highest_combo, 1, 1));
-                stat_y += 20;
-            }
-        }
-        
-        draw_set_font(fnt_default);
-        draw_set_color(c_white);
-        draw_set_alpha(1);
-    }
-    
-    // Show highscore table on the right
-    if (death_phase >= 3 && show_highscores_in_death) {
-        // Draw compact highscore table
-        DrawCompactHighscores(highscore_table, _w, _h, made_highscore ? highscore_rank - 1 : -1);
-    }
-    
-    // Thank you message (moved down)
-    if (death_phase >= 2 && death_stats_alpha > 0) {
-        draw_set_alpha(death_stats_alpha);
+        // Thank you message
         draw_set_color(c_yellow);
-        draw_set_halign(fa_center);
-        draw_text(_cx, _cy + 140, "Thanks for playing the");
+        draw_text(_cx, _cy + 60, "Thanks for playing the");
         draw_set_font(fnt_large);
-        draw_text(_cx, _cy + 170, "TARLHS GAME DEMO");
-        draw_set_font(fnt_default);
+        draw_text(_cx, _cy + 90, "TARLHS GAME DEMO");
+        
         draw_set_alpha(1);
     }
     
@@ -479,6 +431,7 @@ function DrawDeathSequence(_w, _h, _cx, _cy) {
         draw_set_halign(fa_center);
         draw_set_valign(fa_middle);
         draw_set_color(c_white);
+        draw_set_font(fnt_default);
         
         draw_text(_cx, _h - 80, "Click or Press ENTER/SPACE to return to Main Menu");
         
@@ -486,61 +439,6 @@ function DrawDeathSequence(_w, _h, _cx, _cy) {
     }
 }
 	
-/// @function DrawCompactHighscores(_table, _w, _h, _highlight_index)
-function DrawCompactHighscores(_table, _w, _h, _highlight_index = -1) {
-    var table_x = _w - 200;
-    var table_y = _h / 2 - 150;
-    var row_height = 25;
-    
-    // Background
-    draw_set_alpha(0.9);
-    draw_set_color(c_black);
-    draw_rectangle(table_x - 10, table_y - 30, table_x + 180, table_y + (row_height * 5) + 10, false);
-    
-    // Title
-    draw_set_alpha(1);
-    draw_set_color(c_yellow);
-    draw_set_halign(fa_center);
-    draw_text(table_x + 85, table_y - 20, "TOP SCORES");
-    
-    // Show top 5 scores
-    draw_set_halign(fa_left);
-    var num_scores = min(5, array_length(_table));
-    
-    for (var i = 0; i < num_scores; i++) {
-        var yy = table_y + (i * row_height);
-        
-        // Highlight new score
-        if (i == _highlight_index) {
-            // Pulsing background
-            var pulse = 0.3 + sin(current_time * 0.01) * 0.1;
-            draw_set_alpha(pulse);
-            draw_set_color(c_yellow);
-            draw_rectangle(table_x - 5, yy - 2, table_x + 175, yy + row_height - 2, false);
-            draw_set_alpha(1);
-        }
-        
-        // Rank colors
-        if (i == 0) draw_set_color(c_yellow);
-        else if (i == 1) draw_set_color(c_silver);
-        else if (i == 2) draw_set_color(c_orange);
-        else if (i == _highlight_index) draw_set_color(c_lime);
-        else draw_set_color(c_white);
-        
-        // Draw rank and score
-        draw_text(table_x, yy, string(i + 1) + ".");
-        draw_text(table_x + 30, yy, string(_table[i].score));
-        
-        // Show "YOU!" for player's score
-        if (i == _highlight_index) {
-            draw_set_color(c_lime);
-            draw_text(table_x + 120, yy, "YOU!");
-        }
-    }
-    
-    draw_set_alpha(1);
-    draw_set_color(c_white);
-}
 
 // ==========================================
 // MENU HANDLERS
@@ -621,11 +519,9 @@ function HandleCharacterSelect(_mx, _my) {
     // Keyboard
     if (player_input.LeftPress) {
         selected_class = (selected_class - 1 + array_length(class_options)) mod array_length(class_options);
-        show_debug_message("Selected class index: " + string(selected_class)); // DEBUG
     }
     if (player_input.RightPress) {
         selected_class = (selected_class + 1) mod array_length(class_options);
-        show_debug_message("Selected class index: " + string(selected_class)); // DEBUG
     }
     
     // Mouse hover and click
@@ -636,19 +532,14 @@ function HandleCharacterSelect(_mx, _my) {
         
         if (point_in_rectangle(_mx, _my, xx - 100*scale, cy - 80*scale, xx + 100*scale, cy + 80*scale)) {
             selected_class = i;
-            show_debug_message("Mouse hover class index: " + string(i)); // DEBUG
             
             if (mouse_check_button_pressed(mb_left)) {
-                show_debug_message("Starting game with index: " + string(selected_class)); // DEBUG
-                show_debug_message("Class type: " + string(class_options[selected_class].type)); // DEBUG
                 StartGame();
             }
         }
     }
     
     if (player_input.Action) {
-        show_debug_message("Action pressed - Starting with index: " + string(selected_class)); // DEBUG
-        show_debug_message("Class type: " + string(class_options[selected_class].type)); // DEBUG
         StartGame();
     }
     
@@ -660,9 +551,8 @@ function HandleCharacterSelect(_mx, _my) {
 
 /// @function StartGame()
 function StartGame() {
-    selected_character_class = class_options[selected_class].type; // Set on the persistent controller
-    show_debug_message("SET selected_character_class to: " + string(selected_character_class));
-    room_goto(rm_demo_room);
+    global.selected_class = class_options[selected_class].type;
+	room_goto(rm_demo_room); 
 }
 
 /// Handle settings input:
@@ -840,7 +730,6 @@ function QuitToMenu() {
 // ==========================================
 
 function TriggerDeathSequence() {
-	    if (death_sequence_active) return;
     death_sequence_active = true;
     death_phase = 0;
     death_timer = 0;
@@ -849,29 +738,11 @@ function TriggerDeathSequence() {
     death_player_fade = 0;
     menu_state = MENU_STATE.GAME_OVER;
     
-
-    
-    // Get final stats from game manager
+    // Get final stats
     if (instance_exists(obj_game_manager)) {
         final_score = obj_game_manager.score_manager.GetScore();
         final_time = obj_game_manager.time_manager.GetFormattedTime();
-        
-        // Check if score qualifies for highscore table
-        if (!highscore_added) {
-            // Add to highscores
-            AddHighscore(highscore_table, final_score, "DEMO");
-            highscore_added = true;
-            
-            // Check if we made the top 10
-            made_highscore = false;
-            for (var i = 0; i < min(10, array_length(highscore_table)); i++) {
-                if (highscore_table[i].score == final_score) {
-                    made_highscore = true;
-                    highscore_rank = i + 1;
-                    break;
-                }
-            }
-        }
+        obj_game_manager.pause_manager.Pause(PAUSE_REASON.GAME_OVER);
     }
     
     // NEW: Use audio system for death music fade
@@ -883,51 +754,54 @@ function TriggerDeathSequence() {
 
 /// @function UpdateDeathSequence()
 function UpdateDeathSequence() {
-    if (!death_sequence_active) return;
-    
     death_timer++;
     
     switch(death_phase) {
-        case 0: // Initial fade
-            death_fade_alpha = min(death_fade_alpha + 0.02, 0.8);
-            if (death_timer > 60) {
+        case 0: // ZOOM TO PLAYER (60 frames)
+            if (instance_exists(obj_player) && variable_instance_exists(obj_player, "camera")) {
+                obj_player.camera.lock_at(obj_player.x, obj_player.y);
+                obj_player.camera.set_zoom(2.0);
+            }
+            
+            if (death_timer >= 60) {
                 death_phase = 1;
                 death_timer = 0;
             }
             break;
             
-        case 1: // Show player death
-            death_player_fade = min(death_player_fade + 0.03, 1);
-            if (death_timer > 30) {
+        case 1: // FADE TO BLACK (60 frames)
+            death_fade_alpha = min(death_fade_alpha + 0.015, 1);
+            
+            if (death_timer >= 60) {
                 death_phase = 2;
                 death_timer = 0;
             }
             break;
             
-        case 2: // Fade in stats
-            death_stats_alpha = min(death_stats_alpha + 0.03, 1);
-            if (death_timer > 60) {
+        case 2: // SHOW STATS (90 frames)
+            death_stats_alpha = min(death_stats_alpha + 0.02, 1);
+            
+            if (death_timer > 30) {
+                death_player_fade = min(death_player_fade + 0.015, 1);
+            }
+            
+            if (death_timer >= 90) {
                 death_phase = 3;
                 death_timer = 0;
-                show_highscores_in_death = true;
             }
             break;
             
-        case 3: // Wait for input
-            if (death_timer > 60) {
-                if (keyboard_check_pressed(vk_enter) || 
-                    keyboard_check_pressed(vk_space) || 
-                    mouse_check_button_pressed(mb_left)) {
-                    
-                    // Reset and return to menu
-                    death_sequence_active = false;
-                    global.gameSpeed = 1;
-                    room_goto(rm_main_menu);
-                }
+        case 3: // WAIT FOR INPUT
+            if (death_timer > 60 && (keyboard_check_pressed(vk_enter) || 
+                keyboard_check_pressed(vk_space) || 
+                mouse_check_button_pressed(mb_left))) {
+					AddHighscore(highscore_table, final_score, string(final_time));
+                QuitToMenu();
             }
             break;
     }
 }
+
 
 function LoadAudioSettings() {
     ini_open("settings.ini");

@@ -1,4 +1,14 @@
 
+if (!layer_sequence_is_paused(sequence))
+{
+	if layer_sequence_is_finished(sequence) {
+		layer_sequence_pause(sequence);
+		layer_sequence_x(sequence, - 200);
+	}
+		exit;
+}
+
+	
 /// @desc Main Controller - Step Event
 player_input.Update(input_caller);
 

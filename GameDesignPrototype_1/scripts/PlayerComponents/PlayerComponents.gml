@@ -15,11 +15,6 @@ function PlayerMovement(_self, _playerSpeed) constructor {
     dashSpeed = 4;
     isDashing = false;
     
-	dashCooldown = 60;
-	
-	dashMax = 60;
-	
-	
     /// Update - Call in Step Event
     static Update = function(_input, _speed = baseSpeed) {
         if (!_input) {
@@ -34,8 +29,6 @@ function PlayerMovement(_self, _playerSpeed) constructor {
             _self.ProcessPitFall();
             return false;
         }
-		
-		
         
         var _currentSpeed = _speed;
         
@@ -60,12 +53,10 @@ function PlayerMovement(_self, _playerSpeed) constructor {
         
         currentSpeed = ExecuteDash(_self, baseSpeed, dashTimer);
         dashTimer = timer_tick(dashTimer);
-        if (dashCooldown > 0) {
-		dashCooldown = timer_tick(dashCooldown);
-		}
-		else {
-			canDash = true;
-		}
+        
+        if (dashTimer <= 0) {
+            canDash = true;
+        }
         
         // PIT AVOIDANCE - Only if NOT dashing
         var can_move_into_pit = (dashTimer > 0); // Can dash into pits
@@ -153,44 +144,18 @@ function PlayerMovement(_self, _playerSpeed) constructor {
         if !(canDash) return false;
         dashTimer = maxDashTimer;
         canDash = false;
-        dashCooldown = dashMax;
+        
         return true;
     }
     
     static ExecuteDash = function(_self, _baseSpeed, _dashTimer) {
         var _currentSpeed = _baseSpeed * global.gameSpeed;
-		
+        
         if (_dashTimer > 0) {
             _currentSpeed *= dashSpeed;
             _self.invincibility.active = true;
             _self.invincibility.timer = 2;
             createAfterImage(callingObject, _dashTimer, 2, callingObject.currentSprite, callingObject.image_index);
-			
-			// Check if we dodged near an enemy projectile
-		    var dodged_something = false;
-		    with (obj_enemy_attack_orb) { // Or whatever enemy projectiles are
-		        if (distance_to_object(other) < 32) {
-		            dodged_something = true;
-		            break;
-		        }
-		    }
-		    
-		    if (dodged_something) {
-		        _self.dodge_count++;
-		        _self.last_dodge_time = current_time;
-		        
-		        // Award dodge points
-		        if (instance_exists(obj_game_manager)) {
-		            obj_game_manager.score_manager.AddScore(10, {dodge: true});
-		            
-		            // Visual event
-		            if (variable_instance_exists(obj_game_manager, "score_display")) {
-		                obj_game_manager.score_display.AddComboEvent("DODGE", 10, 1);
-		            }
-		        }
-		    }
-			
-			
         }
         return _currentSpeed;
     }

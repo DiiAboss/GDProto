@@ -20,8 +20,8 @@ stats_alpha = 0;
 stats_fade_speed = 0.02;
 
 // Get final stats
-final_score = obj_game_manager.score_manager.GetScore();
-final_time = obj_game_manager.time_manager.GetFormattedTime();
+final_score = instance_exists(obj_game_manager) ? obj_game_manager.score_manager.GetScore() : 0;
+final_time = instance_exists(obj_game_manager) ? obj_game_manager.time_manager.GetFormattedTime() : "00:00";
 
 // Player reference
 dead_player = instance_exists(obj_player) ? obj_player : noone;
@@ -41,9 +41,9 @@ can_go_to_menu = false;
 game_layer_alpha = 1;
 
 // Pause the game
-
-obj_game_manager.pause_manager.Pause(PAUSE_REASON.GAME_OVER);
-
+if (instance_exists(obj_game_manager)) {
+    obj_game_manager.pause_manager.Pause(PAUSE_REASON.GAME_OVER);
+}
 
 death_song = noone;
 // Phase 0: Zoom to player (60 frames)

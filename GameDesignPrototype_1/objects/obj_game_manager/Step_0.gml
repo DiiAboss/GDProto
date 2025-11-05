@@ -4,10 +4,6 @@ pause_manager.Update();
 
 score_manager.Update(game_speed_delta());
 time_manager.Update(game_speed_delta());
-
-score_display.Update(game_speed_delta());
-
-
 //if (global.gameSpeed <= 0) exit;
 
 if (global.gameSpeed > 0)
@@ -73,7 +69,7 @@ UpdateWeaponSwapPrompt();
 // LEVEL UP POPUP (P key for testing)
 // ==========================================
 if (keyboard_check_pressed(ord("P"))) {
-    if (!variable_global_exists("selection_popup") || global.selection_popup == noone) {
+    if (!variable_global_exists("selection_popup") || global.selection_popup == undefined) {
         ShowLevelUpPopup();
     }
 	
@@ -83,24 +79,24 @@ if (keyboard_check_pressed(ord("P"))) {
 // ==========================================
 // UPDATE SELECTION POPUP (Level-ups)
 // ==========================================
-if (variable_global_exists("selection_popup") && global.selection_popup != noone) {
+if (variable_global_exists("selection_popup") && global.selection_popup != undefined) {
     var popup = global.selection_popup;
     popup.step();
 
     if (popup.finished) {
-        global.selection_popup = noone;
+        global.selection_popup = undefined;
     }
 }
 
 // ==========================================
 // UPDATE CHEST POPUP
 // ==========================================
-if (variable_global_exists("chest_popup") && global.chest_popup != noone) {
+if (variable_global_exists("chest_popup") && global.chest_popup != undefined) {
     var chest_popup = global.chest_popup;
     chest_popup.step();
     
     if (chest_popup.finished) {
-        global.chest_popup = noone;
+        global.chest_popup = undefined;
     }
 }
 	

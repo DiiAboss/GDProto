@@ -1,3 +1,4 @@
+if (global.gameSpeed <= 0) exit;
 if (isKnockingBack && !hasTransferredKnockback) {
     var transferDir = point_direction(x, y, other.x, other.y);
     var transferForce = knockbackPower * 0.75;

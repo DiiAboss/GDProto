@@ -3,7 +3,7 @@ projectileType = PROJECTILE_TYPE.NORMAL;
 
 myDir = 0;
 img_xscale = 1;
-speed = 0;
+speed = 8;
 
 life = 100;
 active = true;

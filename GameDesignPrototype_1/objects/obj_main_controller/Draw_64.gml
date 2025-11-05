@@ -1,5 +1,5 @@
 /// @desc Main Controller - Draw GUI Event
-
+if (!layer_sequence_is_paused(sequence))  {exit};
 var gui_w = display_get_gui_width();
 var gui_h = display_get_gui_height();
 var cx = gui_w / 2;

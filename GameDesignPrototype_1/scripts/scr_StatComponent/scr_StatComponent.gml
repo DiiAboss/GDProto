@@ -74,13 +74,13 @@ function StatsComponent(_base_attack, _base_hp, _base_speed, _base_knockback) co
     temp_attack_mult = 1.0;
     temp_speed_mult = 1.0;
 
-    static Recalculate = function(_modifier_func = noone) {
+    static Recalculate = function(_modifier_func = undefined) {
         attack = base_attack;
         hp_max = base_hp;
         speed = base_speed;
         knockback = base_knockback;
 
-        if (_modifier_func != noone) {
+        if (_modifier_func != undefined) {
             var modified = _modifier_func(base_attack, hp_max, base_knockback, base_speed);
             attack = modified[0];
             hp_max = modified[1];

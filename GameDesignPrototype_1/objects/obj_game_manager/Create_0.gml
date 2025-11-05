@@ -10,7 +10,6 @@ pause_manager = new PauseManager();
 score_manager = new ScoreManager();
 time_manager  = new TimeManager();
 ui            = new UIManager();
-score_display = new ScoreDisplayManager();
 
 time_manager.SetupDefaultMilestones();
 
@@ -253,7 +252,7 @@ function HandleHighscoreStart() {
 /// Add this to obj_game_manager
 function ShowLevelUpPopup() {
     // Don't show popup if one is already active
-    if global.selection_popup != noone {
+    if global.selection_popup != undefined {
 		// Resume game
         return;
     }

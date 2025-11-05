@@ -32,7 +32,8 @@ if (hitEnemy != noone) {
         
         // Credit kill to last sword hitter
         if (hitEnemy.hp <= 0 && lastHitBy != noone) {
-            AwardStylePoints("ENVIRONMENTAL", 10, 1);
+            // Give bonus score for redirected kill
+            // lastHitBy.score += 100 * level; // Bonus scales with level
         }
     }
 }

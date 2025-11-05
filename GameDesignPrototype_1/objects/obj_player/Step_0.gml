@@ -124,10 +124,7 @@ HandleWeaponSwitching();
 var _hasMoved = movement.Update(input, scale_movement(mySpeed));
 image_speed = scale_animation(_hasMoved ? 0.4 : 0.2);
 currentSprite = SpriteHandler.UpdateSpriteByAimDirection(currentSprite, mouseDirection);
-// Track timing window between attacks
-if (attack_timing_window > 0) {
-    attack_timing_window-=game_speed_delta();
-}
+
 // ==========================================
 // CHARGE WEAPON
 // ==========================================
@@ -150,37 +147,53 @@ if (weaponCurrent)
 	// ==========================================
 	// WEAPON ATTACKS
 	// ==========================================
-	// When player attacks (in your FirePress section)
-	if (input.FirePress) {
-	    // Evaluate timing
-	    if (attack_timing_window > 0 && attack_timing_window <= perfect_timing_threshold) {
-	        last_timing_quality = "perfect";
-	    } else if (attack_timing_window > 0 && attack_timing_window <= perfect_timing_threshold * 2) {
-	        last_timing_quality = "good";
-	    } else {
-	        last_timing_quality = "normal";
+        if (input.FirePress) {
+            var timing_quality = EvaluateAttackTiming();
+            var timing_mult = ApplyTimingBonus(timing_quality);
+
+            var _primary_attack = undefined;
+            if (variable_struct_exists(weaponCurrent, "primary_attack")) {
+                _primary_attack = weaponCurrent.primary_attack;
+            }
+
+            var attack_result = noone;
+            if (WeaponCallbackIsCallable(_primary_attack)) {
+                attack_result = _primary_attack(self, mouseDirection, mouseDistance, weaponCurrent.projectile_struct);
+            }
+
+            if (attack_result != noone) {
+                if (weaponCurrent.type == WeaponType.Melee && instance_exists(attack_result)) {
+                    attack_result.attack *= timing_mult;
+                    if (timing_quality == "perfect") {
+	                attack_result.is_perfect_attack = true;
+	            }
+	        }
+	        else if (weaponCurrent.type == WeaponType.Range && instance_exists(attack_result)) {
+	            if (variable_instance_exists(attack_result, "damage")) {
+	                attack_result.damage *= timing_mult;
+	            }
+	        }
 	    }
-	    
-	    // Reset window for next attack
-	    attack_timing_window = 60; // 1 second window
-	 
-		
-	    // Your existing attack code...
-	    var attack_result = weaponCurrent.primary_attack(self, mouseDirection, mouseDistance, weaponCurrent.projectile_struct);
-		if (attack_result && switch_near_enemy > 0)
-		{
-			AwardStylePoints("WEAPON SWAP", 5, 1);
-		}
 	}
 	
-	if (input.AltPress) {
-	    weaponCurrent.secondary_attack(self, mouseDirection, mouseDistance, weaponCurrent.projectile_struct);
-		show_debug_message("AltrFire Pressed");
-	}
-	
-	if (variable_struct_exists(weaponCurrent, "step")) {
-	    weaponCurrent.step(self);
-	}
+        if (input.AltPress) {
+            var _secondary_attack = undefined;
+            if (variable_struct_exists(weaponCurrent, "secondary_attack")) {
+                _secondary_attack = weaponCurrent.secondary_attack;
+            }
+
+            if (WeaponCallbackIsCallable(_secondary_attack)) {
+                _secondary_attack(self, mouseDirection, mouseDistance, weaponCurrent.projectile_struct);
+                show_debug_message("AltrFire Pressed");
+            }
+        }
+
+        if (variable_struct_exists(weaponCurrent, "step")) {
+            var _weapon_step = weaponCurrent.step;
+            if (WeaponCallbackIsCallable(_weapon_step)) {
+                _weapon_step(self);
+            }
+        }
 	
 	UpdateTimingVisuals();
 }
@@ -188,16 +201,7 @@ if (weaponCurrent)
 
 status.Update();
 
-if (switch_near_enemy > 0)
-{
-	switch_near_enemy -= game_speed_delta();
-}
 
-
-if (keyboard_check_pressed(ord("F")))
-{
-    instance_create_depth(x, y, depth, obj_split_projectile);
-}
 
 
 /// @func HandleCarrying()
@@ -237,34 +241,16 @@ function AttemptPickup() {
             nearest.moveY = 0;
             
             // **SWITCH TO THROWABLE WEAPON**
-            previous_weapon_instance = weaponCurrent;
-            weaponCurrent = global.WeaponStruct.ThrowableItem;
+            previous_weapon_instance = weaponCurrent; // Store current weapon
+            weaponCurrent = EnsureWeaponInstance(global.WeaponStruct.ThrowableItem);
             charge_amount = 0;
-            
-            // DEBUG: Check if weapon has synergy tags
-            show_debug_message("=== PICKUP DEBUG ===");
-            if (variable_struct_exists(weaponCurrent, "synergy_tags")) {
-                show_debug_message("ThrowableItem has synergy_tags");
-            } else {
-                show_debug_message("ThrowableItem MISSING synergy_tags!");
-            }
-            
-            // Update synergy tags for throwable weapon
-            // NOTE: We're not switching weapon slots, just weaponCurrent reference
-            // So we need to temporarily put it in the weapons array
-            var temp_weapon = weapons[current_weapon_index];
-            weapons[current_weapon_index] = weaponCurrent;
-            UpdateWeaponTags(id, current_weapon_index);
-            weapons[current_weapon_index] = temp_weapon; // Restore original
-            
-            show_debug_message("Combined tags: " + active_combined_tags.DebugPrint());
-            show_debug_message("Active synergies: " + string(active_synergies));
-            show_debug_message("===================");
             
             if (variable_instance_exists(nearest, "OnPickedUp")) {
                 nearest.OnPickedUp(id);
             }
             
+            RefreshPlayerWeaponSynergies(id, weaponCurrent);
+
             show_debug_message("Picked up: " + object_get_name(nearest.object_index));
         }
     }
@@ -292,19 +278,6 @@ function ThrowCarriedObject() {
         
         obj.moveX = lengthdir_x(throw_strength, throw_dir);
         obj.moveY = lengthdir_y(throw_strength, throw_dir);
-        obj.is_projectile = true;
-		obj.is_lob_shot = false;  // Straight throw
-        // ========== NEW: APPLY SYNERGIES TO THROWN OBJECT ==========
-        // Give the thrown object THROWABLE tag and apply synergies
-        if (variable_instance_exists(id, "active_combined_tags") && 
-            variable_instance_exists(id, "active_synergies")) {
-            
-            // Apply synergy behaviors (homing, power throw, etc)
-            ApplySynergyBehavior(obj, active_combined_tags, active_synergies, id);
-            
-            show_debug_message("Applied synergies to thrown object. Synergies: " + string(active_synergies));
-        }
-        // ===========================================================
         
         // Call throw event (for custom behavior)
         if (variable_instance_exists(obj, "OnThrown")) {
@@ -315,6 +288,9 @@ function ThrowCarriedObject() {
     carried_object = noone;
     stats.temp_speed_mult = 1.0; // Restore speed
     weaponCurrent = previous_weapon_instance;
+    if (weaponCurrent != undefined) {
+        RefreshPlayerWeaponSynergies(id, weaponCurrent);
+    }
     show_debug_message("Threw object!");
 }
 
@@ -340,6 +316,9 @@ function DropCarriedObject() {
         obj.OnDropped(id);
     }
     weaponCurrent = previous_weapon_instance;
+    if (weaponCurrent != undefined) {
+        RefreshPlayerWeaponSynergies(id, weaponCurrent);
+    }
     carried_object = noone;
     stats.temp_speed_mult = 1.0;
 }
@@ -375,16 +354,13 @@ if (keyboard_check_pressed(vk_f5)) camera.set_zoom(1.0);
 
 /// @func CheckDamage()
 function CheckDamage() {
-	
-	
-	if (just_hit > 0) just_hit--;
     // ===== ENEMY CONTACT =====
     var enemy = instance_place(x, y, obj_enemy);
     if (enemy != noone && !enemy.marked_for_death && !knockback.IsActive()) {
         // Apply damage and activate invincibility
         damage_sys.TakeDamage(enemy.damage, enemy);
         invincibility.Activate();
-        just_hit = 30;
+        
         // Knockback from enemy
         var kbDir = point_direction(enemy.x, enemy.y, x, y);
         knockback.Apply(kbDir, enemy.knockbackForce);
@@ -512,12 +488,16 @@ function HandleWeaponSwitching() {
         }
     }
 	
-	if (keyboard_check_pressed(ord("7"))) {
+        if (keyboard_check_pressed(ord("7"))) {
     if (instance_exists(melee_weapon)) instance_destroy(melee_weapon);
-    new_weapon = global.WeaponStruct.ChainWhip;
+    new_weapon = EnsureWeaponInstance(global.WeaponStruct.ChainWhip);
+    weaponCurrent = new_weapon;
+    weapons[current_weapon_index] = new_weapon;
     melee_weapon = instance_create_depth(x, y, depth-1, obj_chain_whip);
     melee_weapon.owner = id;
+    melee_weapon.weapon_id = weaponCurrent.id;
     weapon_changed = true;
+    RefreshPlayerWeaponSynergies(id, weaponCurrent);
 }
 }
 
@@ -553,65 +533,7 @@ if (hp <= 0 && instance_exists(obj_main_controller) && !obj_main_controller.deat
 }
 
 
-// In obj_player Step_0
-if (keyboard_check_pressed(vk_f5)) {
-    show_debug_message("===== SYNERGY DEBUG =====");
-    
-    // Better character tag display
-    if (variable_instance_exists(id, "synergy_tags")) {
-        var char_tags = synergy_tags.GetAllTags();
-        var char_str = "";
-        for (var i = 0; i < array_length(char_tags); i++) {
-            char_str += GetTagName(char_tags[i]);
-            if (i < array_length(char_tags) - 1) char_str += ", ";
-        }
-        show_debug_message("Character Tags: " + char_str);
-    }
-    
-    // Better weapon tag display
-    if (weapons[current_weapon_index] != noone) {
-        var weapon = weapons[current_weapon_index];
-        if (variable_struct_exists(weapon, "synergy_tags")) {
-            var weap_tags = weapon.synergy_tags.GetAllTags();
-            var weap_str = "";
-            for (var i = 0; i < array_length(weap_tags); i++) {
-                weap_str += GetTagName(weap_tags[i]);
-                if (i < array_length(weap_tags) - 1) weap_str += ", ";
-            }
-            show_debug_message("Weapon Tags: " + weap_str);
-        }
-    }
-    
-    // Combined tags
-    if (variable_instance_exists(id, "active_combined_tags")) {
-        var combined = active_combined_tags.GetAllTags();
-        var comb_str = "";
-        for (var i = 0; i < array_length(combined); i++) {
-            comb_str += GetTagName(combined[i]);
-            if (i < array_length(combined) - 1) comb_str += ", ";
-        }
-        show_debug_message("Combined Tags: " + comb_str);
-    }
-    
-    // Active synergies
-    if (variable_instance_exists(id, "active_synergies")) {
-        var syn_str = "";
-        for (var i = 0; i < array_length(active_synergies); i++) {
-            syn_str += GetTagName(active_synergies[i]);
-            if (i < array_length(active_synergies) - 1) syn_str += ", ";
-        }
-        show_debug_message("Active Synergies: " + syn_str);
-    }
-}
 
-
-// Temporary test - press F6 to manually update tags
-if (keyboard_check_pressed(vk_f6)) {
-    if (weapons[current_weapon_index] != noone) {
-        UpdateWeaponTags(self, current_weapon_index);
-        show_debug_message("Force updated weapon tags!");
-    }
-}
 
 
 
@@ -626,20 +548,4 @@ if (keyboard_check_pressed(ord("3"))) {
 }
 if (keyboard_check_pressed(ord("4"))) {
     status.ApplyStatusEffect(ELEMENT.LIGHTNING, {duration: 90});
-}
-
-
-if (keyboard_check_pressed(vk_f9)) {
-    show_debug_message("=== WEAPON SLOTS DEBUG ===");
-    show_debug_message("Total slots: " + string(weapon_slots));
-    show_debug_message("Current weapon index: " + string(current_weapon_index));
-    
-    for (var i = 0; i < weapon_slots; i++) {
-        var w = weapons[i];
-        var _status = "EMPTY";
-        if (w != noone) {
-            _status = w.name;
-        }
-        show_debug_message("Slot " + string(i) + ": " + _status);
-    }
 }

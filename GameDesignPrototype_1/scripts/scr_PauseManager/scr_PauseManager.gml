@@ -62,7 +62,7 @@ function PauseManager() constructor {
         // Update current state
         UpdatePauseState();
         
-        //show_debug_message("RESUME: " + GetReasonName(_reason));
+        show_debug_message("RESUME: " + GetReasonName(_reason));
     }
     
     /// @function ResumeAll()
@@ -70,7 +70,7 @@ function PauseManager() constructor {
     static ResumeAll = function() {
         pause_stack = [];
         UpdatePauseState();
-        //show_debug_message("RESUME ALL - Emergency unpause");
+        show_debug_message("RESUME ALL - Emergency unpause");
     }
     
     /// @function UpdatePauseState()
@@ -81,24 +81,20 @@ function PauseManager() constructor {
             is_paused = false;
             current_reason = PAUSE_REASON.NONE;
             target_speed = 1.0;
-			//show_debug_message("UPDATE PAUSE STATE: nothing paused us")
+			show_debug_message("UPDATE PAUSE STATE: nothing paused us")
         } else {
             // Get top of stack (most recent pause)
             var top = pause_stack[array_length(pause_stack) - 1];
             is_paused = true;
             current_reason = top.reason;
             target_speed = top.speed;
-			//show_debug_message("UPDATE PAUSE STATE: Is Paused: " + string(target_speed));
+			show_debug_message("UPDATE PAUSE STATE: Is Paused: " + string(target_speed));
         }
     }
     
     /// @function Update()
     /// @description Call every frame to update game speed
     static Update = function() {
-		
-		
-		
-		
         // Smoothly lerp to target speed
         if (current_speed != target_speed) {
             var diff = target_speed - current_speed;
@@ -109,21 +105,13 @@ function PauseManager() constructor {
                 current_speed += diff * 0.15;
             }
         }
-		
-		
-		if (obj_main_controller.menu_state == MENU_STATE.GAME_OVER)
-		{
-			current_speed = 0;
-			global.is_paused = true;
-		}
-		
-        //show_debug_message("current_Speed: " + string(current_speed));
+        show_debug_message("current_Speed: " + string(current_speed));
         // Update global
         global.gameSpeed = current_speed;
 		
 				if (is_paused) {
 		    if (global.gameSpeed > 0) {
-		        //show_debug_message("WARNING: gameSpeed reset after pause_manager.Update()");
+		        show_debug_message("WARNING: gameSpeed reset after pause_manager.Update()");
 		    }
 }
     }

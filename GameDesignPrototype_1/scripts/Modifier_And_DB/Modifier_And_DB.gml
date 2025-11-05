@@ -6,7 +6,7 @@ function get_mod_by_id(_id) {
             return obj_game_manager.allMods[i];
         }
     }
-    return noone;
+    return undefined;
 }
 
 
@@ -20,73 +20,80 @@ function mod_heal_on_kill(player, _mod, enemy) {
     player.hp = clamp(player.hp + 5, 0, player.maxHp);
 }
 
-/// @function CreateBonusProjectiles(_entity, _event_data)
-function CreateBonusProjectiles(_entity, _event_data) {
-    if (!instance_exists(_event_data.projectile)) return;
+function CreateBonusProjectiles(_entity, _event) {
+    if (_event.attack_type != AttackType.RANGED && _event.attack_type != AttackType.CANNON) return;
     
-    var original_proj = _event_data.projectile;
-    var bonus_count = _event_data.projectile_count_bonus;
-    var spread_angle = 15;
+    var bonus_count = _event.projectile_count_bonus;
+    if (bonus_count <= 0) return;
     
-    // FIX: Use attack_direction instead of direction
-    var base_direction = _event_data.attack_direction ?? original_proj.direction ?? 0;
-    
-    for (var i = 0; i < bonus_count; i++) {
-        var angle_offset = spread_angle * (i + 1);
-        var new_dir = base_direction + choose(angle_offset, -angle_offset);
+    with (_entity) {
+        // Get projectile type
+        var proj_type = obj_arrow;
+        var is_lobbed = false;
         
-        // Create bonus projectile
-        var bonus_proj = instance_create_depth(
-            original_proj.x,
-            original_proj.y,
-            original_proj.depth,
-            original_proj.object_index
-        );
-        
-        // Copy properties from original
-        bonus_proj.direction = new_dir;
-        bonus_proj.image_angle = new_dir;
-        bonus_proj.speed = original_proj.speed;
-        bonus_proj.damage = original_proj.damage;
-        bonus_proj.owner = original_proj.owner;
-        
-        // Copy lob properties for thrown weapons
-        if (variable_instance_exists(original_proj, "xStart")) {
-            bonus_proj.xStart = original_proj.xStart;
-            bonus_proj.yStart = original_proj.yStart;
-            bonus_proj.targetDistance = original_proj.targetDistance;
-            bonus_proj.lob_direction = new_dir;
+        if (_event.projectile != noone && instance_exists(_event.projectile)) {
+            proj_type = _event.projectile.object_index;
+            
+            // Check if it's a lobbed projectile
+            if (variable_instance_exists(_event.projectile, "lobbed")) {
+                is_lobbed = _event.projectile.lobbed;
+            }
         }
         
-        // Copy synergy data
-        if (variable_instance_exists(original_proj, "synergy_tags")) {
-            bonus_proj.synergy_tags = original_proj.synergy_tags;
-        }
-        if (variable_instance_exists(original_proj, "active_synergies")) {
-            bonus_proj.active_synergies = original_proj.active_synergies;
-        }
-        if (variable_instance_exists(original_proj, "synergy_owner")) {
-            bonus_proj.synergy_owner = original_proj.synergy_owner;
-        }
+        // Calculate spread
+        var spread_angle = 15; // Degrees between projectiles
+        var total_spread = spread_angle * bonus_count;
         
-        // Copy synergy-applied properties
-        if (variable_instance_exists(original_proj, "element_type")) {
-            bonus_proj.element_type = original_proj.element_type;
+        // Create projectiles in a spread
+        for (var i = 0; i < bonus_count; i++) {
+            var angle_offset = -total_spread/2 + (i * spread_angle) + spread_angle/2;
+            var proj_direction = _event.attack_direction + angle_offset;
+            
+            // LOBBED PROJECTILES
+            if (is_lobbed) {
+                var lobbed_proj = instance_create_depth(
+                    x,
+                    y,
+                    depth - 1,
+                    proj_type
+                );
+                
+                if (lobbed_proj != noone && instance_exists(lobbed_proj)) {
+                    // Initialize lobbed projectile with spread direction
+                    lobbed_proj.xStart = x;
+                    lobbed_proj.yStart = y;
+                    lobbed_proj.targetDistance = distance_to_point(mouse_x, mouse_y);
+                    lobbed_proj.lob_direction = proj_direction; // SPREAD DIRECTION
+                    lobbed_proj.direction = proj_direction;
+                    lobbed_proj.owner = id;
+                    lobbed_proj.damage = (_event.damage ?? attack) * 0.8;
+                    
+                    // Mark as lobbed
+                    lobbed_proj.lobbed = true;
+                    lobbed_proj.lobStep = 0;
+                }
+            }
+            // REGULAR PROJECTILES
+            else {
+                var proj = instance_create_depth(
+                    _event.attack_position_x,
+                    _event.attack_position_y,
+                    depth - 1,
+                    proj_type
+                );
+                
+                proj.direction = proj_direction;
+                proj.speed = 8;
+                proj.damage = (_event.damage ?? attack) * 0.8;
+                proj.owner = id;
+                proj.image_angle = proj.direction;
+                proj.image_xscale = 0.9;
+                proj.image_yscale = 0.9;
+            }
         }
-        if (variable_instance_exists(original_proj, "has_lifesteal")) {
-            bonus_proj.has_lifesteal = original_proj.has_lifesteal;
-            bonus_proj.lifesteal_percent = original_proj.lifesteal_percent;
-        }
-        if (variable_instance_exists(original_proj, "explosion_damage")) {
-            bonus_proj.explosion_damage = original_proj.explosion_damage;
-        }
-        if (variable_instance_exists(original_proj, "explosion_radius")) {
-            bonus_proj.explosion_radius = original_proj.explosion_radius;
-        }
-        
-        show_debug_message("Created bonus projectile with spread: " + string(angle_offset));
     }
 }
+
 
 function TriggerModifiers(_entity, _trigger, _event_data) {
     if (!variable_instance_exists(_entity, "mod_cache")) return;
@@ -99,7 +106,7 @@ function TriggerModifiers(_entity, _trigger, _event_data) {
     var trigger_str = string(_trigger);
     var trigger_mods = _entity.mod_cache[$ trigger_str];
     
-    if (trigger_mods == noone || array_length(trigger_mods) == 0) return;
+    if (trigger_mods == undefined || array_length(trigger_mods) == 0) return;
     
     // Run all modifiers that respond to this trigger
     for (var i = 0; i < array_length(trigger_mods); i++) {
@@ -109,17 +116,13 @@ function TriggerModifiers(_entity, _trigger, _event_data) {
         
         var mod_template = global.Modifiers[$ mod_instance.template_key];
         
-        if (mod_template == noone) continue;
+        if (mod_template == undefined) continue;
         
-        // Add stack level to event data
         _event_data.mod_instance = mod_instance;
-        _event_data.stack_level = mod_instance.stack_level ?? 1;
-        
-        // Just run the action - let each modifier handle its own proc chance
         mod_template.action(_entity, _event_data);
     }
     
-    // Handle bonus projectiles
+    // FIX: Check if field exists before using it
     if (_trigger == MOD_TRIGGER.ON_ATTACK) {
         if (variable_struct_exists(_event_data, "projectile_count_bonus") && 
             _event_data.projectile_count_bonus > 0) {
@@ -142,38 +145,11 @@ function AddModifier(_entity, _modifier_key) {
     
     var mod_template = global.Modifiers[$ _modifier_key];
     
-    // NEW: Check if entity already has this modifier (for stacking)
-    var existing_index = -1;
-    for (var i = 0; i < array_length(_entity.mod_list); i++) {
-        if (_entity.mod_list[i].template_key == _modifier_key) {
-            existing_index = i;
-            break;
-        }
-    }
-    
-    // NEW: If modifier exists, STACK IT
-    if (existing_index != -1) {
-        if (!variable_struct_exists(_entity.mod_list[existing_index], "stack_level")) {
-            _entity.mod_list[existing_index].stack_level = 1;
-        }
-        _entity.mod_list[existing_index].stack_level++;
-        
-        show_debug_message("STACKED " + _modifier_key + " to level " + string(_entity.mod_list[existing_index].stack_level));
-        
-        // Recalculate passive stats
-        if (instance_exists(_entity) && object_is_ancestor(_entity.object_index, obj_player)) {
-            CalculateCachedStats(_entity);
-        }
-        
-        return _entity.mod_list[existing_index];
-    }
-    
     // Create instance
     var mod_instance = {
         template_key: _modifier_key,
         counter: 0,
-        active: true,
-        stack_level: 1  // NEW: Add stack level
+        active: true
     };
     
     array_push(_entity.mod_list, mod_instance);
@@ -190,22 +166,9 @@ function AddModifier(_entity, _modifier_key) {
         array_push(_entity.mod_cache[$ trigger_str], mod_instance);
     }
     
-    // NEW: Add synergy tags
-    if (variable_struct_exists(mod_template, "synergy_tags")) {
-        for (var i = 0; i < array_length(mod_template.synergy_tags); i++) {
-            AddModifierTag(_entity, mod_template.synergy_tags[i]);
-        }
-    }
-    
-    // NEW: Recalculate passive stats
-    if (instance_exists(_entity) && object_is_ancestor(_entity.object_index, obj_player)) {
-        CalculateCachedStats(_entity);
-    }
-    
     show_debug_message("Added modifier: " + _modifier_key);
     return mod_instance;
 }
-
 
 
 function ApplyStatModifiers(_self, _mods)
@@ -487,55 +450,4 @@ function EventData(_data = []) {
     if (!variable_struct_exists(_event, "target"))      _event.target      = noone;
     if (!variable_struct_exists(_event, "damage"))      _event.damage      = 0;
     return _event;
-}
-
-/// @function CreateModifierInstance(_template_key, _stack_level)
-function CreateModifierInstance(_template_key, _stack_level = 1) {
-    var template = global.Modifiers[$ _template_key];
-    
-    return {
-        template_key: _template_key,
-        stack_level: _stack_level,
-        name: template.name,
-        triggers: template.triggers,
-        
-        // NEW: Activation chance (100 = always, 10 = 10% chance)
-        activation_chance: template.activation_chance ?? 100,
-        
-        // NEW: Synergy tags this modifier provides
-        synergy_tags: template.synergy_tags ?? [],
-        
-        // Track activation statistics
-        activation_attempts: 0,
-        successful_activations: 0
-    };
-}
-
-/// @function GetStackedValue(_base_value, _stack_level)
-/// @description Calculate value with diminishing returns per stack
-/// Stack 1: base_value (100%)
-/// Stack 2: base_value * 1.5 (150%)
-/// Stack 3: base_value * 1.75 (175%)
-/// Stack 4: base_value * 1.875 (187.5%)
-/// Each stack adds 50% of the previous bonus
-function GetStackedValue(_base_value, _stack_level) {
-    if (_stack_level <= 1) return _base_value;
-    
-    var total = _base_value;
-    var bonus = _base_value * 0.5; // 50% bonus for second stack
-    
-    for (var i = 2; i <= _stack_level; i++) {
-        total += bonus;
-        bonus *= 0.5; // Diminishing returns
-    }
-    
-    return total;
-}
-
-/// @function ShouldModifierActivate(_activation_chance)
-/// @description Check if modifier should activate based on chance
-/// @param {real} _activation_chance - Percentage chance (0-100)
-function ShouldModifierActivate(_activation_chance) {
-    if (_activation_chance >= 100) return true;
-    return (random(100) < _activation_chance);
 }

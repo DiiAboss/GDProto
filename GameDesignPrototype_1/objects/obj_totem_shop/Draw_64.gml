@@ -43,7 +43,7 @@ for (var i = 0; i < array_length(available_totems); i++) {
     var totem_type = available_totems[i];
     var totem_data = GetTotemByType(totem_type);
     
-    if (totem_data == noone) continue;
+    if (totem_data == undefined) continue;
     
     var item_y = list_y + (i * item_height);
     var cost = totem_data.GetScaledCost(obj_player.player_level);

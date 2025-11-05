@@ -36,8 +36,8 @@
   "resourceVersion":"2.0",
   "solid":false,
   "spriteId":{
-    "name":"spr_boomerang",
-    "path":"sprites/spr_boomerang/spr_boomerang.yy",
+    "name":"spr_bat",
+    "path":"sprites/spr_bat/spr_bat.yy",
   },
   "spriteMaskId":null,
   "visible":true,

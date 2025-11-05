@@ -1,4 +1,5 @@
 /// @description
+if (global.gameSpeed <= 0) exit;
 var pushDir = point_direction(other.x, other.y, x, y);
     var pushForce = 0.5;
     

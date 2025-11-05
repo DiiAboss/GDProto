@@ -14,7 +14,7 @@ function ChestReward(_type, _id) constructor {
     switch (type) {
         case RewardType.MODIFIER:
             var _mod = get_mod_by_id(_id);
-            if (_mod != noone) {
+            if (_mod != undefined) {
                 name = _mod.id;
                 desc = _mod.description ?? "A powerful modifier";
                 sprite = spr_mod_default;

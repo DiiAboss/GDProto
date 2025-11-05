@@ -10,7 +10,7 @@ isSwinging = false; // Alias for compatibility
 startSwing = false;
 swingSpeed = 8; // How fast the sword swings
 swingProgress = 0; // 0 to 1, tracks swing completion
-melee_streak = 0;
+
 
 // Current position state (starts at down position)
 currentPosition = SwingPosition.Down;

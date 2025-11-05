@@ -1,4 +1,5 @@
 /// obj_enemy - Collision with obj_player (SIMPLIFIED)
+if (global.gameSpeed <= 0) exit;
 var hitPlayer = instance_place(x, y, obj_player);
 if (hitPlayer == noone) exit;
 
@@ -16,6 +17,7 @@ if (overlap > 0) {
     }
 }
 
+// Handle cannonball momentum transfer
 if (hitPlayer.isCannonBalling) {
     var playerSpeed = point_distance(0, 0, hitPlayer.knockbackX, hitPlayer.knockbackY);
     if (playerSpeed > 10) {
@@ -27,7 +29,8 @@ if (hitPlayer.isCannonBalling) {
         knockbackCooldown = 10;
         
         var impactDamage = round(playerSpeed * 2);
-        DealDamage(self, impactDamage, hitPlayer);
+        //takeDamage(self, impactDamage, hitPlayer);
+		hitPlayer.damage_sys.TakeDamage(impactDamage, self)
         
         hitPlayer.knockbackX *= 0.5;
         hitPlayer.knockbackY *= 0.5;

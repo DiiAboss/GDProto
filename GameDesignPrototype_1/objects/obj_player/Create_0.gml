@@ -1,35 +1,11 @@
 /// @desc Player Create Event - Fully Component-based
 
-crosshair = instance_create_depth(x, y, depth, obj_crosshair);
-
-
 // ==========================================
 // CHARACTER CLASS SETUP
 // ==========================================
-// Get selected class FIRST (before anything else uses it)
-// Get from the persistent main controller instead of global
-if (instance_exists(obj_main_controller)) {
-    character_class = obj_main_controller.selected_character_class;
-} else {
-    character_class = CharacterClass.WARRIOR; // Fallback
-}
-show_debug_message("PLAYER CREATED WITH CLASS: " + string(character_class));
-show_debug_message("0=WARRIOR, 1=HOLY_MAGE, 2=VAMPIRE");
-
-// Now get stats based on correct class
+character_class = CharacterClass.WARRIOR;
 class_stats = GetCharacterStats(character_class);
 
-// Initialize character synergy tags
-synergy_tags = InitializeCharacterTags(character_class);
-
-// Container for temporary mod tags
-active_mod_tags = new SynergyTags();
-
-// Cache for current weapon combo
-active_combined_tags = new SynergyTags();
-active_synergies = [];
-
-show_debug_message("Player Tags Initialized: " + synergy_tags.DebugPrint());
 
 status = new StatusEffectComponent(self);
 
@@ -43,9 +19,6 @@ stats = new StatsComponent(
     5
 );
 
-
-switch_near_enemy = 0;
-
 knockback = new KnockbackComponent(0.85, 0.1);
 invincibility = new InvincibilityComponent(30, 4);
 damage_sys = new DamageComponent(self, stats.hp_max);
@@ -54,9 +27,11 @@ timers = new TimerComponent();
 // ==========================================
 // CHARACTER CLASS COMPONENT
 // ==========================================
-// Create class component AFTER stats and damage_sys exist
 class_component = CreateCharacterClass(character_class, stats, damage_sys, class_stats);
 
+// Synergy tagging
+synergy_tags = GetClassSynergyTags(character_class);
+active_synergy_sources = [];
 
 // Legacy compatibility (remove once fully refactored)
 attack		 = stats.attack;
@@ -67,22 +42,7 @@ maxHp		 = damage_sys.max_hp;
 mySpeed		 = stats.speed;
 base_speed	 = stats.base_speed;
 
-// ==========================================
-// SCORING & TIMING VARIABLES
-// ==========================================
-// Attack timing for style points
-last_timing_quality = "normal";
-attack_timing_window = 0;
-perfect_timing_threshold = 10;  // Frames for perfect timing
 
-// Combo tracking
-current_combo_count = 0;
-combo_decay_timer = 0;
-
-// Style tracking
-dodge_count = 0;
-last_dodge_time = 0;
-environmental_kills = 0;
 
 // ==========================================
 // INPUT & MOVEMENT
@@ -107,19 +67,23 @@ weapons = array_create(weapon_slots, noone);
 current_weapon_index = 0;
 
 // Give starting weapon
+var _starting_weapon = EnsureWeaponInstance(global.WeaponStruct.Dagger);
+weapons[0] = _starting_weapon;
+weaponCurrent = _starting_weapon;
 
-weapons[1] = noone;
-weapons[0] = global.WeaponStruct.Dagger; // Or whatever starting weapon
-weaponCurrent = weapons[0];
+if (weapon_slots > 1) {
+    weapons[1] = undefined;
+}
 
 previous_weapon_instance = weaponCurrent;
+
+RefreshPlayerWeaponSynergies(self, weaponCurrent);
 
 
 // Charge weapon
 charge_amount = 0;
 is_charging = false;
 isCannonBalling = false;
-just_hit = 0;
 
 // ==========================================
 // PROGRESSION SYSTEM - INITIALIZATION
@@ -204,9 +168,6 @@ carried_object = noone;
 carry_speed_multiplier = 0.8; // Slower when carrying
 
 
-var test_synergy = GetWeaponSynergy(CharacterClass.HOLY_MAGE, Weapon.BaseballBat);
-show_debug_message("Test synergy type: " + string(test_synergy.type));
-show_debug_message("Damage mult: " + string(test_synergy.damage_mult));
 
 
 
@@ -340,7 +301,7 @@ RespawnFromPit = function() {
     show_debug_message("PLAYER RESPAWNED at " + string(x) + ", " + string(y));
 }
 
-SpawnWeaponPickup(x, y - 64, global.WeaponStruct.HolyWater);
+SpawnWeaponPickup(x, y - 64, global.WeaponStruct.Dagger);
 
 
 is_dead = false;

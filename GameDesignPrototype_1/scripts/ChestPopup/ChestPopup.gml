@@ -175,7 +175,7 @@ function ChestPopup(_x, _y, _rewards, _chest_cost, _on_select, _on_skip) constru
     if (finished) return;
     
     // Safety check
-    if (rewards == noone || !is_array(rewards) || array_length(rewards) == 0) return;
+    if (rewards == undefined || !is_array(rewards) || array_length(rewards) == 0) return;
     
     // Overlay
     draw_set_alpha(0.8 * alpha);
@@ -241,7 +241,7 @@ function ChestPopup(_x, _y, _rewards, _chest_cost, _on_select, _on_skip) constru
         
         var desc_reward = rewards[desc_index];
         
-        if (desc_reward != noone && alpha > 0.01) {
+        if (desc_reward != undefined && alpha > 0.01) {
             draw_set_alpha(alpha);
             draw_set_color(c_white);
             draw_set_font(fnt_default);

@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"scr_WeaponPickup",
   "parent":{
-    "name":"WEAPONS_SCRIPTS",
-    "path":"folders/Scripts/WEAPONS_SCRIPTS.yy",
+    "name":"Scripts",
+    "path":"folders/Scripts.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

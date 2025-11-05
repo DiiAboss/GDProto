@@ -247,13 +247,13 @@ function TimeManager() constructor {
     /// @description Setup standard time milestones
     static SetupDefaultMilestones = function() {
         milestones = [
-            { time_seconds: 30, name: "30 Seconds", triggered: false, callback: noone },
-            { time_seconds: 60, name: "1 Minute", triggered: false, callback: noone },
-            { time_seconds: 120, name: "2 Minutes", triggered: false, callback: noone },
-            { time_seconds: 180, name: "3 Minutes", triggered: false, callback: noone },
-            { time_seconds: 300, name: "5 Minutes", triggered: false, callback: noone },
-            { time_seconds: 600, name: "10 Minutes", triggered: false, callback: noone },
-            { time_seconds: 900, name: "15 Minutes", triggered: false, callback: noone }
+            { time_seconds: 30, name: "30 Seconds", triggered: false, callback: undefined },
+            { time_seconds: 60, name: "1 Minute", triggered: false, callback: undefined },
+            { time_seconds: 120, name: "2 Minutes", triggered: false, callback: undefined },
+            { time_seconds: 180, name: "3 Minutes", triggered: false, callback: undefined },
+            { time_seconds: 300, name: "5 Minutes", triggered: false, callback: undefined },
+            { time_seconds: 600, name: "10 Minutes", triggered: false, callback: undefined },
+            { time_seconds: 900, name: "15 Minutes", triggered: false, callback: undefined }
         ];
         milestone_index = 0;
     }
@@ -262,7 +262,7 @@ function TimeManager() constructor {
     /// @param {real} _seconds Time in seconds
     /// @param {string} _name Milestone name
     /// @param {function} _callback Optional callback when reached
-    static AddMilestone = function(_seconds, _name, _callback = noone) {
+    static AddMilestone = function(_seconds, _name, _callback = undefined) {
         array_push(milestones, {
             time_seconds: _seconds,
             name: _name,
@@ -287,7 +287,7 @@ function TimeManager() constructor {
             OnMilestoneReached(current_milestone);
             
             // Execute callback if exists
-            if (current_milestone.callback != noone) {
+            if (current_milestone.callback != undefined) {
                 current_milestone.callback();
             }
             

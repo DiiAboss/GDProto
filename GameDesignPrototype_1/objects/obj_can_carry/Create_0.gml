@@ -20,7 +20,7 @@ moveY = 0;
 friction_amount = 0.92;
 speed_threshold = 0.5;
 bounce_dampening = 0.5;
-visual_effect = "";
+
 // Throw properties
 throw_force = 10;
 can_be_thrown = true;
@@ -41,7 +41,7 @@ is_lob_shot = false;
 is_charged_throw = false;
 projectile_speed = 0;
 damage = 100; // Base damage when thrown
-destroy_on_impact = false;
+destroy_on_impact = true;
 thrown_direction = 0;
 
 // Lob arc variables
@@ -103,10 +103,3 @@ tilemap_id = layer_tilemap_get_id(tile_layer_id);
 
 loaded = false;
 alarm[0] = 1;
-
-
-/// @function lerp_angle(from, to, amount)
-function lerp_angle(_from, _to, _amount) {
-    var diff = angle_difference(_to, _from);
-    return _from + diff * _amount;
-}
