@@ -203,7 +203,6 @@ status.Update();
 
 
 
-
 /// @func HandleCarrying()
 function HandleCarrying() {
     // THROW CARRIED OBJECT

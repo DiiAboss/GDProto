@@ -234,7 +234,6 @@
     {"name":"Sprite74","order":14,"path":"sprites/Sprite74/Sprite74.yy",},
     {"name":"Sprite75","order":15,"path":"sprites/Sprite75/Sprite75.yy",},
     {"name":"Sprite76","order":16,"path":"sprites/Sprite76/Sprite76.yy",},
-    {"name":"Sprite77","order":49,"path":"sprites/Sprite77/Sprite77.yy",},
     {"name":"Overworld_TS","order":1,"path":"tilesets/Overworld_TS/Overworld_TS.yy",},
   ],
 }
