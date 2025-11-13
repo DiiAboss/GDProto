@@ -4,9 +4,9 @@
 // Inherit base enemy components
 event_inherited();
 
-// ==========================================
+
 // OVERRIDE BASE ENEMY VALUES
-// ==========================================
+
 mySprite = spr_mini_boss_1;
 size = sprite_get_height(mySprite);
 
@@ -27,9 +27,9 @@ separationRadius = 48;
 knockback = new KnockbackComponent(0.5, 0.05); // More resistant
 knockbackFriction = 0.5;
 
-// ==========================================
+
 // MINIBOSS-SPECIFIC PROPERTIES
-// ==========================================
+
 
 // State machine
 enum BOSS_STATE {

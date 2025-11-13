@@ -1,6 +1,6 @@
-// ==========================================
+
 // CREATE EVENT
-// ==========================================
+
 
 // Configuration
 chest_type = choose(ChestType.MINI, ChestType.MINI, ChestType.MINI, ChestType.GOLD);
@@ -29,9 +29,9 @@ if (chest_type == ChestType.PREMIUM) {
     target_scale = base_scale;
 }
 
-// ==========================================
+
 // FUNCTIONS
-// ==========================================
+
 
 /// @func BeginOpening()
 function BeginOpening() {

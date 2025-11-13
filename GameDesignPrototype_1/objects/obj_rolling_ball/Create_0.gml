@@ -38,3 +38,20 @@ hitCooldown = 10;
 cornerHitTimer = 0;
 
 alarm[0] = 600;
+
+// === UPDATE STATS BASED ON LEVEL ===
+function updateBallStats() {
+    // Damage scales with level
+    damage = baseDamage + (level * 2); // +2 damage per level
+    
+    // Knockback scales with level
+    knockbackForce = baseKnockback + (level * 1.5); // +1.5 knockback per level
+    
+    // Speed scales with level
+    mySpeed = 4 + (level * 0.5); // +0.5 speed per level
+    currentSpeed = max(currentSpeed, mySpeed); // Don't reduce current if it's boosted
+    
+    // Color changes with level
+    currentColor = colorList[min(level, array_length(colorList) - 1)];
+}
+

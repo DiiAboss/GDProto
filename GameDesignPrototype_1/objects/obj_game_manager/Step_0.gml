@@ -69,22 +69,22 @@ if (instance_exists(obj_coin))
 UpdateWeaponSwapPrompt();
 
 
-	// ==========================================
+	
 // LEVEL UP POPUP (P key for testing)
-// ==========================================
+
 if (keyboard_check_pressed(ord("P"))) {
-    if (!variable_global_exists("selection_popup") || global.selection_popup == noone) {
-        ShowLevelUpPopup();
+    if global.selection_popup == noone {
+        ShowLevelUpPopup(can_click);
     }
 	
 	show_debug_message("Step Event Loaded");
 }
 
-// ==========================================
+
 // UPDATE SELECTION POPUP (Level-ups)
-// ==========================================
-if (variable_global_exists("selection_popup") && global.selection_popup != noone) {
-    var popup = global.selection_popup;
+
+if global.selection_popup != noone {
+	var popup = global.selection_popup;
     popup.step();
 
     if (popup.finished) {
@@ -92,18 +92,41 @@ if (variable_global_exists("selection_popup") && global.selection_popup != noone
     }
 }
 
-// ==========================================
+
 // UPDATE CHEST POPUP
-// ==========================================
-if (variable_global_exists("chest_popup") && global.chest_popup != noone) {
-    var chest_popup = global.chest_popup;
+
+if global.chest_popup != noone {
+	var chest_popup = global.chest_popup;
     chest_popup.step();
     
     if (chest_popup.finished) {
         global.chest_popup = noone;
     }
 }
-	
+if (obj_main_controller.menu_system.state == MENU_STATE.PAUSE_MENU)
+{
+	alarm[0] = 10;
+	can_click = false;
+	exit;
+}
+
+// Level up slowdown effect
+if (level_up_slowdown_active) {
+    level_up_slowdown_timer++;
+    
+    // Gradual slowdown
+    var progress = level_up_slowdown_timer / level_up_slowdown_duration;
+    var target_speed = lerp(1.0, 0.1, progress);
+    pause_manager.target_speed = target_speed;
+    
+    if (level_up_slowdown_timer >= level_up_slowdown_duration) {
+        level_up_slowdown_active = false;
+        level_up_slowdown_timer = 0;
+        
+        // Show the actual popup
+        ShowLevelUpPopup(can_click);
+    }
+}
 
 
 

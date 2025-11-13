@@ -1,6 +1,6 @@
-// ==========================================
+
 // ENEMY CONTROLLER - CREATE EVENT
-// ==========================================
+
 
 // Enemy tracking
 enemy_list = ds_list_create();
@@ -23,9 +23,9 @@ bomb_check_timer = 0;
 enemy_count = 0;
 dead_count = 0;
 
-// ==========================================
+
 // DIFFICULTY SCALING SYSTEM
-// ==========================================
+
 
 difficulty_level = 1;
 difficulty_timer = 0;

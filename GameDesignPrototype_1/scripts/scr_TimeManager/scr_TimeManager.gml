@@ -1,9 +1,9 @@
 /// @description TimeManager Constructor
 /// Create: scr_time_manager.gml
 
-// ==========================================
+
 // ENUMS
-// ==========================================
+
 
 enum TIME_STATE {
     STOPPED,
@@ -11,9 +11,9 @@ enum TIME_STATE {
     PAUSED
 }
 
-// ==========================================
+
 // TIME MANAGER CONSTRUCTOR
-// ==========================================
+
 
 /// @function TimeManager()
 /// @description Manages game time, intervals, and time-based events
@@ -40,9 +40,9 @@ function TimeManager() constructor {
     milestones = [];
     milestone_index = 0;
     
-    // ==========================================
+    
     // CORE FUNCTIONS
-    // ==========================================
+    
     
     /// @function Start()
     /// @description Start the timer
@@ -117,9 +117,9 @@ function TimeManager() constructor {
         intervals = {};
     }
     
-    // ==========================================
+    
     // FORMATTING
-    // ==========================================
+    
     
     /// @function GetFormattedTime(_include_milliseconds)
     /// @param {bool} _include_milliseconds Include milliseconds
@@ -168,9 +168,9 @@ function TimeManager() constructor {
         return GetRealTimeElapsed() - total_paused_time;
     }
     
-    // ==========================================
+    
     // INTERVAL SYSTEM
-    // ==========================================
+    
     
     /// @function RegisterInterval(_name, _seconds, _callback, _repeat)
     /// @param {string} _name Unique identifier
@@ -239,9 +239,9 @@ function TimeManager() constructor {
         }
     }
     
-    // ==========================================
+    
     // MILESTONE SYSTEM
-    // ==========================================
+    
     
     /// @function SetupDefaultMilestones()
     /// @description Setup standard time milestones
@@ -295,9 +295,9 @@ function TimeManager() constructor {
         }
     }
     
-    // ==========================================
+    
     // EVENTS (Override these in game_manager)
-    // ==========================================
+    
     
     /// @function OnSecondPassed()
     /// @description Called every game second
@@ -314,9 +314,9 @@ function TimeManager() constructor {
         show_debug_message("Milestone reached: " + _milestone.name);
     }
     
-    // ==========================================
+    
     // UTILITY
-    // ==========================================
+    
     
     /// @function IsRunning()
     /// @returns {bool} Whether timer is running
@@ -351,9 +351,9 @@ function TimeManager() constructor {
     }
 }
 
-// ==========================================
+
 // USAGE EXAMPLE
-// ==========================================
+
 
 /*
 // In obj_game_manager Create Event:

@@ -1,4 +1,4 @@
-/// SelectionPopup.gml
+/// SelectionPopup
 function SelectionPopup(_x, _y, _options, _onSelect) constructor {
     x = _x;
     y = _y;
@@ -44,7 +44,7 @@ function SelectionPopup(_x, _y, _options, _onSelect) constructor {
     /// STEP method
     step = function() {
         if (finished) return;
-
+		if (!obj_game_manager.can_click) return;
         // fade in overlay
         if (fading_in) {
             alpha = min(alpha + 0.12, 1);
@@ -118,10 +118,10 @@ function SelectionPopup(_x, _y, _options, _onSelect) constructor {
 
         // ---------- WAIT FOR ANY KEY / CLICK ----------
         if (can_finish) {
-            if (keyboard_check_pressed(vk_anykey) || mouse_check_button_pressed(mb_left)) {
+            //if (keyboard_check_pressed(vk_anykey) || mouse_check_button_pressed(mb_left)) {
                 finished = true;
                 if (variable_global_exists("selection_popup")) global.selection_popup = noone;
-            }
+            //}
         }
 
         // ---------- IDLE hover scaling ----------

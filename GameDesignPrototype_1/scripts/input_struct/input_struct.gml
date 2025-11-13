@@ -24,6 +24,12 @@ function Input() constructor
 	Down	  = false;
 	Right	  = false;
 	
+	
+    UpPress = false;
+    LeftPress = false;
+    DownPress = false;
+    RightPress = false;
+	
 	FireButtonType = BUTTON_TYPE.MOUSE;
 	Fire	  = false;
 	FirePress = false;
@@ -50,8 +56,55 @@ function Input() constructor
 		}
 	}
 	
+	static GetDevicePrompt = function(_action) {
+        if (InputType == INPUT.KEYBOARD) {
+            switch(_action) {
+                case "confirm": return "[ENTER]";
+                case "back": return "[ESC]";
+                case "navigate": return "[WASD/ARROWS]";
+                case "interact": return "[E]";
+                case "attack": return "[LMB]";
+                case "special": return "[RMB]";
+                default: return "";
+            }
+        } else {
+            // Gamepad prompts (Xbox style)
+            switch(_action) {
+                case "confirm": return "(A)";
+                case "back": return "(B)";
+                case "navigate": return "(D-PAD/STICK)";
+                case "interact": return "(X)";
+                case "attack": return "(RT)";
+                case "special": return "(LT)";
+                default: return "";
+            }
+        }
+    }
+	
 	static Update = function(_self)
 	{
+		 // AUTO-DETECT DEVICE SWITCHING
+	    // Check for keyboard activity when in gamepad mode
+	    if (InputType == INPUT.GAMEPAD && keyboard_check(vk_anykey)) {
+	        InputType = INPUT.KEYBOARD;
+	    }
+	    
+	    // Check for gamepad activity when in keyboard mode
+	    if (InputType == INPUT.KEYBOARD && Device != -1) {
+	        // Check any gamepad button
+	        for (var i = gp_face1; i <= gp_padr; i++) {
+	            if (gamepad_button_check(Device, i)) {
+	                InputType = INPUT.GAMEPAD;
+	                break;
+	            }
+	        }
+	        
+	        // Check analog sticks (with deadzone)
+	        if (abs(gamepad_axis_value(Device, gp_axislh)) > 0.3 ||
+	            abs(gamepad_axis_value(Device, gp_axislv)) > 0.3) {
+	            InputType = INPUT.GAMEPAD;
+	        }
+	    }
 		if (InputType == INPUT.KEYBOARD)
 		{
 			Up		= keyboard_check(InputMap.Up);
@@ -59,10 +112,10 @@ function Input() constructor
 			Right	= keyboard_check(InputMap.Right);
 			Down	= keyboard_check(InputMap.Down);
 			
-			UpPress =    keyboard_check_pressed(vk_up) || keyboard_check_pressed(InputMap.Up);
-			LeftPress =  keyboard_check_pressed(vk_left) || keyboard_check_pressed(InputMap.Left);
-			RightPress = keyboard_check_pressed(vk_right) || keyboard_check_pressed(InputMap.Right);
-			DownPress =  keyboard_check_pressed(vk_down) || keyboard_check_pressed(InputMap.Down);
+			UpPress		 = keyboard_check_pressed(vk_up) || keyboard_check_pressed(InputMap.Up);
+			LeftPress	 = keyboard_check_pressed(vk_left) || keyboard_check_pressed(InputMap.Left);
+			RightPress	 = keyboard_check_pressed(vk_right) || keyboard_check_pressed(InputMap.Right);
+			DownPress	 = keyboard_check_pressed(vk_down) || keyboard_check_pressed(InputMap.Down);
 			
 			Action	= keyboard_check_pressed(InputMap.Action);
 			Back    = keyboard_check_pressed(InputMap.Back);
@@ -103,10 +156,10 @@ function Input() constructor
 			Right = gamepad_button_check(Device, ControllerMap.Right) || (gamepad_axis_value(Device, gp_axislh) > 0.5);
 			Down =  gamepad_button_check(Device, ControllerMap.Down)  || (gamepad_axis_value(Device, gp_axislv) > 0.5);
 			
-			UpPress =	 gamepad_button_check_pressed(Device, ControllerMap.Up)    || ((gamepad_axis_value(Device, gp_axislv) < -0.5) && ButtonHold = 10);
-			LeftPress =  gamepad_button_check_pressed(Device, ControllerMap.Left)  || ((gamepad_axis_value(Device, gp_axislh) < -0.5) && ButtonHold = 10);
-			RightPress = gamepad_button_check_pressed(Device, ControllerMap.Right) || ((gamepad_axis_value(Device, gp_axislh) > 0.5) && ButtonHold = 10);
-			DownPress =  gamepad_button_check_pressed(Device, ControllerMap.Down)  || ((gamepad_axis_value(Device, gp_axislv) > 0.5) && ButtonHold = 10);
+			UpPress		 = gamepad_button_check_pressed(Device, ControllerMap.Up)    || ((gamepad_axis_value(Device, gp_axislv) < -0.5) && ButtonHold = 10);
+			LeftPress	 = gamepad_button_check_pressed(Device, ControllerMap.Left)  || ((gamepad_axis_value(Device, gp_axislh) < -0.5) && ButtonHold = 10);
+			RightPress	 = gamepad_button_check_pressed(Device, ControllerMap.Right) || ((gamepad_axis_value(Device, gp_axislh) > 0.5) && ButtonHold = 10);
+			DownPress	 = gamepad_button_check_pressed(Device, ControllerMap.Down)  || ((gamepad_axis_value(Device, gp_axislv) > 0.5) && ButtonHold = 10);
 			
 			if (Up)
 			|| (Left)

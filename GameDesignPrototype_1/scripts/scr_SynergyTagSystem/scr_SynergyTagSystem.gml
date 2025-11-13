@@ -1,6 +1,6 @@
-// ==========================================
+
 // TAG-BASED SYNERGY SYSTEM
-// ==========================================
+
 // This system allows dynamic interactions between:
 // - Character Classes (innate tags)
 // - Weapons (innate tags)
@@ -9,9 +9,9 @@
 // Tags are checked at RUNTIME to determine behavior
 // No hardcoded synergies - everything is emergent
 
-// ==========================================
+
 // TAG DEFINITIONS
-// ==========================================
+
 enum SYNERGY_TAG {
     // Character Identity Tags
     VAMPIRE,
@@ -63,9 +63,9 @@ enum SYNERGY_TAG {
     POWER_THROW
 }
 
-// ==========================================
+
 // SYNERGY TAG CONTAINER
-// ==========================================
+
 /// @function SynergyTags()
 /// @description Container for all active tags on an entity
 function SynergyTags() constructor {
@@ -132,9 +132,9 @@ function SynergyTags() constructor {
     }
 }
 
-// ==========================================
+
 // CHARACTER CLASS TAG INITIALIZATION
-// ==========================================
+
 /// @function InitializeCharacterTags(_class_type)
 /// @description Returns innate tags for a character class
 function InitializeCharacterTags(_class_type) {
@@ -166,9 +166,9 @@ function InitializeCharacterTags(_class_type) {
     return tags;
 }
 
-// ==========================================
+
 // WEAPON TAG INITIALIZATION
-// ==========================================
+
 /// @function InitializeWeaponTags(_weapon_id)
 /// @description Returns innate tags for a weapon type
 function InitializeWeaponTags(_weapon_id) {
@@ -223,9 +223,9 @@ function InitializeWeaponTags(_weapon_id) {
     return tags;
 }
 
-// ==========================================
+
 // COMBINED TAG RESOLUTION
-// ==========================================
+
 /// @function GetCombinedTags(_player, _weapon_struct)
 /// @description Merges character tags + weapon tags + active mod tags
 function GetCombinedTags(_player, _weapon_struct) {
@@ -265,9 +265,9 @@ function GetCombinedTags(_player, _weapon_struct) {
     return combined;
 }
 
-// ==========================================
+
 // SYNERGY DETECTION & RESOLUTION
-// ==========================================
+
 /// @function DetectSynergies(_combined_tags)
 /// @description Checks for emergent synergy combinations
 function DetectSynergies(_combined_tags) {
@@ -326,9 +326,9 @@ function DetectSynergies(_combined_tags) {
     return detected;
 }
 
-// ==========================================
+
 // SYNERGY APPLICATION
-// ==========================================
+
 /// @function ApplySynergyBehavior(_projectile, _combined_tags, _detected_synergies, _player)
 /// @description Modifies projectile behavior based on active synergies
 function ApplySynergyBehavior(_projectile, _combined_tags, _detected_synergies, _player) {
@@ -425,9 +425,9 @@ function ApplySynergyBehavior(_projectile, _combined_tags, _detected_synergies, 
     }
 }
 
-// ==========================================
+
 // EXPLOSION SYNERGY HANDLER
-// ==========================================
+
 /// @function ApplyExplosionSynergies(_explosion_x, _explosion_y, _owner, _combined_tags, _detected_synergies)
 /// @description Handles synergies that affect explosion behavior
 function ApplyExplosionSynergies(_explosion_x, _explosion_y, _owner, _combined_tags, _detected_synergies, _base_damage, _base_radius) {
@@ -522,9 +522,9 @@ function ApplyExplosionSynergies(_explosion_x, _explosion_y, _owner, _combined_t
     CreateExplosionVisuals(_explosion_x, _explosion_y, final_radius, element);
 }
 
-// ==========================================
+
 // VISUAL EFFECTS
-// ==========================================
+
 /// @function CreateExplosionVisuals(_x, _y, _radius, _element)
 function CreateExplosionVisuals(_x, _y, _radius, _element) {
     var color1 = c_white;
@@ -561,9 +561,9 @@ function CreateExplosionVisuals(_x, _y, _radius, _element) {
     }
 }
 
-// ==========================================
+
 // HELPER FUNCTIONS
-// ==========================================
+
 /// @function UpdateWeaponTags(_player, _weapon_index)
 /// @description Called when player switches weapons
 function UpdateWeaponTags(_player, _weapon_index) {

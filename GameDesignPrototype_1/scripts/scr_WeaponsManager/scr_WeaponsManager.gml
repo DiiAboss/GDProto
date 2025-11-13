@@ -1,9 +1,9 @@
 /// @description Weapon Management System for TARLHS
 /// Add this to your ChestSystem.gml or create a new WeaponManager.gml script
 
-// ==========================================
+
 // WEAPON MANAGEMENT FUNCTIONS
-// ==========================================
+
 
 /// @function GiveWeapon(_player, _weapon_id)
 /// @description Attempt to give player a weapon, handle full inventory
@@ -91,9 +91,9 @@ function GetWeaponName(_weapon_id) {
     return weapon_struct != noone ? weapon_struct.name : "Unknown Weapon";
 }
 
-// ==========================================
+
 // WEAPON SWAP PROMPT SYSTEM
-// ==========================================
+
 
 /// @function ShowWeaponSwapPrompt(_player, _new_weapon_struct)
 /// @description Create a popup asking player which weapon to replace
@@ -237,9 +237,9 @@ function DrawWeaponSwapPrompt() {
              "W/S: Select  |  SPACE/ENTER: Swap  |  ESC: Cancel");
 }
 
-// ==========================================
+
 // NOTIFICATION SYSTEM
-// ==========================================
+
 
 /// @function CreateWeaponNotification(_player, _weapon_struct, _action)
 /// @description Show a brief notification when weapon is equipped/swapped

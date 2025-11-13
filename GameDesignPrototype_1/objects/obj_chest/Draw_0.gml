@@ -1,6 +1,6 @@
-// ==========================================
+
 // DRAW EVENT (simplified)
-// ==========================================
+
 
 // Draw chest with glow
 if (glow_intensity > 0) {

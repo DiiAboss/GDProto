@@ -1,3 +1,7 @@
+
+if (is_falling) {
+    exit;
+}
 if (isKnockingBack && !hasTransferredKnockback) {
     var transferDir = point_direction(x, y, other.x, other.y);
     var transferForce = knockbackPower * 0.75;
@@ -39,7 +43,7 @@ if (isKnockingBack && !hasTransferredKnockback) {
         if (other.knockbackX != 0 || other.knockbackY != 0) {
             other.knockbackCooldown = 5;
             hasTransferredKnockback = true;
-            
+            AwardArcadeScore("Dominoes");
             // Reduce our knockback
             knockbackX *= 0.8;
             knockbackY *= 0.8;

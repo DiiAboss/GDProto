@@ -1,7 +1,7 @@
 /// @description
-// ==========================================
+
 // STEP EVENT
-// ==========================================
+
 
 lifetime -= game_speed_delta();
 y_offset += rise_speed * game_speed_delta();

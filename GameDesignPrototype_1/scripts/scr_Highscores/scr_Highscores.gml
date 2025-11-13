@@ -96,3 +96,170 @@ function AddHighscore(_highscore_table, _score, _name) {
         }
     }
 }
+
+
+/// @description Highscore System
+function HighscoreSystem() constructor {
+    
+    highscore_table = [];
+    max_highscores = 10;
+    
+    /// @function AddHighscore(_score, _name)
+    static AddHighscore = function(_score, _name) {
+        // Create new entry
+        var new_entry = {
+            score: _score,
+            name: _name,
+            date: date_current_datetime()
+        };
+        
+        // Add to table
+        array_push(highscore_table, new_entry);
+        
+        // Sort by score (descending)
+        array_sort(highscore_table, function(a, b) {
+            return b.score - a.score;
+        });
+        
+        // Keep only top entries
+        if (array_length(highscore_table) > max_highscores) {
+            array_resize(highscore_table, max_highscores);
+        }
+        
+        return GetScoreRank(_score);
+    }
+    
+    /// @function GetScoreRank(_score)
+    /// @returns {real} Rank (1-based), or -1 if not in top 10
+    static GetScoreRank = function(_score) {
+        for (var i = 0; i < array_length(highscore_table); i++) {
+            if (highscore_table[i].score == _score) {
+                return i + 1;
+            }
+        }
+        return -1;
+    }
+    
+    /// @function DrawHighscores(_w, _h)
+    static DrawHighscores = function(_w, _h) {
+        if (array_length(highscore_table) == 0) return;
+        
+        var table_x = _w - 220;
+        var table_y = 80;
+        var row_height = 30;
+        
+        // Background
+        draw_set_alpha(0.8);
+        draw_set_color(c_black);
+        draw_rectangle(table_x - 10, table_y - 10, 
+                      table_x + 200, table_y + (row_height * min(5, array_length(highscore_table))) + 20, false);
+        draw_set_alpha(1);
+        
+        // Title
+        draw_set_halign(fa_center);
+        draw_set_valign(fa_top);
+        draw_set_font(fnt_default);
+        draw_set_color(c_yellow);
+        draw_text(table_x + 95, table_y, "TOP SCORES");
+        
+        // Scores
+        draw_set_halign(fa_left);
+        var num_scores = min(5, array_length(highscore_table));
+        
+        for (var i = 0; i < num_scores; i++) {
+            var yy = table_y + 25 + (i * row_height);
+            
+            // Rank color
+            if (i == 0) draw_set_color(c_yellow);
+            else if (i == 1) draw_set_color(c_silver);
+            else if (i == 2) draw_set_color(c_orange);
+            else draw_set_color(c_white);
+            
+            draw_text(table_x, yy, string(i + 1) + ".");
+            draw_text(table_x + 30, yy, string(highscore_table[i].score));
+        }
+        
+        draw_set_color(c_white);
+    }
+    
+    /// @function DrawCompactHighscores(_w, _h, _highlight_index)
+    static DrawCompactHighscores = function(_w, _h, _highlight_index = -1) {
+        if (array_length(highscore_table) == 0) return;
+        
+        var table_x = _w - 200;
+        var table_y = _h / 2 - 150;
+        var row_height = 25;
+        
+        // Background
+        draw_set_alpha(0.9);
+        draw_set_color(c_black);
+        draw_rectangle(table_x - 10, table_y - 30, table_x + 180, table_y + (row_height * 5) + 10, false);
+        
+        // Title
+        draw_set_alpha(1);
+        draw_set_color(c_yellow);
+        draw_set_halign(fa_center);
+        draw_text(table_x + 85, table_y - 20, "TOP SCORES");
+        
+        // Show top 5 scores
+        draw_set_halign(fa_left);
+        var num_scores = min(5, array_length(highscore_table));
+        
+        for (var i = 0; i < num_scores; i++) {
+            var yy = table_y + (i * row_height);
+            
+            // Highlight new score
+            if (i == _highlight_index) {
+                var pulse = 0.3 + sin(current_time * 0.01) * 0.1;
+                draw_set_alpha(pulse);
+                draw_set_color(c_yellow);
+                draw_rectangle(table_x - 5, yy - 2, table_x + 175, yy + row_height - 2, false);
+                draw_set_alpha(1);
+            }
+            
+            // Rank colors
+            if (i == 0) draw_set_color(c_yellow);
+            else if (i == 1) draw_set_color(c_silver);
+            else if (i == 2) draw_set_color(c_orange);
+            else if (i == _highlight_index) draw_set_color(c_lime);
+            else draw_set_color(c_white);
+            
+            draw_text(table_x, yy, string(i + 1) + ".");
+            draw_text(table_x + 30, yy, string(highscore_table[i].score));
+            
+            // Show "YOU!" for player's score
+            if (i == _highlight_index) {
+                draw_set_color(c_lime);
+                draw_text(table_x + 120, yy, "YOU!");
+            }
+        }
+        
+        draw_set_alpha(1);
+        draw_set_color(c_white);
+    }
+    
+    /// @function SaveHighscores()
+    static SaveHighscores = function() {
+        var json_string = json_stringify(highscore_table);
+        
+        var file = file_text_open_write("highscores.json");
+        file_text_write_string(file, json_string);
+        file_text_close(file);
+    }
+    
+    /// @function LoadHighscores()
+    static LoadHighscores = function() {
+        if (!file_exists("highscores.json")) return;
+        
+        try {
+            var file = file_text_open_read("highscores.json");
+            var json_string = file_text_read_string(file);
+            file_text_close(file);
+            
+            highscore_table = json_parse(json_string);
+            
+        } catch(error) {
+            show_debug_message("ERROR loading highscores: " + string(error));
+        }
+    }
+}

@@ -204,7 +204,6 @@ global.Modifiers.ChainLightning = {
         var lightning_damage = (_event.damage ?? _entity.attack) * GetStackedValue(mod_template.damage_multiplier, stack);
         var jumps = floor(GetStackedValue(mod_template.max_jumps, stack));
         
-        // Call your existing chain lightning script
         scr_chain_lightning(
             _entity,
             start_target,
@@ -304,7 +303,8 @@ global.Modifiers.StrengthBoost = {
     synergy_tags: [SYNERGY_TAG.STRENGTH],
     
     passive_stats: {
-        damage_bonus: 5
+        damage_bonus: 5,
+		damage_mult: 1.5,
     },
     
     action: function(_entity, _event) {
@@ -320,7 +320,8 @@ global.Modifiers.SpeedBoost = {
     synergy_tags: [SYNERGY_TAG.SPEED],
     
     passive_stats: {
-        speed_bonus: 0.5
+        speed_bonus: 0.5,
+		speed_mult: 1.2  // This needs to exist
     },
     
     action: function(_entity, _event) {
@@ -410,12 +411,10 @@ global.Modifiers.Lifesteal = {
         
         if (instance_exists(_entity)) {
             // Use the component system
-            if (variable_instance_exists(_entity, "damage_sys")) {
                 _entity.damage_sys.Heal(heal_amount);
                 
                 // Visual feedback
                 spawn_damage_number(_entity.x, _entity.y - 32, floor(heal_amount), c_lime, false);
-            }
         }
     }
 };
@@ -433,31 +432,19 @@ global.Modifiers.Regeneration = {
     
     heal_per_tick: 1,
     tick_rate: 180, // 3 seconds at 60 FPS
-    
+    regen_timer: 0,
+	
     instance_data: {
         regen_timer: 0
     },
     
     action: function(_entity, _event) {
-        // This should be handled in a separate update function
-        // Or add to player Step event:
-        /*
-        for (var i = 0; i < array_length(mod_list); i++) {
-            if (mod_list[i].template_key == "Regeneration") {
-                mod_list[i].regen_timer++;
-                if (mod_list[i].regen_timer >= 180) {
-                    hp = min(hp + 1, hp_max);
-                    mod_list[i].regen_timer = 0;
-                }
-            }
-        }
-        */
     }
 };
 
-// ==========================================
+
 // SYNERGY TAG REFERENCE
-// ==========================================
+
 /*
 SYNERGY_TAG.VAMPIRE      - Vampire class tag
 SYNERGY_TAG.HOLY         - Holy Mage class tag

@@ -32,8 +32,8 @@
   "resourceVersion":"2.0",
   "solid":false,
   "spriteId":{
-    "name":"spr_crosshair",
-    "path":"sprites/spr_crosshair/spr_crosshair.yy",
+    "name":"spr_player_direction",
+    "path":"sprites/spr_player_direction/spr_player_direction.yy",
   },
   "spriteMaskId":null,
   "visible":true,

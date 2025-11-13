@@ -1,10 +1,10 @@
 /// @description
 // When player dodges:
-AwardStylePoints("DODGE", 10, 1);
+AwardArcadeScore("Dominoes");
 
 // When player gets multi-kill:
-AwardStylePoints("DOUBLE KILL", 50, 2);
+AwardArcadeScore("DoubleKill");
 
 // Environmental kill:
-AwardStylePoints("SPIKED", 30, 1);
-AwardStylePoints("ENVIRONMENTAL", 20, 1);
+AwardArcadeScore("SpikeKill");
+AwardArcadeScore("Dominoes");

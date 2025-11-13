@@ -1,8 +1,8 @@
 /// @description AudioSystem Constructor
 
-// ==========================================
+
 // AUDIO ENUMS
-// ==========================================
+
 
 enum AUDIO_CHANNEL {
     MUSIC,
@@ -19,17 +19,17 @@ enum FADE_TYPE {
     EXPONENTIAL
 }
 
-// ==========================================
+
 // AUDIO SYSTEM CONSTRUCTOR
-// ==========================================
+
 
 /// @function AudioSystem()
 /// @description Complete audio management system
 function AudioSystem() constructor {
     
-    // ==========================================
+    
     // PROPERTIES
-    // ==========================================
+    
     
     // Music properties
     current_music = noone;
@@ -89,9 +89,9 @@ function AudioSystem() constructor {
         ambient_enabled: true
     };
     
-    // ==========================================
+    
     // MUSIC FUNCTIONS
-    // ==========================================
+    
     
     /// @function PlayMusic(_sound, _loop, _fade_in_duration)
     /// @param {Asset.GMSound} _sound Sound to play
@@ -202,9 +202,9 @@ function AudioSystem() constructor {
         }
     };
     
-    // ==========================================
+    
     // SOUND EFFECT FUNCTIONS
-    // ==========================================
+    
     
     /// @function PlaySFX(_sound, _pitch_variance, _volume_scale)
     /// @param {Asset.GMSound} _sound Sound to play
@@ -270,9 +270,9 @@ function AudioSystem() constructor {
         return sound_id;
     };
     
-    // ==========================================
+    
     // VOICE/DIALOGUE FUNCTIONS
-    // ==========================================
+    
     
     /// @function PlayVoice(_sound, _interrupt)
     static PlayVoice = function(_sound, _interrupt = true) {
@@ -297,9 +297,9 @@ function AudioSystem() constructor {
         }
     };
     
-    // ==========================================
+    
     // AMBIENT SOUND FUNCTIONS
-    // ==========================================
+    
     
     /// @function PlayAmbient(_sound, _volume_scale)
     static PlayAmbient = function(_sound, _volume_scale = 1.0) {
@@ -337,9 +337,9 @@ function AudioSystem() constructor {
         }
     };
     
-    // ==========================================
+    
     // VOLUME CONTROL FUNCTIONS
-    // ==========================================
+    
     
     /// @function SetMasterVolume(_volume)
     static SetMasterVolume = function(_volume) {
@@ -379,9 +379,9 @@ function AudioSystem() constructor {
         ui_volume = clamp(_volume, 0, 1);
     };
     
-    // ==========================================
+    
     // GETTER FUNCTIONS
-    // ==========================================
+    
     
     /// @function GetMusicVolume()
     static GetMusicVolume = function() {
@@ -421,9 +421,9 @@ function AudioSystem() constructor {
         return noone;
     };
     
-    // ==========================================
+    
     // UPDATE FUNCTION
-    // ==========================================
+    
     
     /// @function Update()
     /// @description Call this every step
@@ -523,9 +523,9 @@ function AudioSystem() constructor {
         }
     };
     
-    // ==========================================
+    
     // UTILITY FUNCTIONS
-    // ==========================================
+    
     
     /// @function CleanupFinishedSounds()
     static CleanupFinishedSounds = function() {
@@ -582,9 +582,9 @@ function AudioSystem() constructor {
         ds_map_destroy(sfx_pool);
     };
     
-    // ==========================================
+    
     // SAVE/LOAD FUNCTIONS
-    // ==========================================
+    
     
     /// @function SaveSettings()
     static SaveSettings = function() {
@@ -607,9 +607,9 @@ function AudioSystem() constructor {
         }
     };
     
-    // ==========================================
+    
     // HELPER FUNCTIONS
-    // ==========================================
+    
     
     /// @function smoothstep(_edge0, _edge1, _x)
     static smoothstep = function(_edge0, _edge1, _x) {
@@ -618,9 +618,9 @@ function AudioSystem() constructor {
     };
 }
 
-// ==========================================
+
 // GLOBAL INSTANCE SETUP (in obj_main_controller Create)
-// ==========================================
+
 /*
 // In obj_main_controller Create Event:
 audio_system = new AudioSystem();

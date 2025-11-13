@@ -9,17 +9,17 @@ var _player_x = _player_exists ? obj_player.x : x;
 var _player_y = _player_exists ? obj_player.y : y;
 var _player_instance = _player_exists ? obj_player : noone;
 
-// ==========================================
+
 // DEAD STATE - Use inherited controller
-// ==========================================
+
 if (marked_for_death) {
     controller_step_dead(_delta);
     exit;
 }
 
-// ==========================================
+
 // COMPONENT UPDATES (from base enemy)
-// ==========================================
+
 damage_sys.Update();
 hp = damage_sys.hp;
 
@@ -40,9 +40,9 @@ if (is_burning && burn_timer > 0) {
     }
 }
 
-// ==========================================
+
 // DEATH DETECTION
-// ==========================================
+
 if (damage_sys.IsDead() && !marked_for_death) {
     marked_for_death = true;
     miniboss_defeated = true;
@@ -67,18 +67,18 @@ if (damage_sys.IsDead() && !marked_for_death) {
     exit;
 }
 
-// ==========================================
+
 // TIMER UPDATES
-// ==========================================
+
 if (knockbackCooldown > 0) knockbackCooldown = timer_tick(knockbackCooldown);
 if (wallBounceCooldown > 0) wallBounceCooldown = timer_tick(wallBounceCooldown);
 if (wallHitCooldown > 0) wallHitCooldown = timer_tick(wallHitCooldown);
 if (hitFlashTimer > 0) hitFlashTimer = timer_tick(hitFlashTimer);
 if (attackTimer > 0) attackTimer = timer_tick(attackTimer);
 
-// ==========================================
+
 // KNOCKBACK PHYSICS (inherited)
-// ==========================================
+
 if (abs(knockbackX) > knockbackThreshold || abs(knockbackY) > knockbackThreshold) {
     isKnockingBack = true;
     knockbackPower = point_distance(0, 0, knockbackX, knockbackY);
@@ -147,9 +147,9 @@ if (abs(knockbackX) > knockbackThreshold || abs(knockbackY) > knockbackThreshold
     if (wallHitCooldown > 0) wallHitCooldown = 0;
 }
 
-// ==========================================
+
 // MINIBOSS STATE MACHINE
-// ==========================================
+
 if (!_player_exists) {
     state = BOSS_STATE.IDLE;
 } else {
@@ -236,9 +236,9 @@ if (!_player_exists) {
     }
 }
 
-// ==========================================
+
 // VISUAL EFFECTS (inherited)
-// ==========================================
+
 var moveDistance = point_distance(x, y, lastX, lastY);
 isMoving = (moveDistance > 0.5);
 lastX = x;
@@ -253,9 +253,9 @@ if (isMoving && !isCharging) {
     wobbleTimer = lerp(wobbleTimer, 0, 0.1 * _delta);
 }
 
-// ==========================================
+
 // DAMAGE NUMBERS
-// ==========================================
+
 if (took_damage != 0) {
     var dmg = spawn_damage_number(x, y - 32, took_damage, c_white, false);
     dmg.owner = self;
@@ -264,9 +264,9 @@ if (took_damage != 0) {
 
 depth = -y;
 
-// ==========================================
+
 // PROJECTILE FIRING FUNCTION
-// ==========================================
+
 /// @function FireProjectiles(_direction)
 function FireProjectiles(_direction) {
     if (!instance_exists(obj_enemy_attack_orb)) return;

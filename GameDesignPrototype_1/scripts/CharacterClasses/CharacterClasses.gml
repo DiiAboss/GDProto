@@ -1,8 +1,8 @@
 /// @desc Character class behaviors and updates
 
-// ==========================================
+
 // WARRIOR CLASS
-// ==========================================
+
 function WarriorClass(_stats_component, _damage_component) constructor {
     stats = _stats_component;
     damage = _damage_component;
@@ -37,9 +37,9 @@ function WarriorClass(_stats_component, _damage_component) constructor {
     }
 }
 
-// ==========================================
+
 // HOLY MAGE CLASS
-// ==========================================
+
 function HolyMageClass(_stats_component, _damage_component, _class_stats) constructor {
     stats = _stats_component;
     damage = _damage_component;
@@ -113,9 +113,9 @@ function HolyMageClass(_stats_component, _damage_component, _class_stats) constr
     }
 }
 
-// ==========================================
+
 // VAMPIRE CLASS
-// ==========================================
+
 function VampireClass(_stats_component, _damage_component, _class_stats) constructor {
     stats = _stats_component;
     damage = _damage_component;
@@ -212,9 +212,9 @@ function VampireClass(_stats_component, _damage_component, _class_stats) constru
     }
 }
 
-// ==========================================
+
 // FACTORY FUNCTION
-// ==========================================
+
 /// @func CreateCharacterClass(_type, _stats, _damage, _class_stats)
 function CreateCharacterClass(_type, _stats, _damage, _class_stats) {
     switch (_type) {

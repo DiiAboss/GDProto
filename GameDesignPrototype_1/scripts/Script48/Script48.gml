@@ -25,9 +25,9 @@ function DealDamage(_target, _damage, _source, _knockback_force = 1.0) {
         _target.total_damage_taken += _damage;
     }
     
-    // ==========================================
+    
     // HANDLE PLAYER DAMAGE
-    // ==========================================
+    
     if (_target.object_index == obj_player) {
         // Check invincibility
         if (_target.invincibility.active) {
@@ -55,9 +55,9 @@ function DealDamage(_target, _damage, _source, _knockback_force = 1.0) {
         return _target.hp;
     }
     
-    // ==========================================
+    
     // HANDLE ENEMY DAMAGE
-    // ==========================================
+    
     else if (object_is_ancestor(_target.object_index, obj_enemy) || 
              _target.object_index == obj_enemy ||
              object_is_ancestor(_target.object_index, obj_miniboss_parent)) {
@@ -110,9 +110,9 @@ function DealDamage(_target, _damage, _source, _knockback_force = 1.0) {
         return _ret;
     }
     
-    // ==========================================
+    
     // HANDLE OTHER OBJECTS
-    // ==========================================
+    
     else {
         // Generic damage for destructibles, etc
         if (variable_instance_exists(_target, "hp")) {
@@ -135,9 +135,9 @@ function DealDamage(_target, _damage, _source, _knockback_force = 1.0) {
     return 0;
 }
 
-// ==========================================
+
 // HEALING FUNCTION
-// ==========================================
+
 /// @function HealTarget(_target, _amount, _show_number)
 function HealTarget(_target, _amount, _show_number = true) {
     if (!instance_exists(_target)) return;
@@ -166,9 +166,9 @@ function HealTarget(_target, _amount, _show_number = true) {
     return actual_heal;
 }
 
-// ==========================================
+
 // DAMAGE WITH SPECIAL EFFECTS
-// ==========================================
+
 /// @function DealElementalDamage(_target, _damage, _source, _element)
 function DealElementalDamage(_target, _damage, _source, _element) {
     // Deal base damage first
@@ -225,9 +225,9 @@ function DealElementalDamage(_target, _damage, _source, _element) {
     return remaining_hp;
 }
 
-// ==========================================
+
 // SPECIAL DAMAGE TYPES
-// ==========================================
+
 /// @function DealExplosiveDamage(_x, _y, _radius, _damage, _source)
 function DealExplosiveDamage(_x, _y, _radius, _damage, _source) {
     var hits = 0;
@@ -259,9 +259,9 @@ function DealExplosiveDamage(_x, _y, _radius, _damage, _source) {
     return hits;
 }
 
-// ==========================================
+
 // DEATH HANDLING
-// ==========================================
+
 /// @function HandleEnemyDeath(_enemy, _killer)
 function HandleEnemyDeath(_enemy, _killer) {
     // Spawn pickups

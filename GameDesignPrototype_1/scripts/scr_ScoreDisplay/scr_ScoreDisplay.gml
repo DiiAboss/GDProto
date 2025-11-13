@@ -1,5 +1,41 @@
 /// @function ScoreDisplayManager()
 /// @description Manages visual display of score combos and events
+
+global.ArcadeScoreEvents = {
+    // COLLISION & PHYSICS
+    Dominoes: { name: "DOMINOES!", points: 25 },
+    Dribble: { name: "DRIBBLE!", points: 25 },
+    Fore: { name: "FORE!", points: 50 },
+    Pocket: { name: "POCKET!", points: 100 },
+    Bump: { name: "BUMP!", points: 10 },
+    
+    // COMBAT MASTERY
+    Bulltrue: { name: "BULLTRUE!", points: 50 },
+    ToSender: { name: "TO SENDER!", points: 25 },
+    BatBack: { name: "BAT BACK!", points: 30 },
+    
+    // OBJECTIVES
+    Closed: { name: "CLOSED!", points: 200 },
+    ClosedForSeason: { name: "CLOSED FOR SEASON!", points: 1000 },
+    TotemActivated: { name: "TOTEM ACTIVATED", points: 200 },
+    GoodLuck: { name: "GOOD LUCK!", points: 1000 },
+    
+    // MULTI-KILLS
+    DoubleKill: { name: "DOUBLE KILL", points: 50 },
+    TripleKill: { name: "TRIPLE KILL!", points: 100 },
+    MultiKill: { name: "MULTI KILL!", points: 200 },
+    MegaKill: { name: "MEGA KILL!!", points: 300 },
+    MonsterKill: { name: "MONSTER KILL!!!", points: 500 },
+    
+    // ENVIRONMENTAL
+    SpikeKill: { name: "IMPALED!", points: 50 },
+    WallSplat: { name: "WALL SPLAT!", points: 30 },
+    PitFall: { name: "HOLE IN ONE!", points: 75 }
+};
+
+
+
+
 function ScoreDisplayManager() constructor {
     
     // Display position
@@ -30,9 +66,9 @@ function ScoreDisplayManager() constructor {
     score_actual = 0;
     score_flash = 0;
     
-    // ==========================================
+    
     // COMBO BUILDING
-    // ==========================================
+    
     
     /// @function AddComboEvent(_name, _points, _multiplier)
     static AddComboEvent = function(_name, _points, _multiplier = 1) {
@@ -114,9 +150,9 @@ function ScoreDisplayManager() constructor {
         }
     }
     
-    // ==========================================
+    
     // UPDATE LOOP
-    // ==========================================
+    
     
    static Update = function(_delta) {
         // Update stack animations
@@ -170,9 +206,9 @@ function ScoreDisplayManager() constructor {
         score_flash = lerp(score_flash, 0, 0.1 * _delta);
     }
     
-    // ==========================================
+    
     // DRAWING
-    // ==========================================
+    
     
     /// @function Draw()
     static Draw = function() {
@@ -337,4 +373,25 @@ function AwardStylePoints(_name, _points, _mult = 1) {
         obj_game_manager.score_display.AddComboEvent(_name, _points, _mult);
         obj_game_manager.score_manager.AddScore(_points * _mult);
     }
+}
+
+/// @function AwardArcadeScore(_event_key)
+function AwardArcadeScore(_event_key) {
+    if (!instance_exists(obj_game_manager)) return;
+    
+    var _event_data = global.ArcadeScoreEvents[$ _event_key];
+    if (_event_data == undefined) {
+        show_debug_message("ERROR: Unknown arcade event: " + _event_key);
+        return;
+    }
+    
+    // Use your existing system!
+    var mult = obj_game_manager.score_manager.GetComboMultiplier();
+    AwardStylePoints(_event_data.name, _event_data.points, mult);
+    
+    // Increase combo slightly on arcade events
+    obj_game_manager.score_manager.IncreaseCombo(0.05);
+	
+	// Track medal in save system
+	RecordMedalEarned(_event_key);
 }

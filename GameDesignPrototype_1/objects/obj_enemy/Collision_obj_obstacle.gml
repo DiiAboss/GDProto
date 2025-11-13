@@ -1,3 +1,7 @@
+if (is_falling) {
+    exit;
+}
+
 /// @description
 var pushDir = point_direction(other.x, other.y, x, y);
     var pushForce = 0.5;

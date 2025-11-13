@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_WrapText",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_WrapText",
+  "parent":{
+    "name":"DRAW_STUFF",
+    "path":"folders/Scripts/DRAW_STUFF.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

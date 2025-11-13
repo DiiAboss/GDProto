@@ -1,7 +1,7 @@
 /// @description
-// ==========================================
+
 // DRAW EVENT
-// ==========================================
+
 
 draw_set_alpha(alpha);
 draw_set_color(color);

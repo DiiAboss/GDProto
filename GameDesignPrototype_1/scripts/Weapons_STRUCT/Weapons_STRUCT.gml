@@ -11,7 +11,7 @@ global.WeaponStruct =
 
         primary_attack: function(_self, _direction, _range, _projectile_struct) {
             var _attack = Shoot_Projectile(_self, _direction, _self, _range, _projectile_struct, obj_arrow);
-            
+            _attack.speed = 6;
 			
 			// NEW: Apply synergy behaviors to projectile
 		    if (variable_instance_exists(_self, "active_combined_tags")) {
@@ -28,7 +28,7 @@ global.WeaponStruct =
         secondary_attack: function(_self, _direction, _range, _projectile_struct) {
            
 			
-			 var _attack = Lob_Projectile(_self, _direction, _range, projectile_struct.object);
+			 var _attack = Lob_Projectile(_self, _direction, _range, _projectile_struct.object);
 			
 						// NEW: Apply synergy behaviors to projectile
 		    if (variable_instance_exists(_self, "active_combined_tags")) {

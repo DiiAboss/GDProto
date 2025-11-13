@@ -1,3 +1,7 @@
+if (is_falling) {
+    exit;
+}
+
 /// obj_enemy - Collision with obj_player (SIMPLIFIED)
 var hitPlayer = instance_place(x, y, obj_player);
 if (hitPlayer == noone) exit;

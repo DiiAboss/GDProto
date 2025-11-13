@@ -2,9 +2,9 @@ if (!loaded) exit;
 
 /// @description Handle carrying and projectile physics
 
-// ==========================================
+
 // FALLING STATE
-// ==========================================
+
 if (is_falling) {
     fall_timer++;
     var fall_progress = fall_timer / fall_duration;
@@ -24,9 +24,9 @@ if (is_falling) {
     exit; // Stop all other processing
 }
 
-// ==========================================
+
 // BEING CARRIED STATE
-// ==========================================
+
 if (is_being_carried && instance_exists(carrier)) {
     // Follow carrier position
     x = carrier.x + carry_offset_x;
@@ -43,9 +43,9 @@ if (is_being_carried && instance_exists(carrier)) {
     exit; // Skip other physics
 }
 
-// ==========================================
+
 // PROJECTILE STATE
-// ==========================================
+
 if (is_projectile) {
     
     // --- HOMING LOGIC (Both lob and straight throws) ---
@@ -166,9 +166,9 @@ if (is_projectile) {
     exit; // Skip normal physics
 }
 
-// ==========================================
+
 // NORMAL PHYSICS (Idle on ground)
-// ==========================================
+
 
 // Update knockback
 knockback.Update(self);
@@ -208,9 +208,9 @@ shadowY = y + shadow_offset;
 shadow_scale = 1.0;
 shadow_alpha = 0.3;
 
-// ==========================================
+
 // PIT DETECTION (Only when idle and slow)
-// ==========================================
+
 var current_speed = point_distance(0, 0, moveX, moveY);
 var is_slow = (current_speed < 2.0);
 var is_moving = (current_speed > speed_threshold);
@@ -247,9 +247,9 @@ if (is_slow && is_moving) {
 
 depth = -y;
 
-// ==========================================
+
 // HELPER FUNCTIONS
-// ==========================================
+
 
 /// @function HandleProjectileHit([enemy])
 /// @description Handle collision with enemy or landing

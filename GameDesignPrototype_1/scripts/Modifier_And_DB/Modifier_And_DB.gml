@@ -480,7 +480,7 @@ function scr_lightning_effect(x1, y1, x2, y2) {
 
 
 
-function EventData(_data = []) {
+function EventData(_data = {}) {
     var _event = _data;
     if (!variable_struct_exists(_event, "attack_type")) _event.attack_type = AttackType.UNKNOWN;
     if (!variable_struct_exists(_event, "projectile"))  _event.projectile  = noone;

@@ -16,7 +16,7 @@ draw_set_halign(fa_center);
 draw_set_valign(fa_center);
 draw_set_font(fnt_large); // Create large font
 
-var logo_y = cy - 200 + logo_bounce;
+var logo_y = cy - 200 + menu_system.logo_bounce;
 draw_text_transformed_color(cx, logo_y, "TARLHS GAME", 
     logo_scale * 2, logo_scale * 2, 0,
     c_red, c_orange, c_yellow, c_red, menu_alpha);

@@ -20,9 +20,9 @@ tilemap_id = layer_tilemap_get_id(tile_layer_id);
 
 chance_to_spawn_chest = 1;
 
-// ==========================================
+
 // COMPONENTS (matching player)
-// ==========================================
+
 damage_sys = new DamageComponent(self, 50); // 100 base HP
 knockback  = new KnockbackComponent(0.85, 0.1);
 status     = new StatusEffectComponent(self);
@@ -107,33 +107,33 @@ burn_tick_counter = 0;
 holy_water_splash_direction = 0;
 killed_by_holy_water = false;
 
-// ==========================================
+
 // ADD THESE TO obj_enemy CREATE EVENT
 // (or in a script if you prefer)
-// ==========================================
+
 
 /// @function controller_step(_delta, _player_exists, _player_x, _player_y, _player_instance)
 controller_step = function(_delta, _player_exists, _player_x, _player_y, _player_instance) {
-    // ==========================================
+    
     // COMPONENT UPDATES
-    // ==========================================
+    
     
 	if (global.gameSpeed <= 0) exit;
 	damage_sys.Update();
     hp = damage_sys.hp;
     
     status.Update();
-    // ==========================================
+    
     // DEATH DETECTION - FIXED
-    // ==========================================
+    
     if (damage_sys.IsDead() && !marked_for_death) {
         marked_for_death = true;
         image_angle = choose(90, 270);
         knockbackFriction = 0.01;
         
-        // ==========================================
+        
         // DETERMINE KILL SOURCE
-        // ==========================================
+        
         var kill_source = "direct"; // Default
         
         // Check if killed by a modifier (prevents chain reactions)
@@ -154,9 +154,9 @@ controller_step = function(_delta, _player_exists, _player_x, _player_y, _player
             kill_source = "wall_impact";
         }
         
-        // ==========================================
+        
         // TRIGGER ON_KILL MODIFIERS - FIXED
-        // ==========================================
+        
         if (_player_instance != noone && instance_exists(_player_instance)) {
             // Use the proper event helper
             var kill_event = CreateKillEvent(
@@ -168,6 +168,8 @@ controller_step = function(_delta, _player_exists, _player_x, _player_y, _player
                 object_index       // enemy_type
             );
             
+
+			
             TriggerModifiers(_player_instance, MOD_TRIGGER.ON_KILL, kill_event);
         	
 			if (!is_falling)
@@ -182,17 +184,17 @@ controller_step = function(_delta, _player_exists, _player_x, _player_y, _player
         return; // Exit early, controller will handle dead enemies separately
     }
     
-    // ==========================================
+    
     // TIMER UPDATES
-    // ==========================================
+    
     if (knockbackCooldown > 0) knockbackCooldown = timer_tick(knockbackCooldown);
     if (wallBounceCooldown > 0) wallBounceCooldown = timer_tick(wallBounceCooldown);
     if (wallHitCooldown > 0) wallHitCooldown = timer_tick(wallHitCooldown);
     if (hitFlashTimer > 0) hitFlashTimer = timer_tick(hitFlashTimer);
     
-    // ==========================================
+    
     // KNOCKBACK PHYSICS
-    // ==========================================
+    
     if (abs(knockbackX) > knockbackThreshold || abs(knockbackY) > knockbackThreshold) {
         isKnockingBack = true;
         knockbackPower = point_distance(0, 0, knockbackX, knockbackY);
@@ -262,9 +264,9 @@ controller_step = function(_delta, _player_exists, _player_x, _player_y, _player
     }
     
    //// @description Enemy Pit System - Only Fall When Knocked Back
-// ==========================================
+
 // MOVEMENT WITH PIT AVOIDANCE (Normal Movement Only)
-// ==========================================
+
 if (knockbackCooldown <= 0 && abs(knockbackX) < 1 && abs(knockbackY) < 1 && _player_exists) {
     var _dir = point_direction(x, y, _player_x, _player_y);
     var _spd = scale_movement(moveSpeed);
@@ -321,9 +323,9 @@ if (knockbackCooldown <= 0 && abs(knockbackX) < 1 && abs(knockbackY) < 1 && _pla
     if (!place_meeting(x, y + moveY, obj_obstacle)) y += moveY;
 }
 
-// ==========================================
+
 // PIT FALL CHECK (Only During Knockback or Already Falling)
-// ==========================================
+
 if (!is_falling && can_fall) {
     // Only check for pit fall if being knocked back OR moving fast
     var is_being_knocked = (abs(knockbackX) > knockbackThreshold || abs(knockbackY) > knockbackThreshold);
@@ -362,15 +364,15 @@ if (!is_falling && can_fall) {
             // Stop knockback momentum
             knockbackX = 0;
             knockbackY = 0;
-            
+            AwardArcadeScore("Pocket");
             show_debug_message("ENEMY KNOCKED INTO PIT! Center tile: " + string(tile_check) + " Unsafe: " + string(unsafe_count) + "/4");
         }
     }
 }
 
-// ==========================================
+
 // PROCESS FALLING ANIMATION
-// ==========================================
+
 if (is_falling) {
     fall_timer++;
     var fall_progress = fall_timer / fall_duration;
@@ -402,9 +404,9 @@ if (is_falling) {
 
 
 	
-    // ==========================================
+    
     // VISUAL EFFECTS
-    // ==========================================
+    
     var moveDistance = point_distance(x, y, lastX, lastY);
     isMoving = (moveDistance > 0.5);
     lastX = x;
@@ -419,9 +421,9 @@ if (is_falling) {
         wobbleTimer = lerp(wobbleTimer, 0, 0.1 * _delta);
     }
     
-    // ==========================================
+    
     // DAMAGE NUMBERS
-    // ==========================================
+    
     if (took_damage != 0) {
         var dmg = spawn_damage_number(x, y - 16, took_damage, c_white, false);
         dmg.owner = self;
@@ -470,7 +472,32 @@ controller_step_dead = function(_delta) {
             _exp.direction = irandom(359);
             _exp.speed = 3;
         }
-        
+        			// Drop souls based on enemy type
+			var soul_amount = 1; // Base amount
+
+			// Scale by enemy type/difficulty
+			if (object_index == obj_enemy_bomber) soul_amount = 2;
+			if (object_index == obj_summoner_demon) soul_amount = 5;
+			// Add more enemy types as needed
+
+			// Create soul drops
+			for (var i = 0; i < soul_amount; i++) {
+			    var soul = instance_create_depth(
+			        x + random_range(-16, 16), 
+			        y + random_range(-16, 16), 
+			        depth - 1, 
+			        obj_soul_drop
+			    );
+			    soul.z_velocity = random_range(-3, -1);
+			}
+			
+			// Track kill for missions
+			UpdateMission("first_kill");
+			UpdateMission("kill_10");
+			UpdateMission("kill_100");
+
+			// Update career total
+			global.SaveData.career.total_kills++;
         instance_destroy();
     }
     

@@ -1,135 +1,215 @@
-/// @desc obj_projectile Step Event - Fixed
+/// @desc Enhanced Projectile Step with modifier support
 
-//direction = myDir;
-if (projectileType == PROJECTILE_TYPE.NORMAL)
-{
-    if (life > 0)
-    {
+
+// UPDATE TIMERS
+
+time_alive++;
+if (instance_exists(owner)) {
+    distance_from_owner = point_distance(x, y, owner.x, owner.y);
+}
+
+
+// HOMING BEHAVIOR
+
+if (is_homing && homing_delay <= 0) {
+    // Find or validate target
+    if (!instance_exists(homing_target) ||  homing_target.marked_for_death) {
+        // Find new target
+        homing_target = instance_nearest(x, y, obj_enemy);
+        if (point_distance(x, y, homing_target.x, homing_target.y) > homing_range) {
+            homing_target = noone;
+        }
+    }
+    
+    // Apply homing
+    if (instance_exists(homing_target)) {
+        var target_dir = point_direction(x, y, homing_target.x, homing_target.y);
+        var current_dir = direction;
+        var angle_diff = angle_difference(target_dir, current_dir);
+        
+        // Smooth turn toward target
+        direction += angle_diff * homing_strength;
+        speed = max(speed, min_speed);  // Maintain minimum speed
+    }
+} else if (homing_delay > 0) {
+    homing_delay--;
+}
+
+
+// BOOMERANG BEHAVIOR
+
+if (is_boomerang) {
+    distance_traveled += speed;
+    
+    if (!boomerang_returning) {
+        // Check if should return
+        if (distance_traveled >= boomerang_max_distance) {
+            boomerang_returning = true;
+            speed *= -1;  // Reverse direction initially
+        }
+    } else {
+        // Return to owner
+        if (instance_exists(owner)) {
+            var return_dir = point_direction(x, y, owner.x, owner.y);
+            direction = return_dir;
+            speed = abs(speed);  // Ensure positive speed
+            
+            // Check if caught
+            if (point_distance(x, y, owner.x, owner.y) < boomerang_catch_radius) {
+                // Trigger catch event
+                if (variable_instance_exists(owner, "OnProjectileCaught")) {
+                    owner.OnProjectileCaught(id);
+                }
+                instance_destroy();
+            }
+        }
+    }
+}
+
+
+// ORBIT BEHAVIOR
+
+if (is_orbiting) {
+    orbit_angle += orbit_speed;
+    x = orbit_center_x + lengthdir_x(orbit_radius, orbit_angle);
+    y = orbit_center_y + lengthdir_y(orbit_radius, orbit_angle);
+    
+    orbit_duration--;
+    if (orbit_duration <= 0) {
+        // Fire out from orbit
+        is_orbiting = false;
+        direction = orbit_angle;
+        speed = max_speed;
+    }
+}
+
+
+// PINBALL MODE (Screen Edge Bouncing)
+
+if (pinball_mode) {
+    var bounced = false;
+    
+    // Check screen edges
+    if (x <= 0 || x >= room_width) {
+        hspeed *= -1;
+        x = clamp(x, 1, room_width - 1);
+        bounced = true;
+    }
+    if (y <= 0 || y >= room_height) {
+        vspeed *= -1;
+        y = clamp(y, 1, room_height - 1);
+        bounced = true;
+    }
+    
+    if (bounced) {
+        screen_bounces++;
+        damage *= (1 + screen_bounce_damage_bonus);
+        
+        // Visual effect
+        var spark = instance_create_depth(x, y, depth - 1, obj_particle);
+        spark.image_blend = c_yellow;
+        spark.direction = random(360);
+        spark.speed = random_range(2, 5);
+    }
+}
+
+
+// VACUUM EFFECT
+
+if (has_vacuum) {
+    var vacuum_list = ds_list_create();
+    collision_circle_list(x, y, vacuum_range, obj_enemy, false, true, vacuum_list, false);
+    
+    for (var i = 0; i < ds_list_size(vacuum_list); i++) {
+        var enemy = vacuum_list[| i];
+        if (!enemy.marked_for_death) {
+            var pull_dir = point_direction(enemy.x, enemy.y, x, y);
+            enemy.knockbackX += lengthdir_x(vacuum_strength, pull_dir);
+            enemy.knockbackY += lengthdir_y(vacuum_strength, pull_dir);
+        }
+    }
+    
+    ds_list_destroy(vacuum_list);
+}
+
+
+// TRAIL CREATION
+
+if (leaves_trail) {
+    trail_timer++;
+    if (trail_timer >= trail_interval) {
+        trail_timer = 0;
+        
+        var trail = instance_create_depth(x, y, depth + 1, obj_projectile_trail);
+        trail.trail_type = trail_type;
+        trail.duration = trail_duration;
+        trail.damage = trail_damage;
+        trail.owner = owner;
+        trail.element_type = element_type;
+    }
+}
+
+
+// STANDARD PROJECTILE LOGIC
+
+if (projectileType == PROJECTILE_TYPE.NORMAL) {
+    // Life countdown
+    if (life > 0) {
         life -= 1;
-    }
-    else
-    {
-        instance_destroy();
-    }
-    
-    
-    if (active)
-    {
-        if (place_meeting(x, y, obj_enemy))
-        {
-            var enemy = instance_nearest(x, y, obj_enemy);
-            
-            // Skip dead enemies
-            if (variable_instance_exists(enemy, "marked_for_death") && enemy.marked_for_death) {
-                active = false;
-                instance_destroy();
-                exit;
-            }
-            
-            // Apply knockback using custom knockback variables
-            if (enemy.knockbackCooldown <= 0) {
-                var knockbackDir = point_direction(x, y, enemy.x, enemy.y);
-                var knockbackForce = 5; // Stronger knockback with combo
-            
-                // Set the enemy's knockback velocity
-                enemy.knockbackX = lengthdir_x(knockbackForce, knockbackDir);
-                enemy.knockbackY = lengthdir_y(knockbackForce, knockbackDir);
-            
-                // Set cooldown to prevent knockback stacking
-                enemy.knockbackCooldown = enemy.knockbackCooldownMax;
-            }
-            
-            active = false;
-        }
-    }
-    else
-    {
-        instance_destroy();
-    }        
-} 
-
-if (projectileType == PROJECTILE_TYPE.LOB) {
-    lobStep = lobShot(self, 0.02, direction, xStart, yStart, targetDistance);
-    
-    if (lobStep >= 1) {
-        instance_create_depth(x, y, depth, obj_knockback);
-        instance_destroy();
+    } else {
+        HandleProjectileDeath();
+        exit;
     }
     
-    // Use lengthdir functions which handle degrees and GML's coordinate system correctly
-    targetX = xStart + lengthdir_x(targetDistance, direction);
-    targetY = yStart + lengthdir_y(targetDistance, direction);
-    groundShadowY = yStart;
+    // Apply physics
+    if (gravity_strength != 0) {
+        vspeed += gravity_strength;
+    }
     
-    // Calculate arc for next frame (for rotation)
-    var arcHeight = targetDistance * 0.25;
-    var next_progress = min(1, lobStep + 0.02);
+    if (friction_amount != 1.0) {
+        speed *= friction_amount;
+    }
     
-    var nextX = lerp(xStart, targetX, next_progress);
-    var nextY = lerp(yStart, targetY, next_progress) - sin(pi * next_progress) * arcHeight * 2;
-    
-    drawDir = point_direction(x, y, nextX, nextY);
-    depth = -(bbox_bottom + 32 + (point_distance(x, y, x, yStart)));
-}
-
-// ==========================================
-// COLLISION DETECTION & DAMAGE
-// ==========================================
-if (place_meeting(x, y, obj_enemy)) {
-    var enemy = instance_place(x, y, obj_enemy);
-    
-    if (enemy != noone) {
-        // IMPORTANT: Skip if enemy is already dead
-        if (variable_instance_exists(enemy, "marked_for_death") && enemy.marked_for_death) {
-            // Don't hit dead enemies, but don't destroy projectile yet (might pierce)
-            if (!piercing) {
-                instance_destroy();
-            }
-            exit;
+    // Wall bouncing
+    if (can_bounce && bounces_remaining > 0) {
+        if (place_meeting(x + hspeed, y, obj_wall)) {
+            hspeed *= -bounce_dampening;
+            bounces_remaining--;
         }
-        
-        // Track who hit the enemy
-        enemy.last_hit_by = owner;
-        enemy.last_damage_taken = damage;
-        
-        // Deal damage
-        //takeDamage(enemy, damage, owner);
-        enemy.damage_sys.TakeDamage(damage, owner);
-        // Mark if from corpse explosion (prevents chain reactions)
-        if (variable_instance_exists(id, "from_corpse_explosion") && from_corpse_explosion) {
-            enemy.killed_by_modifier = "corpse_explosion";
-        }
-        
-        // ==========================================
-        // TRIGGER ON_HIT MODIFIERS - Use Helper
-        // ==========================================
-        var should_trigger = variable_instance_exists(id, "can_trigger_modifiers") ? can_trigger_modifiers : true;
-        
-        if (owner != noone && instance_exists(owner) && should_trigger) {
-            // Use the projectile hit event helper
-            var hit_event = CreateProjectileHitEvent(owner, id, enemy, damage);
-            
-            TriggerModifiers(owner, MOD_TRIGGER.ON_HIT, hit_event);
-        }
-        
-        // ==========================================
-        // CHECK FOR KILL - But don't manually trigger
-        // Let the enemy's death system handle it properly
-        // ==========================================
-        if (enemy.hp <= 0 && !enemy.marked_for_death) {
-            // The enemy will die in its next step
-            // The controller will handle death and trigger ON_KILL modifiers
-            // with the proper kill_source from killed_by_modifier flag
-        }
-        
-        // Destroy projectile if not piercing
-        if (!piercing) {
-            instance_destroy();
+        if (place_meeting(x, y + vspeed, obj_wall)) {
+            vspeed *= -bounce_dampening;
+            bounces_remaining--;
         }
     }
 }
 
-if (destroy)
-{
-    instance_destroy();
+
+// ENEMY COLLISION
+
+var enemy = instance_place(x, y, obj_enemy);
+if (enemy != noone && !enemy.marked_for_death) {
+    HandleEnemyHit(enemy);
+}
+
+
+// ROTATION AND VISUALS
+
+if (rotation_speed != 0) {
+    image_angle += rotation_speed;
+}
+
+if (pulse_scale) {
+    var pulse = 1 + sin(time_alive * pulse_speed) * pulse_amount;
+    image_xscale = img_xscale * pulse;
+    image_yscale = img_xscale * pulse;
+}
+
+if (has_afterimage && afterimage_timer++ >= afterimage_interval) {
+    afterimage_timer = 0;
+    var after = instance_create_depth(x, y, depth + 1, obj_afterimage);
+    after.sprite_index = sprite_index;
+    after.image_angle = image_angle;
+    after.image_xscale = image_xscale;
+    after.image_yscale = image_yscale;
+    after.image_alpha = 0.5;
 }

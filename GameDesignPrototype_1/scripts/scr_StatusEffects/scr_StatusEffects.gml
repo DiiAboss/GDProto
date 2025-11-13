@@ -1,6 +1,6 @@
-// ==========================================
+
 // STATUS EFFECT COMPONENT
-// ==========================================
+
 function StatusEffectComponent(_owner) constructor {
     owner = _owner;
 

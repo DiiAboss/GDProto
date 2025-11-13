@@ -1,11 +1,24 @@
 function spawn_damage_number(_x, _y, _damage, _color = c_white, _isCrit = false) {
     var dmgNum = instance_create_depth(_x, _y, -1000, obj_damage_number); // High depth to draw on top
-    
     var _range = random_range(0.8, 1.2);
     var _floatSpeed = _range;
+	
+	
+	if !(is_string(_damage))
+	{
+		dmgNum.damage = _damage;
+		 // Different colors for different damage amounts
+	    if (_damage >= 50) {
+	        dmgNum.scale = 1;
+	        dmgNum.floatSpeed = _floatSpeed * 2.5;
+	    } else if (_damage >= 20) {
+	        dmgNum.scale = 1.1;
+	    }
+	}
+	
+    
     // Set damage value
-    dmgNum.damage = _damage;
-    dmgNum.damageString = string(round(_damage));
+    dmgNum.damageString = string(_damage);
     
     // Add some position randomness so multiple numbers don't stack
     dmgNum.x += random_range(-10, 10);
@@ -17,19 +30,13 @@ function spawn_damage_number(_x, _y, _damage, _color = c_white, _isCrit = false)
     // Critical hit settings
     if (_isCrit) {
         dmgNum.isCrit = true;
-        dmgNum.damageString = string(round(_damage)) + "!";
+        dmgNum.damageString = string(_damage) + "!";
         dmgNum.scale = 1.3;
         dmgNum.floatSpeed = _floatSpeed * 3;
         dmgNum.lifetime = 80;
     }
     
-    // Different colors for different damage amounts
-    if (_damage >= 50) {
-        dmgNum.scale = 1;
-        dmgNum.floatSpeed = _floatSpeed * 2.5;
-    } else if (_damage >= 20) {
-        dmgNum.scale = 1.1;
-    }
+   
     
     return dmgNum;
 }

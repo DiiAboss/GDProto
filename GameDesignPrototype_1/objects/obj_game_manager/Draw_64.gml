@@ -1,3 +1,5 @@
+
+if (obj_main_controller.menu_system.state == MENU_STATE.PAUSE_MENU) exit;
 // Draw level-up popup
 if (variable_global_exists("selection_popup") && global.selection_popup != noone) {
     global.selection_popup.draw();

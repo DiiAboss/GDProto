@@ -1,16 +1,16 @@
 /// @description Enemy Controller with Scoring Integration
 
-// ==========================================
+
 // ENEMY CONTROLLER - STEP EVENT (UPDATED)
-// ==========================================
+
 
 // Early exit if paused
 if (global.gameSpeed <= 0) exit;
 
 
-// ==========================================
+
 // DIFFICULTY SCALING
-// ==========================================
+
 
 difficulty_timer++;
 
@@ -70,9 +70,9 @@ if (difficulty_timer >= difficulty_interval) {
     show_debug_message("HP: " + string(enemy_hp_mult) + "x");
 }
 
-// ==========================================
+
 // SUMMONER SPAWNING
-// ==========================================
+
 
 summoner_spawn_timer--;
 
@@ -118,9 +118,9 @@ if (summoner_spawn_timer <= 0) {
 
 
 
-// ==========================================
+
 // CACHE SHARED VALUES (ONCE PER FRAME)
-// ==========================================
+
 cached_delta = game_speed_delta();
 cached_player_exists = instance_exists(obj_player);
 
@@ -129,18 +129,18 @@ if (cached_player_exists) {
     cached_player_x = obj_player.x;
     cached_player_y = obj_player.y;
 }
-// ==========================================
+
 // CACHE ARMED BOMBS (periodic check)
-// ==========================================
+
 
 if (instance_exists(obj_bomb)) {
     bomb_check_timer--;
     
     if (bomb_check_timer <= 0) {
         bomb_check_timer = bomb_check_frequency;
-        // ==========================================
+        
 // BOMB AVOIDANCE (similar to enemy separation)
-// ==========================================
+
 with (obj_enemy)
 	{
 		// Check for nearby armed bombs
@@ -193,9 +193,9 @@ if (instance_exists(bomb) && bomb.is_armed) {
 	}
 
 }
-// ==========================================
+
 // REBUILD ENEMY LIST (if needed)
-// ==========================================
+
 var current_count = instance_number(obj_enemy);
 
 if (current_count != enemy_count) {
@@ -210,9 +210,9 @@ if (current_count != enemy_count) {
     enemy_count = ds_list_size(enemy_list);
 }
 
-// ==========================================
+
 // UPDATE LIVING ENEMIES
-// ==========================================
+
 for (var i = 0; i < enemy_count; i++) {
     var _enemy = enemy_list[| i];
     
@@ -238,9 +238,9 @@ for (var i = 0; i < enemy_count; i++) {
 }
 
 
-// ==========================================
+
 // UPDATE DEAD ENEMIES (separate pass)
-// ==========================================
+
 ds_list_clear(dead_list);
 
 with (obj_enemy) {
@@ -259,9 +259,9 @@ for (var i = 0; i < dead_count; i++) {
     }
 }
 
-// ==========================================
+
 // SCORING FUNCTION
-// ==========================================
+
 
 /// @function HandleEnemyDeath(_enemy)
 /// @param {Id.Instance} _enemy The enemy that just died

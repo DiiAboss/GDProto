@@ -111,13 +111,13 @@ function GetRandomRewardID(_reward_type, _force_rare = false) {
     return "unknown";
 }
 
-// ==========================================
-// INTEGRATION WITH CHEST SYSTEM
-// ==========================================
 
-// ==========================================
 // INTEGRATION WITH CHEST SYSTEM
-// ==========================================
+
+
+
+// INTEGRATION WITH CHEST SYSTEM
+
 
 /// @function ApplyReward_Updated(_player, _reward)
 /// @description Updated ApplyReward function for weapon handling

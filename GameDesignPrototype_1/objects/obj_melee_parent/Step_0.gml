@@ -29,9 +29,9 @@ if (instance_exists(owner)) {
             targetPosition = SwingPosition.Down;
         }
         
-        // ==========================================
+        
         // TRIGGER ON_ATTACK MODIFIERS
-        // ==========================================
+        
         if (instance_exists(owner)) {
             var attack_event = CreateAttackEvent(
                 owner,
@@ -117,9 +117,9 @@ if (instance_exists(owner)) {
     x = owner.x + lengthdir_x(actualDistance, image_angle);
     y = owner.y + lengthdir_y(actualDistance, image_angle);
     
-    // ==========================================
+    
     // COLLISION DETECTION DURING SWING
-    // ==========================================
+    
     if (swinging && swingProgress > 0.05 && swingProgress < 0.95) {
         
         // ===== HIT ENEMIES =====
@@ -148,9 +148,9 @@ if (instance_exists(owner)) {
                 // Deal damage
                 //takeDamage(hit, damage, owner);
                 hit.damage_sys.TakeDamage(damage, owner);
-                // ==========================================
+                
                 // TRIGGER ON_HIT MODIFIERS
-                // ==========================================
+                
                 if (instance_exists(owner)) {
                     var hit_event = CreateHitEvent(
                         owner,
@@ -161,9 +161,9 @@ if (instance_exists(owner)) {
                     TriggerModifiers(owner, MOD_TRIGGER.ON_HIT, hit_event);
                 }
                 
-                // ==========================================
+                
                 // CHECK FOR KILL (let enemy system handle it naturally)
-                // ==========================================
+                
                 // The enemy will die in its next step if hp <= 0
                 // The controller will trigger ON_KILL modifiers properly
                 

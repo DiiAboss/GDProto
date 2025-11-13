@@ -2,10 +2,15 @@
 show_debug_message("GameManager CREATED: " + string(id) + " | room: " + room_get_name(room));
 depth = -999;
 
+can_click = true;
 
-// ==========================================
+level_up_slowdown_active = false;
+level_up_slowdown_timer = 0;
+level_up_slowdown_duration = 60; // 0.5 seconds at 60fps
+
+
 // MANAGERS
-// ==========================================
+
 pause_manager = new PauseManager();
 score_manager = new ScoreManager();
 time_manager  = new TimeManager();
@@ -43,9 +48,9 @@ time_manager.OnSecondPassed = function() {
     // Per-second events
 };
 
-// ==========================================
+
 // GAME STATE
-// ==========================================
+
 global.gameSpeed = 1;
 
 player_level = 1;
@@ -54,9 +59,9 @@ player_experience = 0;
 games_played_this_session = 0;
 total_deaths = 0;
 
-// ==========================================
+
 // SYSTEMS
-// ==========================================
+
 enemy_controller = noone;
 chests_opened = 0;
 
@@ -76,15 +81,15 @@ slowdown_timer = 0;
 slowdown_duration = 30;
 slowdown_target = 0.1;
 
-// ==========================================
+
 // LOAD SYSTEMS
-// ==========================================
+
 LoadModifiers();
 CreateUIManager();
 
-// ==========================================
+
 // FUNCTIONS
-// ==========================================
+
 
 /// @function LoadModifiers()
 function LoadModifiers() {
@@ -210,9 +215,9 @@ function OnChestClosing(_chest) {
     pause_manager.Resume(PAUSE_REASON.CHEST_OPENING);
 }
 
-// ==========================================
+
 // ROOM MANAGEMENT (Keep for Other_4 compatibility)
-// ==========================================
+
 
 
 function HandleGameplayStart() {
@@ -251,9 +256,9 @@ function HandleHighscoreStart() {
 
 /// @function ShowLevelUpPopup()
 /// Add this to obj_game_manager
-function ShowLevelUpPopup() {
+function ShowLevelUpPopup(_can_click) {
     // Don't show popup if one is already active
-    if global.selection_popup != noone {
+    if (global.selection_popup != noone || can_click == false) {
 		// Resume game
         return;
     }
@@ -294,11 +299,10 @@ function ShowLevelUpPopup() {
     
     // Callback when player selects
     function on_modifier_select(index, option) {
-        // Add modifier to player
-        if (instance_exists(obj_player)) {
-            AddModifier(obj_player, option.mod_key);
-            show_debug_message("Player selected: " + option.name);
-        }
+		// Add modifier to player
+        AddModifier(obj_player, option.mod_key);
+        show_debug_message("Player selected: " + option.name);
+        
         
         // Resume game
         obj_game_manager.pause_manager.Resume(PAUSE_REASON.LEVEL_UP);

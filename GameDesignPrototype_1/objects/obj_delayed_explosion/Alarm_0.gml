@@ -1,8 +1,8 @@
 /// @desc obj_delayed_explosion - Complete Fixed Step Event
 
-// ==========================================
+
 // FAILSAFE: Prevent too many explosions
-// ==========================================
+
 if (instance_number(obj_delayed_explosion) > 15) {
     instance_destroy();
     exit;
@@ -22,15 +22,15 @@ for (var i = 0; i < projectile_count; i++) {
         proj.owner = owner;
     }
     
-    // ==========================================
+    
     // CRITICAL: Mark projectiles to prevent chains
-    // ==========================================
+    
     proj.from_corpse_explosion = true;
 }
 
-// ==========================================
+
 // AOE DAMAGE - WITHOUT TRIGGERING MODIFIERS
-// ==========================================
+
 var hit_list = ds_list_create();
 var hit_count = collision_circle_list(x, y, 50, obj_enemy, false, true, hit_list, false);
 
@@ -58,10 +58,10 @@ for (var i = 0; i < hit_count; i++) {
         enemy.hitFlashTimer = 5;
     }
     
-    // ==========================================
+    
     // CRITICAL FIX: Mark enemies killed by explosion
     // This prevents the modifier from triggering again
-    // ==========================================
+    
     if (variable_instance_exists(enemy, "damage_sys")) {
         if (enemy.damage_sys.IsDead() || enemy.hp <= 0) {
             // Mark this enemy so modifiers know it died from explosion
@@ -74,18 +74,18 @@ for (var i = 0; i < hit_count; i++) {
         enemy.killed_by_modifier = "corpse_explosion";
     }
     
-    // ==========================================
+    
     // DO NOT TRIGGER MODIFIERS HERE
     // Let the enemy's normal death flow handle it
     // The marked flag will prevent recursive explosions
-    // ==========================================
+    
 }
 
 ds_list_destroy(hit_list);
 
-// ==========================================
+
 // VISUAL EFFECTS
-// ==========================================
+
 // Create visual explosion
 repeat(20) {
     var part = instance_create_depth(x, y, depth - 20, obj_firework_particle);

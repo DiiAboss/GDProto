@@ -1,15 +1,15 @@
 /// @desc Player Step Event - Component-based
 if (is_dead) exit;
-// ==========================================
+
 // SYSTEM UPDATES
-// ==========================================
+
 camera.update();
 depth = -y;
 
 if (global.gameSpeed == 0) exit;
-// ==========================================
+
 // COMPONENT UPDATES
-// ==========================================
+
 timers.Update();
 invincibility.Update();
 damage_sys.Update();
@@ -27,8 +27,11 @@ while (experience_points >= exp_to_next_level) {
     exp_to_next_level = calculate_exp_requirement(player_level);
     
     // NEW: Trigger level up with popup
-    TriggerLevelUp();
+    //TriggerLevelUp();
+	on_level_up();
 }
+
+
 
 /// @function TriggerLevelUp()
 function TriggerLevelUp() {
@@ -36,10 +39,10 @@ function TriggerLevelUp() {
     //hp = min(hp + (maxHp * 0.2), maxHp);
     
     // Tell game manager to show popup
-    if (instance_exists(obj_game_manager)) {
-        obj_game_manager.ShowLevelUpPopup();
-    }
+    var _gm = obj_game_manager;
+    _gm.ShowLevelUpPopup(_gm.can_click);
     
+    UpdateMission("reach_level_5", 1);
     show_debug_message("Level Up! Now level " + string(player_level));
 }
 
@@ -47,34 +50,30 @@ function TriggerLevelUp() {
 /// @function on_level_up()
 /// @description Called when player levels up
 function on_level_up() {
-    // Play level up sound
-    // audio_play_sound(snd_levelup, 1, false);
+    // Visual feedback first
+    var popup = instance_create_depth(x, y - 60, -9999, obj_floating_text);
+    popup.text = "LEVEL UP!";
+    popup.color = c_yellow;
+    popup.lifetime = 120;
+    popup.rise_speed = 0.5;
+    popup.scale = 2.0;
     
-    // Heal player slightly on level up
-    hp = min(hp + (maxHp * 0.2), maxHp); // Restore 20% HP
+    // Heal player slightly
+    hp = min(hp + (maxHp * 0.2), maxHp);
     
-    // Add visual effect
-    // instance_create_depth(x, y, depth - 1, obj_levelup_effect);
+    // Start slowdown sequence
+    obj_game_manager.level_up_slowdown_active = true;
+    obj_game_manager.level_up_slowdown_timer = 0;
     
-    // Show level up UI / weapon selection
-    // This is where you'd trigger your upgrade selection screen
-    show_debug_message("Level Up! Now level " + string(player_level));
-    
-    // Optional: Grant stat increases
-    maxHp += 5; // Gain 5 max HP per level
-    hp += 5;    // Also heal the 5 HP gained
+    show_debug_message("Level Up! Starting slowdown sequence");
 }
 
 
-// ==========================================
+
 // STAT RECALCULATION
-// ==========================================
-stats.Recalculate(function(_atk, _hp, _kb, _spd) {
 
-    return obj_game_manager.gm_calculate_player_stats(_atk, _hp, _kb, _spd);
-});
-
-// Apply class-specific modifiers
+//stats.Recalculate(function(_atk, _hp, _kb, _spd)) 
+//// Apply class-specific modifiers
 stats.attack = class_component.ApplyModifiers(stats.attack);
 
 // Sync legacy variables
@@ -83,16 +82,16 @@ mySpeed = stats.speed;
 knockbackPower = stats.knockback;
 maxHp = stats.hp_max;
 
-// ==========================================
+
 // DAMAGE DETECTION
-// ==========================================
+
 if (!invincibility.active) {
     CheckDamage();
 }
 
-// ==========================================
+
 // COIN COLLECTION
-// ==========================================
+
 if (place_meeting(x, y, obj_coin)) {
     with (instance_place(x, y, obj_coin)) {
         other.gold += 1;
@@ -100,27 +99,27 @@ if (place_meeting(x, y, obj_coin)) {
     }
 }
 
-// ==========================================
+
 // INPUT UPDATE
-// ==========================================
+
 //input.Update(self);
 mouseDirection = input.Direction;
 mouseDistance = distance_to_point(mouse_x, mouse_y);
 
 
-// ==========================================
+
 // CARRYING SYSTEM
-// ==========================================
+
 HandleCarrying();
 
-// ==========================================
+
 // WEAPON SWITCHING
-// ==========================================
+
 HandleWeaponSwitching();
 
-// ==========================================
+
 // MOVEMENT
-// ==========================================
+
 var _hasMoved = movement.Update(input, scale_movement(mySpeed));
 image_speed = scale_animation(_hasMoved ? 0.4 : 0.2);
 currentSprite = SpriteHandler.UpdateSpriteByAimDirection(currentSprite, mouseDirection);
@@ -128,9 +127,9 @@ currentSprite = SpriteHandler.UpdateSpriteByAimDirection(currentSprite, mouseDir
 if (attack_timing_window > 0) {
     attack_timing_window-=game_speed_delta();
 }
-// ==========================================
+
 // CHARGE WEAPON
-// ==========================================
+
 if (weaponCurrent)
 {
 	if (variable_struct_exists(weaponCurrent, "charge_rate")) {
@@ -147,9 +146,9 @@ if (weaponCurrent)
 	    }
 	}
 	
-	// ==========================================
+	
 	// WEAPON ATTACKS
-	// ==========================================
+	
 	// When player attacks (in your FirePress section)
 	if (input.FirePress) {
 	    // Evaluate timing
@@ -304,7 +303,6 @@ function ThrowCarriedObject() {
             
             show_debug_message("Applied synergies to thrown object. Synergies: " + string(active_synergies));
         }
-        // ===========================================================
         
         // Call throw event (for custom behavior)
         if (variable_instance_exists(obj, "OnThrown")) {
@@ -349,9 +347,9 @@ if (is_carrying && keyboard_check_pressed(ord("Q"))) {
     DropCarriedObject();
 }
 
-// ==========================================
+
 // DEBUG COMMANDS
-// ==========================================
+
 #region Debug
 if (keyboard_check_pressed(ord("M"))) AddModifier(id, "TripleRhythmFire");
 if (keyboard_check_pressed(ord("Q"))) {
@@ -369,9 +367,13 @@ if (keyboard_check_pressed(vk_f5)) camera.set_zoom(1.0);
 #endregion
 
 
-// ==========================================
-// HELPER FUNCTIONS (at bottom of step)
-// ==========================================
+
+
+
+
+
+// HELPER FUNCTIONS
+
 
 /// @func CheckDamage()
 function CheckDamage() {
@@ -474,9 +476,9 @@ function CheckDamage() {
     }
 }
 
-// ==========================================
+
 // WEAPON SWITCHING (Keyboard 1/2)
-// ==========================================
+
 
 /// @function HandleWeaponSwitching()
 /// @description Handle keyboard weapon switching (already in your player Step)
@@ -537,12 +539,16 @@ if (keyboard_check_pressed(vk_f6)) {
     }
 }
 
-// ==========================================
+
 // DEATH CHECK
-// ==========================================
+
 if (hp <= 0 && instance_exists(obj_main_controller) && !obj_main_controller.death_sequence_active) {
     // Trigger death sequence through main controller
-    obj_main_controller.TriggerDeathSequence();
+    obj_main_controller.death_sequence.Trigger(
+    obj_game_manager,
+    obj_player,
+    obj_main_controller.highscore_system
+);
     
     // Stop player movement
     hsp = 0;

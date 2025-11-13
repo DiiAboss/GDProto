@@ -1,6 +1,6 @@
-// ==========================================
+
 // WEAPON SYNERGY SYSTEM
-// ==========================================
+
 
 /// @desc Initialize synergy lookup table (call in game init)
 function InitWeaponSynergySystem() {

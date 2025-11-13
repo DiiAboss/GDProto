@@ -1,9 +1,9 @@
 /// @description ScoreManager Constructor
 /// Create: scr_score_manager.gml
 
-// ==========================================
+
 // ENUMS
-// ==========================================
+
 
 enum STYLE_TYPE {
     PERFECT_TIMING,
@@ -14,9 +14,9 @@ enum STYLE_TYPE {
     FLAWLESS
 }
 
-// ==========================================
+
 // SCORE MANAGER CONSTRUCTOR
-// ==========================================
+
 
 /// @function ScoreManager()
 /// @description Manages all scoring, combos, and style tracking
@@ -53,9 +53,9 @@ function ScoreManager() constructor {
     score_events = [];
     max_events = 100; // Keep last 100 events
     
-    // ==========================================
+    
     // CORE FUNCTIONS
-    // ==========================================
+    
     
     /// @function AddScore(_base_amount, _style_bonuses)
     /// @param {real} _base_amount Base score value
@@ -318,9 +318,9 @@ function ScoreManager() constructor {
         score_events = [];
     }
     
-    // ==========================================
+    
     // HELPER FUNCTIONS
-    // ==========================================
+    
     
     /// @function LogScoreEvent(_event_data)
     /// @param {struct} _event_data Event data to log
@@ -359,9 +359,9 @@ function ScoreManager() constructor {
     }
 }
 
-// ==========================================
+
 // USAGE EXAMPLE
-// ==========================================
+
 
 /*
 // In obj_game_manager Create Event:

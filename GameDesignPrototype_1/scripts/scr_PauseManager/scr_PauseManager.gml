@@ -1,6 +1,6 @@
-// ==========================================
+
 // PAUSE REASONS ENUM
-// ==========================================
+
 
 enum PAUSE_REASON {
     NONE,
@@ -12,9 +12,9 @@ enum PAUSE_REASON {
     GAME_OVER
 }
 
-// ==========================================
+
 // PAUSE MANAGER CONSTRUCTOR
-// ==========================================
+
 
 /// @function PauseManager()
 /// @description Manages all game pausing with priority system
@@ -96,9 +96,6 @@ function PauseManager() constructor {
     /// @description Call every frame to update game speed
     static Update = function() {
 		
-		
-		
-		
         // Smoothly lerp to target speed
         if (current_speed != target_speed) {
             var diff = target_speed - current_speed;
@@ -113,7 +110,7 @@ function PauseManager() constructor {
 		
 		if (obj_main_controller.menu_state == MENU_STATE.GAME_OVER)
 		{
-			current_speed = 0;
+			current_speed	 = 0;
 			global.is_paused = true;
 		}
 		
@@ -121,10 +118,10 @@ function PauseManager() constructor {
         // Update global
         global.gameSpeed = current_speed;
 		
-				if (is_paused) {
-		    if (global.gameSpeed > 0) {
+			if (is_paused) {
+				if (global.gameSpeed > 0) {
 		        //show_debug_message("WARNING: gameSpeed reset after pause_manager.Update()");
-		    }
+				}
 }
     }
     

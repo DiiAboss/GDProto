@@ -3,16 +3,14 @@
 crosshair = instance_create_depth(x, y, depth, obj_crosshair);
 
 
-// ==========================================
+
 // CHARACTER CLASS SETUP
-// ==========================================
+
 // Get selected class FIRST (before anything else uses it)
 // Get from the persistent main controller instead of global
-if (instance_exists(obj_main_controller)) {
-    character_class = obj_main_controller.selected_character_class;
-} else {
-    character_class = CharacterClass.WARRIOR; // Fallback
-}
+
+character_class = GetSelectedCharacterClass(obj_main_controller);
+
 show_debug_message("PLAYER CREATED WITH CLASS: " + string(character_class));
 show_debug_message("0=WARRIOR, 1=HOLY_MAGE, 2=VAMPIRE");
 
@@ -33,9 +31,9 @@ show_debug_message("Player Tags Initialized: " + synergy_tags.DebugPrint());
 
 status = new StatusEffectComponent(self);
 
-// ==========================================
+
 // CORE COMPONENTS
-// ==========================================
+
 stats = new StatsComponent(
     class_stats.attack_base,
     class_stats.hp_max,
@@ -46,14 +44,14 @@ stats = new StatsComponent(
 
 switch_near_enemy = 0;
 
-knockback = new KnockbackComponent(0.85, 0.1);
+knockback	  = new KnockbackComponent(0.85, 0.1);
 invincibility = new InvincibilityComponent(30, 4);
-damage_sys = new DamageComponent(self, stats.hp_max);
-timers = new TimerComponent();
+damage_sys	  = new DamageComponent(self, stats.hp_max);
+timers		  = new TimerComponent();
 
-// ==========================================
+
 // CHARACTER CLASS COMPONENT
-// ==========================================
+
 // Create class component AFTER stats and damage_sys exist
 class_component = CreateCharacterClass(character_class, stats, damage_sys, class_stats);
 
@@ -67,40 +65,46 @@ maxHp		 = damage_sys.max_hp;
 mySpeed		 = stats.speed;
 base_speed	 = stats.base_speed;
 
-// ==========================================
+
 // SCORING & TIMING VARIABLES
-// ==========================================
+
 // Attack timing for style points
-last_timing_quality = "normal";
-attack_timing_window = 0;
+last_timing_quality		 = "normal";
+attack_timing_window	 = 0;
 perfect_timing_threshold = 10;  // Frames for perfect timing
 
 // Combo tracking
-current_combo_count = 0;
-combo_decay_timer = 0;
+current_combo_count  = 0;
+combo_decay_timer	 = 0;
 
 // Style tracking
-dodge_count = 0;
-last_dodge_time = 0;
+dodge_count		    = 0;
+last_dodge_time	    = 0;
 environmental_kills = 0;
 
-// ==========================================
+
 // INPUT & MOVEMENT
-// ==========================================
+
 mouseDirection = 0;
 mouseDistance = 0;
 controllerType = CONTROL_TYPE.KBM;
 
 input = noone;//new Input();
 movement = new PlayerMovement(self, stats.speed);
+
+
+
+// SPRITE SYSTEM
+
+
 spriteHandler = new SpriteHandler(spr_vh_walk_west, spr_vh_walk_east, spr_vh_walk_north, spr_vh_walk_south);
 currentSprite = spr_vh_walk_west;
 image_speed = 1;
 
 
-// ==========================================
+
 // WEAPON SYSTEM
-// ==========================================
+
 melee_weapon = noone;
 weapon_slots = class_stats.weapon_slots;
 weapons = array_create(weapon_slots, noone);
@@ -121,9 +125,9 @@ is_charging = false;
 isCannonBalling = false;
 just_hit = 0;
 
-// ==========================================
+
 // PROGRESSION SYSTEM - INITIALIZATION
-// ==========================================
+
 experience_points = 0;
 player_level = 1; // Start at level 1, not 0
 gold = 999;
@@ -137,9 +141,9 @@ exp_linear = 3;       // Small linear component
 exp_to_next_level = calculate_exp_requirement(player_level);
 
 
-// ==========================================
+
 // LEVEL UP SYSTEM FUNCTIONS
-// ==========================================
+
 
 /// @function calculate_exp_requirement(level)
 /// @description Calculate XP needed for a specific level (Vampire Survivors formula)
@@ -151,9 +155,9 @@ function calculate_exp_requirement(_level) {
     return floor(required_exp);
 }
 
-// ==========================================
+
 // MODIFIER SYSTEM
-// ==========================================
+
 mod_list = [];
 mod_cache = {
     stats: {},
@@ -164,9 +168,9 @@ mod_triggers = {};
 
 
 
-// ==========================================
+
 // COMBAT TIMING SYSTEM
-// ==========================================
+
 perfect_window_start = 0.70;
 perfect_window_end = 0.90;
 good_window_start = 0.50;
@@ -179,15 +183,15 @@ perfect_hits_count = 0;
 good_hits_count = 0;
 early_hits_count = 0;
 
-// ==========================================
+
 // CAMERA SYSTEM
-// ==========================================
+
 camera = new Camera(id);
 camera.remove_bounds();
 
-// ==========================================
+
 // MISC
-// ==========================================
+
 depth = -y;
 global.pause_game = false;
 
@@ -196,9 +200,9 @@ attack_counter = 0;
 projectile_count_bonus = 0;
 
 
-// ==========================================
+
 // CARRYING SYSTEM
-// ==========================================
+
 is_carrying = false;
 carried_object = noone;
 carry_speed_multiplier = 0.8; // Slower when carrying

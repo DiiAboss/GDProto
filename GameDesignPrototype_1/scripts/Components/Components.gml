@@ -1,8 +1,8 @@
 /// @desc Reusable components for player, enemies, and entities
 
-// ==========================================
+
 // KNOCKBACK COMPONENT
-// ==========================================
+
 function KnockbackComponent(_friction = 0.85, _threshold = 0.1) constructor {
     x_velocity = 0;
     y_velocity = 0;
@@ -68,9 +68,9 @@ function KnockbackComponent(_friction = 0.85, _threshold = 0.1) constructor {
     }
 }
 
-// ==========================================
+
 // INVINCIBILITY COMPONENT
-// ==========================================
+
 function InvincibilityComponent(_duration = 60, _flash_speed = 4) constructor {
     active = false;
     timer = 0;
@@ -106,6 +106,7 @@ function DamageComponent(_owner, _max_hp) constructor {
     last_damage = 0;
     last_attacker = noone;
     damage_flash_timer = 0;
+	hp_regen = 0;
 
     /// @func TakeDamage(_amount, _attacker, _element)
     static TakeDamage = function(_amount, _attacker, _element = ELEMENT.PHYSICAL) {
@@ -183,9 +184,9 @@ function DamageComponent(_owner, _max_hp) constructor {
 }
 
 
-// ==========================================
+
 // TIMER COMPONENT
-// ==========================================
+
 function TimerComponent() constructor {
     timers = {}; // Struct to hold named timers
     
