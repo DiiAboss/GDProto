@@ -74,6 +74,7 @@ function StatsComponent(_base_attack, _base_hp, _base_speed, _base_knockback) co
     temp_attack_mult = 1.0;
     temp_speed_mult = 1.0;
 
+	// Bad calling method for stat recalculations
     static Recalculate = function(_modifier_func = noone) {
         attack = base_attack;
         hp_max = base_hp;

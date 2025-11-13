@@ -19,8 +19,10 @@ global.SaveData = {
     
     // Unlocks
     unlocks: {
-        characters: [CharacterClass.WARRIOR], // Start with warrior unlocked
-        levels:     ["arena_1"] // Start with one level
+	    characters: [CharacterClass.WARRIOR],
+	    levels:     ["arena_1"],
+	    weapons:    [Weapon.Sword, Weapon.Bow], // ADD THIS
+	    modifiers:  [] // ADD THIS
     },
     
     // Career Stats
@@ -72,8 +74,12 @@ global.SaveData = {
 		skill_tree: {
 		    unlocked_nodes: ["root"], // Array of node IDs
 		    node_stacks: {} // For stackable stat boosts: {hp_boost_1: 3}
-		}
-    }
+		},
+		character_loadouts: {},
+		active_loadout: ["", "", "", "", ""],
+		character_weapon_loadouts: {},
+	},
+	
 };
 
 // Initialize character stats for each class
@@ -92,7 +98,121 @@ for (var i = 0; i < array_length(char_classes); i++) {
 
 
 // SAVE FUNCTIONS
+/// @function GetCharacterWeaponLoadout(_character_class)
+function GetCharacterWeaponLoadout(_character_class) {
 
+    
+    var key = string(_character_class);
+    //var default_weapons = GetDefaultWeaponsForCharacter(_character_class);
+    //    global.SaveData.career.character_weapon_loadouts[$ key] = default_weapons;
+		
+    return global.SaveData.career.character_weapon_loadouts[$ key];
+}
+
+/// @function SaveCharacterWeaponLoadout(_character_class, _weapon_array)
+function SaveCharacterWeaponLoadout(_character_class, _weapon_array) {
+    global.SaveData.career.character_weapon_loadouts = {};
+    
+    var key = string(_character_class);
+    global.SaveData.career.character_weapon_loadouts[$ key] = _weapon_array;
+    SaveGame();
+}
+
+/// @function GetDefaultWeaponsForCharacter(_character_class)
+function GetDefaultWeaponsForCharacter(_character_class) {
+    switch (_character_class) {
+        case CharacterClass.WARRIOR:
+            return [Weapon.Sword, noone]; // Start with sword
+            
+        case CharacterClass.HOLY_MAGE:
+            return [Weapon.Staff, noone]; // Start with staff
+            
+        case CharacterClass.VAMPIRE:
+            return [Weapon.Whip, noone]; // Start with whip
+            
+        case CharacterClass.BASEBALL_PLAYER:
+            return [Weapon.BaseballBat, noone]; // Start with bat
+            
+        default:
+            return [Weapon.Sword, noone];
+    }
+}
+
+/// @function GetUnlockedWeaponsForCharacter(_character_class)
+function GetUnlockedWeaponsForCharacter(_character_class) {
+    var unlocked_weapons = [];
+    var node_keys = variable_struct_get_names(global.SkillTree);
+    
+    // Add default weapon(s)
+    var defaults = GetDefaultWeaponsForCharacter(_character_class);
+    for (var i = 0; i < array_length(defaults); i++) {
+        if (defaults[i] != noone && !array_contains(unlocked_weapons, defaults[i])) {
+            array_push(unlocked_weapons, defaults[i]);
+        }
+    }
+    
+    // Add unlocked weapons from skill tree
+    for (var i = 0; i < array_length(node_keys); i++) {
+        var key = node_keys[i];
+        var node = global.SkillTree[$ key];
+        
+        // Only weapon_unlock type nodes
+        if (node.type != "weapon_unlock") continue;
+        if (!node.unlocked) continue;
+        
+        // Check character restriction (if any)
+        if (variable_struct_exists(node, "required_character")) {
+            if (node.required_character != _character_class) {
+                continue;
+            }
+        }
+        
+        // Add weapon if not already in list
+        if (variable_struct_exists(node, "weapon")) {
+            var weapon = node.weapon;
+            if (!array_contains(unlocked_weapons, weapon)) {
+                array_push(unlocked_weapons, weapon);
+            }
+        }
+    }
+    
+    return unlocked_weapons;
+}
+
+///// @function GetWeaponName(_weapon_enum)
+//function GetWeaponName(_weapon_enum) {
+//    switch (_weapon_enum) {
+//        case Weapon.Sword: return "Sword";
+//        case Weapon.Axe: return "Axe";
+//        case Weapon.Staff: return "Staff";
+//        case Weapon.Dagger: return "Dagger";
+//        case Weapon.Boomerang: return "Boomerang";
+//        case Weapon.BaseballBat: return "Baseball Bat";
+//        case Weapon.Whip: return "Whip";
+//        case Weapon.Spear: return "Spear";
+//        case Weapon.Bow: return "Bow";
+//        default: return "Unknown";
+//    }
+//}
+
+/// @function GetWeaponSprite(_weapon_enum)
+function GetWeaponSprite(_weapon_enum) {
+    switch (_weapon_enum) {
+        case Weapon.Sword: return spr_sword;
+        //case Weapon.Bow: return spr_bow;
+        case Weapon.Dagger: return spr_dagger;
+        case Weapon.Boomerang: return spr_boomerang;
+        //case Weapon.ChargeCannon: return spr_charge_cannon; // Update sprite name
+        case Weapon.BaseballBat: return spr_way_better_bat;
+        case Weapon.Holy_Water: return spr_holy_water; // Update sprite name
+        default: return spr_mod_default;
+    }
+}
+
+/// @function IsWeaponEquipped(_weapon, _weapon_array)
+function IsWeaponEquipped(_weapon, _weapon_array) {
+    return array_contains(_weapon_array, _weapon);
+}
 
 /// @function SaveGame()
 /// @description Save all persistent data to file
@@ -101,6 +221,39 @@ function SaveGame() {
     
     // Update last played time
     global.SaveData.last_played = date_current_datetime();
+    
+    // === CRITICAL: SYNC SKILL TREE STATE ===
+    InitializeSkillTreeSaveData(); // Ensure structure exists
+    
+    // Clear and rebuild unlocked nodes list
+    global.SaveData.career.skill_tree.unlocked_nodes = [];
+    global.SaveData.career.skill_tree.node_stacks = {};
+    
+    var node_keys = variable_struct_get_names(global.SkillTree);
+    for (var i = 0; i < array_length(node_keys); i++) {
+        var key = node_keys[i];
+        var node = global.SkillTree[$ key];
+        
+        // Save unlocked status
+        if (node.unlocked) {
+            array_push(global.SaveData.career.skill_tree.unlocked_nodes, key);
+        }
+        
+        // Save stack counts
+        if (variable_struct_exists(node, "current_stacks") && node.current_stacks > 0) {
+            global.SaveData.career.skill_tree.node_stacks[$ key] = node.current_stacks;
+        }
+    }
+    
+    // === SYNC SOULS ===
+    if (variable_global_exists("Souls")) {
+        global.SaveData.career.currency.souls = global.Souls;
+    }
+    
+    // === SYNC CHARACTER LOADOUTS ===
+    if (variable_struct_exists(global.SaveData, "character_weapon_loadouts")) {
+        // Already handled by SaveCharacterWeaponLoadout
+    }
     
     // Convert struct to JSON string
     var json_string = json_stringify(global.SaveData);
@@ -111,6 +264,8 @@ function SaveGame() {
     file_text_close(file);
     
     show_debug_message("Game saved successfully!");
+    show_debug_message("  Souls: " + string(global.SaveData.career.currency.souls));
+    show_debug_message("  Unlocked nodes: " + string(array_length(global.SaveData.career.skill_tree.unlocked_nodes)));
 }
 
 /// @function LoadGame()
@@ -172,101 +327,125 @@ function MergeSaveData(_loaded) {
             global.SaveData.career[$ key] = _loaded.career[$ key];
         }
     }
-}
-
-/// @function ResetSaveData()
-/// @description Delete save file and reset to defaults
-function ResetSaveData() {
-    if (file_exists("tarlhs_save.json")) {
-        file_delete("tarlhs_save.json");
+    
+    // === CRITICAL: RESTORE SKILL TREE STATE ===
+    InitializeSkillTreeSaveData(); // Ensure structure exists
+    
+    if (variable_struct_exists(global.SaveData.career, "skill_tree")) {
+        var unlocked = global.SaveData.career.skill_tree.unlocked_nodes;
+        var stacks = global.SaveData.career.skill_tree.node_stacks;
+        
+        // Apply unlocked status to actual nodes
+        for (var i = 0; i < array_length(unlocked); i++) {
+            var node_id = unlocked[i];
+            if (variable_struct_exists(global.SkillTree, node_id)) {
+                global.SkillTree[$ node_id].unlocked = true;
+                show_debug_message("  Restored node: " + node_id);
+            } else {
+                show_debug_message("  WARNING: Unknown node in save: " + node_id);
+            }
+        }
+        
+        // Apply stack counts
+        var stack_keys = variable_struct_get_names(stacks);
+        for (var i = 0; i < array_length(stack_keys); i++) {
+            var node_id = stack_keys[i];
+            if (variable_struct_exists(global.SkillTree, node_id)) {
+                global.SkillTree[$ node_id].current_stacks = stacks[$ node_id];
+            }
+        }
+        
+        show_debug_message("Skill tree loaded: " + string(array_length(unlocked)) + " nodes unlocked");
     }
     
-    // Reinitialize default data
-    // (Copy the initialization code from top of this script)
-    show_debug_message("Save data reset!");
+    // === RESTORE SOULS ===
+    if (variable_struct_exists(global.SaveData.career, "currency")) {
+        global.Souls = global.SaveData.career.currency.souls;
+        show_debug_message("Souls loaded: " + string(global.Souls));
+    }
 }
 
 
 // UNLOCK FUNCTIONS
 
 
-/// @function IsCharacterUnlocked(_class)
-function IsCharacterUnlocked(_class) {
-    return array_contains(global.SaveData.unlocks.characters, _class);
-}
+///// @function IsCharacterUnlocked(_class)
+//function IsCharacterUnlocked(_class) {
+//    return array_contains(global.SaveData.unlocks.characters, _class);
+//}
 
-/// @function UnlockCharacter(_class)
-function UnlockCharacter(_class) {
-    if (!IsCharacterUnlocked(_class)) {
-        array_push(global.SaveData.unlocks.characters, _class);
-        SaveGame();
-        show_debug_message("Unlocked character: " + string(_class));
-        return true;
-    }
-    return false;
-}
+///// @function UnlockCharacter(_class)
+//function UnlockCharacter(_class) {
+//    if (!IsCharacterUnlocked(_class)) {
+//        array_push(global.SaveData.unlocks.characters, _class);
+//        SaveGame();
+//        show_debug_message("Unlocked character: " + string(_class));
+//        return true;
+//    }
+//    return false;
+//}
 
-/// @function IsLevelUnlocked(_level_id)
-function IsLevelUnlocked(_level_id) {
-    return array_contains(global.SaveData.unlocks.levels, _level_id);
-}
+///// @function IsLevelUnlocked(_level_id)
+//function IsLevelUnlocked(_level_id) {
+//    return array_contains(global.SaveData.unlocks.levels, _level_id);
+//}
 
-/// @function UnlockLevel(_level_id)
-function UnlockLevel(_level_id) {
-    if (!IsLevelUnlocked(_level_id)) {
-        array_push(global.SaveData.unlocks.levels, _level_id);
-        SaveGame();
-        show_debug_message("Unlocked level: " + _level_id);
-        return true;
-    }
-    return false;
-}
+///// @function UnlockLevel(_level_id)
+//function UnlockLevel(_level_id) {
+//    if (!IsLevelUnlocked(_level_id)) {
+//        array_push(global.SaveData.unlocks.levels, _level_id);
+//        SaveGame();
+//        show_debug_message("Unlocked level: " + _level_id);
+//        return true;
+//    }
+//    return false;
+//}
 
 
 // ==========================================
 // CURRENCY FUNCTIONS
 // ==========================================
 
-/// @function AddSouls(_amount)
-/// @description Add souls (meta currency) to player's account
-function AddSouls(_amount) {
-    global.SaveData.career.currency.souls += _amount;
-    global.SaveData.career.currency.lifetime_souls += _amount;
-    SaveGame();
+///// @function AddSouls(_amount)
+///// @description Add souls (meta currency) to player's account
+//function AddSouls(_amount) {
+//    global.SaveData.career.currency.souls += _amount;
+//    global.SaveData.career.currency.lifetime_souls += _amount;
+//    SaveGame();
     
-    show_debug_message("Gained " + string(_amount) + " souls! Total: " + string(global.SaveData.career.currency.souls));
-}
+//    show_debug_message("Gained " + string(_amount) + " souls! Total: " + string(global.SaveData.career.currency.souls));
+//}
 
-/// @function AddGold(_amount)
-/// @description Add gold (in-run currency) - NOT saved between runs
-function AddGold(_amount) {
-    // Gold is tracked in run, not saved directly
-    if (instance_exists(obj_game_manager)) {
-        obj_game_manager.current_gold += _amount;
-    }
+///// @function AddGold(_amount)
+///// @description Add gold (in-run currency) - NOT saved between runs
+//function AddGold(_amount) {
+//    // Gold is tracked in run, not saved directly
+//    if (instance_exists(obj_game_manager)) {
+//        obj_game_manager.current_gold += _amount;
+//    }
     
-    // Track lifetime total
-    global.SaveData.career.currency.lifetime_gold += _amount;
-}
+//    // Track lifetime total
+//    global.SaveData.career.currency.lifetime_gold += _amount;
+//}
 
-/// @function SpendSouls(_amount)
-/// @returns {bool} Success
-function SpendSouls(_amount) {
-    if (global.SaveData.career.currency.souls >= _amount) {
-        global.SaveData.career.currency.souls -= _amount;
-        SaveGame();
-        show_debug_message("Spent " + string(_amount) + " souls! Remaining: " + string(global.SaveData.career.currency.souls));
-        return true;
-    }
-    show_debug_message("Not enough souls! Need " + string(_amount) + ", have " + string(global.SaveData.career.currency.souls));
-    return false;
-}
+///// @function SpendSouls(_amount)
+///// @returns {bool} Success
+//function SpendSouls(_amount) {
+//    if (global.SaveData.career.currency.souls >= _amount) {
+//        global.SaveData.career.currency.souls -= _amount;
+//        SaveGame();
+//        show_debug_message("Spent " + string(_amount) + " souls! Remaining: " + string(global.SaveData.career.currency.souls));
+//        return true;
+//    }
+//    show_debug_message("Not enough souls! Need " + string(_amount) + ", have " + string(global.SaveData.career.currency.souls));
+//    return false;
+//}
 
 /// @function GetSouls()
 /// @returns {real} Current soul count
-function GetSouls() {
-    return global.SaveData.career.currency.souls;
-}
+//function GetSouls() {
+//    return global.SaveData.career.currency.souls;
+//}
 
 /// @function GetGold()
 /// @returns {real} Current run gold
@@ -377,3 +556,4 @@ function InitializeSaveSystem() {
     
     show_debug_message("=== SAVE SYSTEM READY ===");
 }
+

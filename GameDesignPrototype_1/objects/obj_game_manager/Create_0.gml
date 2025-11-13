@@ -303,7 +303,6 @@ function ShowLevelUpPopup(_can_click) {
         AddModifier(obj_player, option.mod_key);
         show_debug_message("Player selected: " + option.name);
         
-        
         // Resume game
         obj_game_manager.pause_manager.Resume(PAUSE_REASON.LEVEL_UP);
     }

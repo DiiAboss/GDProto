@@ -86,11 +86,11 @@ function GetWeaponStructById(_weapon_id) {
 
 /// @function GetWeaponName(_weapon_id)
 /// @description Get display name for weapon
-function GetWeaponName(_weapon_id) {
-    var weapon_struct = GetWeaponStructById(_weapon_id);
+function GetWeaponName(_weapon_enum) {
+    // Use existing GetWeaponStructById function
+    var weapon_struct = GetWeaponStructById(_weapon_enum);
     return weapon_struct != noone ? weapon_struct.name : "Unknown Weapon";
 }
-
 
 // WEAPON SWAP PROMPT SYSTEM
 

@@ -45,6 +45,7 @@ stats = new StatsComponent(
 switch_near_enemy = 0;
 
 knockback	  = new KnockbackComponent(0.85, 0.1);
+knockbackPower = stats.knockback;
 invincibility = new InvincibilityComponent(30, 4);
 damage_sys	  = new DamageComponent(self, stats.hp_max);
 timers		  = new TimerComponent();

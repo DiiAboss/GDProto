@@ -15,6 +15,10 @@ enum Weapon {
 	Holy_Water = 6,
 	ThrowableItem = 7,
 	ChainWhip = 8,
+	Axe,
+	Staff,
+	Whip,
+	Spear
 }
 
 enum AttackType {

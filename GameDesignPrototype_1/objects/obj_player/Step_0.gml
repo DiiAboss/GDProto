@@ -16,11 +16,16 @@ damage_sys.Update();
 knockback.Update(self);
 class_component.Update(); // CLASS SYSTEM UPDATE
 
+
+
+
 // Sync legacy variables
 hp = damage_sys.hp;
 invincible = invincibility.active;
 invincible_timer = invincibility.timer;
 total_damage_taken = 0;
+
+
 while (experience_points >= exp_to_next_level) {
     experience_points -= exp_to_next_level;
     player_level += 1;
@@ -70,17 +75,7 @@ function on_level_up() {
 
 
 
-// STAT RECALCULATION
 
-//stats.Recalculate(function(_atk, _hp, _kb, _spd)) 
-//// Apply class-specific modifiers
-stats.attack = class_component.ApplyModifiers(stats.attack);
-
-// Sync legacy variables
-attack = stats.attack;
-mySpeed = stats.speed;
-knockbackPower = stats.knockback;
-maxHp = stats.hp_max;
 
 
 // DAMAGE DETECTION

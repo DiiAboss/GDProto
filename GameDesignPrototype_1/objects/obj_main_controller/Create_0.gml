@@ -38,3 +38,4 @@ InitWeaponSynergySystem();
 global.selection_popup = noone;
 global.chest_popup = noone;
 global.weapon_swap_prompt = noone;
+global.SaveData.career.currency.souls = 5000;
