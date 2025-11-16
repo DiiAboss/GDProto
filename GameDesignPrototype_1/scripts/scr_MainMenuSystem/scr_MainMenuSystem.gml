@@ -225,6 +225,26 @@ active_loadout_weapons = [noone, noone]; // Current weapon selection
         room_goto(rm_main_menu);
     }
     
+	
+	/// @function LoadAvailableMods()
+	static LoadAvailableMods = function() {
+	    // Get all unlocked pre-game mods from skill tree
+	    available_mods = [];
+    
+	    var node_keys = variable_struct_get_names(global.SkillTree);
+	    for (var i = 0; i < array_length(node_keys); i++) {
+	        var key = node_keys[i];
+	        var node = global.SkillTree[$ key];
+        
+	        // If it's an unlocked pre-game mod, add it to available list
+	        if (node.type == "pregame_mod_unlock" && node.unlocked) {
+	            array_push(available_mods, node.mod_id); // This is the PreGameMod enum
+	        }
+	    }
+    
+	    show_debug_message("Loaded " + string(array_length(available_mods)) + " unlocked pre-game mods");
+	}
+	
     // ==========================================
     // MAIN MENU
     // ==========================================
@@ -354,7 +374,9 @@ active_loadout_weapons = [noone, noone]; // Current weapon selection
 	 /// @function ToggleModInLoadout(_mod_id, _audio)
 	static ToggleModInLoadout = function(_mod_id, _audio) {
 	    var loadout = global.SaveData.career.active_loadout;
+	    //var character_key = string(selected_character_class);
     
+
 	    // Check if already equipped
 	    var equipped_index = -1;
 	    for (var i = 0; i < array_length(loadout); i++) {
@@ -366,13 +388,13 @@ active_loadout_weapons = [noone, noone]; // Current weapon selection
     
 	    if (equipped_index != -1) {
 	        // Remove from loadout
-	        loadout[equipped_index] = "";
+	        loadout[equipped_index] = noone;
 	        _audio.PlayUISound(snd_menu_select);
 	        show_debug_message("Removed mod from slot " + string(equipped_index));
 	    } else {
 	        // Add to first empty slot
 	        for (var i = 0; i < array_length(loadout); i++) {
-	            if (loadout[i] == "") {
+	            if (loadout[i] == noone) {
 	                loadout[i] = _mod_id;
 	                loadout_selected_slot = i;
 	                _audio.PlayUISound(snd_menu_select);
@@ -383,6 +405,7 @@ active_loadout_weapons = [noone, noone]; // Current weapon selection
         
 	        // No empty slots
 	        show_debug_message("No empty slots! Remove a mod first.");
+			show_debug_message("Slots: " + json_stringify(loadout));
 	    }
 	}
 
@@ -490,7 +513,7 @@ active_loadout_weapons = [noone, noone]; // Current weapon selection
     
 	    var equipped_count = 0;
 	    for (var i = 0; i < array_length(loadout); i++) {
-	        if (loadout[i] != "") {
+	        if (loadout[i] != noone) {
 	            var node = global.SkillTree[$ loadout[i]];
 	            if (node != noone) {
 	                draw_set_color(c_white);
@@ -553,35 +576,29 @@ active_loadout_weapons = [noone, noone]; // Current weapon selection
 	    }
 	}
 
-	/// @function CalculateStatModsFromLoadout(_loadout)
-	static CalculateStatModsFromLoadout = function(_loadout) {
-	    var mods = { hp: 0, attack: 0, speed: 0 };
+/// @function CalculateStatModsFromLoadout(_loadout)
+static CalculateStatModsFromLoadout = function(_loadout) {
+    var mods = { hp: 0, attack: 0, speed: 0 };
     
-	    for (var i = 0; i < array_length(_loadout); i++) {
-	        if (_loadout[i] == "") continue;
+    for (var i = 0; i < array_length(_loadout); i++) {
+        if (_loadout[i] == "" || _loadout[i] == noone) continue;
         
-	        var node = global.SkillTree[$ _loadout[i]];
-	        if (node == noone) continue;
+        var node = global.SkillTree[$ _loadout[i]];
+        if (node == noone) continue;
+        if (!variable_struct_exists(node, "mod_id")) continue;
         
-	        var mod_key = node.mod_key;
+        var mod_id = node.mod_id;
         
-	        // Parse mod key to determine stat bonuses
-	        // This is simplified - expand based on your actual mod system
-	        if (string_pos("Vitality1", mod_key) > 0) mods.hp += 20;
-	        if (string_pos("Vitality2", mod_key) > 0) mods.hp += 40;
-	        if (string_pos("Vitality3", mod_key) > 0) mods.hp += 60;
+        // Check against PreGameMod enum values
+        if (mod_id == PreGameMod.STAT_HP) mods.hp += 10; // +10% as per your definition
+        if (mod_id == PreGameMod.STAT_DAMAGE) mods.attack += 10; // +10%
+        if (mod_id == PreGameMod.STAT_SPEED) mods.speed += 10; // +10%
         
-	        if (string_pos("Strength1", mod_key) > 0) mods.attack += 2;
-	        if (string_pos("Strength2", mod_key) > 0) mods.attack += 5;
-	        if (string_pos("Strength3", mod_key) > 0) mods.attack += 8;
-        
-	        if (string_pos("Swiftness1", mod_key) > 0) mods.speed += 0.3;
-	        if (string_pos("Swiftness2", mod_key) > 0) mods.speed += 0.6;
-	        if (string_pos("Swiftness3", mod_key) > 0) mods.speed += 1.0;
-	    }
+        // Add other stat mods if you have them
+    }
     
-	    return mods;
-	}
+    return mods;
+}
 
 	/// ==========================================
 	/// CENTER COLUMN: WEAPONS
@@ -1161,7 +1178,7 @@ active_loadout_weapons = [noone, noone]; // Current weapon selection
 	        if (mod_id != undefined && IsModEquipped(mod_id, global.SaveData.career.active_loadout)) {
 	            for (var i = 0; i < array_length(global.SaveData.career.active_loadout); i++) {
 	                if (global.SaveData.career.active_loadout[i] == mod_id) {
-	                    global.SaveData.career.active_loadout[i] = "";
+	                    global.SaveData.career.active_loadout[i] = noone;
 	                    _audio.PlayUISound(snd_menu_select);
 	                    break;
 	                }
@@ -1882,12 +1899,6 @@ active_loadout_weapons = [noone, noone]; // Current weapon selection
 	    draw_set_font(fnt_default);
 	    draw_set_color(c_gray);
 	    draw_text(_cx, _h - 40, "[LEFT/RIGHT] Adjust  [ESC] Back  [F1] Reset Data & Reset");
-	
-		if (keyboard_check_pressed(vk_f1))
-		{
-			ResetSaveData();
-			game_end();
-		}
 	}
     
 	  /// @function HandleSettings(_input, _audio, _mx, _my)
@@ -2000,6 +2011,11 @@ active_loadout_weapons = [noone, noone]; // Current weapon selection
 	        selected_option = 3;
 	        SaveAudioSettings(_audio);
 	    }
+	if (keyboard_check(vk_f1)) {
+        ResetSaveData();
+        show_message("Save data reset!");
+		game_restart();
+    }
 	}
     
     // ==========================================
@@ -2186,7 +2202,7 @@ active_loadout_weapons = [noone, noone]; // Current weapon selection
     
 	    // Right column - Active modifiers WITH INTERACTION
 	    draw_set_color(c_yellow);
-	    draw_text(col2_x, start_y, "ACTIVE MODIFIERS:");
+	    draw_text(col2_x, start_y, "ACTIVE MODIFIERS: " + string(array_length(obj_player.mod_list)));
 	    draw_set_color(c_white);
     
 	    var mod_y = start_y + line_h;
@@ -2202,7 +2218,7 @@ active_loadout_weapons = [noone, noone]; // Current weapon selection
 	             array_length(obj_player.mod_list) > 0) {
 	        mods_to_display = obj_player.mod_list;
 	    }
-    
+		
 	    // Track which mod is hovered/selected
 	    var hovered_mod = -1;
     

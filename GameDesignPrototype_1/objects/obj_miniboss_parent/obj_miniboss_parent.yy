@@ -6,8 +6,8 @@
   "name":"obj_miniboss_parent",
   "overriddenProperties":[],
   "parent":{
-    "name":"Enemies",
-    "path":"folders/Objects/In-Game/Enemies.yy",
+    "name":"Enemies_Objects",
+    "path":"folders/ENEMIES/Enemies_Objects.yy",
   },
   "parentObjectId":{
     "name":"obj_enemy",

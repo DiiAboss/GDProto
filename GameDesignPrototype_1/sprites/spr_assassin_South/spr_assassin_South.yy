@@ -1,6 +1,6 @@
 {
   "$GMSprite":"",
-  "%Name":"spr_assassin_South",
+  "%Name":"spr_Assassin_South",
   "bboxMode":0,
   "bbox_bottom":31,
   "bbox_left":9,
@@ -21,19 +21,19 @@
   "layers":[
     {"$GMImageLayer":"","%Name":"c10cc1ad-6d9d-4e3a-82b5-6501056ff7fa","blendMode":0,"displayName":"default","isLocked":false,"name":"c10cc1ad-6d9d-4e3a-82b5-6501056ff7fa","opacity":100.0,"resourceType":"GMImageLayer","resourceVersion":"2.0","visible":true,},
   ],
-  "name":"spr_assassin_South",
+  "name":"spr_Assassin_South",
   "nineSlice":null,
   "origin":4,
   "parent":{
-    "name":"Player_Characters",
-    "path":"folders/Sprites/Player_Characters.yy",
+    "name":"Assassin",
+    "path":"folders/PlayerGroup/Sprites/Player_Characters/Assassin.yy",
   },
   "preMultiplyAlpha":false,
   "resourceType":"GMSprite",
   "resourceVersion":"2.0",
   "sequence":{
     "$GMSequence":"v1",
-    "%Name":"spr_assassin_South",
+    "%Name":"spr_Assassin_South",
     "autoRecord":true,
     "backdropHeight":768,
     "backdropImageOpacity":0.5,
@@ -57,7 +57,7 @@
       "resourceType":"KeyframeStore<MomentsEventKeyframe>",
       "resourceVersion":"2.0",
     },
-    "name":"spr_assassin_South",
+    "name":"spr_Assassin_South",
     "playback":1,
     "playbackSpeed":30.0,
     "playbackSpeedType":0,
@@ -71,7 +71,7 @@
     "tracks":[
       {"$GMSpriteFramesTrack":"","builtinName":0,"events":[],"inheritsTrackColour":true,"interpolation":1,"isCreationTrack":false,"keyframes":{"$KeyframeStore<SpriteFrameKeyframe>":"","Keyframes":[
             {"$Keyframe<SpriteFrameKeyframe>":"","Channels":{
-                "0":{"$SpriteFrameKeyframe":"","Id":{"name":"c4886b3b-f24d-4d55-b496-a52a6e6b7180","path":"sprites/spr_assassin_South/spr_assassin_South.yy",},"resourceType":"SpriteFrameKeyframe","resourceVersion":"2.0",},
+                "0":{"$SpriteFrameKeyframe":"","Id":{"name":"c4886b3b-f24d-4d55-b496-a52a6e6b7180","path":"sprites/spr_Assassin_South/spr_Assassin_South.yy",},"resourceType":"SpriteFrameKeyframe","resourceVersion":"2.0",},
               },"Disabled":false,"id":"091e5e89-d691-4a11-bb05-f5144d15f172","IsCreationKey":false,"Key":0.0,"Length":1.0,"resourceType":"Keyframe<SpriteFrameKeyframe>","resourceVersion":"2.0","Stretch":false,},
           ],"resourceType":"KeyframeStore<SpriteFrameKeyframe>","resourceVersion":"2.0",},"modifiers":[],"name":"frames","resourceType":"GMSpriteFramesTrack","resourceVersion":"2.0","spriteId":null,"trackColour":0,"tracks":[],"traits":0,},
     ],

@@ -106,6 +106,20 @@ global.Modifiers.IceEnchantment = {
     }
 };
 
+global.Modifiers.Souls2x = {
+    name: "Double Souls",
+    description: "Earn 2x souls from kills",
+    triggers: [MOD_TRIGGER.ON_KILL],
+    synergy_tags: [],
+    
+    soul_multiplier: 2.0,
+    
+    action: function(_entity, _event) {
+        // This would need to be applied where you grant souls
+        // You'll need to check for this modifier when awarding souls
+    }
+};
+
 global.Modifiers.LightningEnchantment = {
     name: "Lightning Enchantment",
     description: "Projectiles shock enemies",
@@ -480,3 +494,34 @@ SYNERGY_TAG.REGENERATION - Health regen
 SYNERGY_TAG.GLASS_CANNON - High risk/reward
 SYNERGY_TAG.TANKY        - High defense
 */
+function GetModifierKeyFromNodeId(_node_id) {
+    var mapping = {
+        "pregame_souls_2x": "Souls2x",
+        "pregame_stat_hp": "StatHP",
+        "pregame_stat_damage": "StatDamage",
+        "pregame_stat_speed": "StatSpeed",
+        "pregame_bouncy": "Bouncy",
+        "pregame_meteor": "MeteorStrike",
+        "pregame_fire": "FireEnchantment",
+        "pregame_ice": "IceEnchantment",
+        "pregame_lightning": "LightningEnchantment",
+        "pregame_poison": "PoisonEnchantment",
+        "pregame_chain_lightning": "ChainLightning",
+        "pregame_multishot": "Multishot",
+        "pregame_piercing": "PiercingShot",
+        "pregame_corpse_explosion": "CorpseExplosion",
+        "pregame_strength": "StrengthBoost",
+        "pregame_speed": "SpeedBoost",
+        "pregame_glass_cannon": "GlassCannon",
+        "pregame_tank": "Tank",
+        "pregame_crit": "CriticalStrike",
+        "pregame_lifesteal": "Lifesteal",
+        "pregame_regen": "Regeneration",
+    };
+    
+    if (variable_struct_exists(mapping, _node_id)) {
+        return mapping[$ _node_id];
+    }
+    
+    return undefined;
+}

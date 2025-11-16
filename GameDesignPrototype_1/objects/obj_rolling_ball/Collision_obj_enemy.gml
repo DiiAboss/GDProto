@@ -14,10 +14,7 @@ if (hitEnemy != noone) {
         hitEnemy.damage_sys.TakeDamage(damage, self);  
         // Apply knockback (scaled by level)
         var kbDir = point_direction(x, y, hitEnemy.x, hitEnemy.y);
-        hitEnemy.knockbackX = lengthdir_x(knockbackForce, kbDir);
-        hitEnemy.knockbackY = lengthdir_y(knockbackForce, kbDir);
-        hitEnemy.knockbackCooldown = 10;
-        
+        hitEnemy.knockback.Apply(kbDir, knockbackForce);
         // Bounce off
         myDir = point_direction(hitEnemy.x, hitEnemy.y, x, y);
         

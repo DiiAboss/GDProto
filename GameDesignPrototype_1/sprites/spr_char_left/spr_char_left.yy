@@ -28,8 +28,8 @@
   "nineSlice":null,
   "origin":4,
   "parent":{
-    "name":"Player_Characters",
-    "path":"folders/Sprites/Player_Characters.yy",
+    "name":"Legacy",
+    "path":"folders/PlayerGroup/Sprites/Player_Characters/Legacy.yy",
   },
   "preMultiplyAlpha":false,
   "resourceType":"GMSprite",

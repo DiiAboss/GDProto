@@ -11,8 +11,8 @@
   "name":"obj_enemy_bomber",
   "overriddenProperties":[],
   "parent":{
-    "name":"Enemies",
-    "path":"folders/Objects/In-Game/Enemies.yy",
+    "name":"Enemies_Objects",
+    "path":"folders/ENEMIES/Enemies_Objects.yy",
   },
   "parentObjectId":{
     "name":"obj_enemy",

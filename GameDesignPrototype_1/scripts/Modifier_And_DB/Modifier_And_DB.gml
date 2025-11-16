@@ -129,59 +129,37 @@ function TriggerModifiers(_entity, _trigger, _event_data) {
 }
 
 function AddModifier(_entity, _modifier_key) {
+    show_debug_message("AddModifier called with key: " + _modifier_key);
+    
     if (!variable_instance_exists(_entity, "mod_list")) {
         _entity.mod_list = [];
-        _entity.mod_cache = {}; // Cache modifiers by trigger
+        _entity.mod_cache = {};
     }
     
-    // Check if modifier exists
+    // Check if modifier exists in global.Modifiers
     if (!variable_struct_exists(global.Modifiers, _modifier_key)) {
-        show_debug_message("Modifier not found: " + _modifier_key);
+        show_debug_message("ERROR: Modifier not found in global.Modifiers: " + _modifier_key);
         return noone;
     }
     
     var mod_template = global.Modifiers[$ _modifier_key];
-    
-    // NEW: Check if entity already has this modifier (for stacking)
-    var existing_index = -1;
-    for (var i = 0; i < array_length(_entity.mod_list); i++) {
-        if (_entity.mod_list[i].template_key == _modifier_key) {
-            existing_index = i;
-            break;
-        }
-    }
-    
-    // NEW: If modifier exists, STACK IT
-    if (existing_index != -1) {
-        if (!variable_struct_exists(_entity.mod_list[existing_index], "stack_level")) {
-            _entity.mod_list[existing_index].stack_level = 1;
-        }
-        _entity.mod_list[existing_index].stack_level++;
-        
-        show_debug_message("STACKED " + _modifier_key + " to level " + string(_entity.mod_list[existing_index].stack_level));
-        
-        // Recalculate passive stats
-        if (instance_exists(_entity) && object_is_ancestor(_entity.object_index, obj_player)) {
-            CalculateCachedStats(_entity);
-        }
-        
-        return _entity.mod_list[existing_index];
-    }
+    show_debug_message("Found modifier template: " + mod_template.name);
     
     // Create instance
     var mod_instance = {
         template_key: _modifier_key,
         counter: 0,
         active: true,
-        stack_level: 1  // NEW: Add stack level
+        stack_level: 1 
     };
     
     array_push(_entity.mod_list, mod_instance);
+    show_debug_message("Added to mod_list. New length: " + string(array_length(_entity.mod_list)));
     
-    // Cache by trigger type for fast lookup
+    // Cache by trigger type
     for (var i = 0; i < array_length(mod_template.triggers); i++) {
         var trigger = mod_template.triggers[i];
-        var trigger_str = string(trigger); // Convert enum to string for struct key
+        var trigger_str = string(trigger);
         
         if (!variable_struct_exists(_entity.mod_cache, trigger_str)) {
             _entity.mod_cache[$ trigger_str] = [];
@@ -190,22 +168,9 @@ function AddModifier(_entity, _modifier_key) {
         array_push(_entity.mod_cache[$ trigger_str], mod_instance);
     }
     
-    // NEW: Add synergy tags
-    if (variable_struct_exists(mod_template, "synergy_tags")) {
-        for (var i = 0; i < array_length(mod_template.synergy_tags); i++) {
-            AddModifierTag(_entity, mod_template.synergy_tags[i]);
-        }
-    }
-    
-    // NEW: Recalculate passive stats
-    if (instance_exists(_entity) && object_is_ancestor(_entity.object_index, obj_player)) {
-        CalculateCachedStats(_entity);
-    }
-    
-    show_debug_message("Added modifier: " + _modifier_key);
+    show_debug_message("Successfully added modifier: " + _modifier_key);
     return mod_instance;
 }
-
 
 
 function ApplyStatModifiers(_self, _mods)

@@ -1,76 +1,204 @@
 /// @desc Reusable components for player, enemies, and entities
 
 
-// KNOCKBACK COMPONENT
-
+// KNOCKBACK COMPONENT - Enhanced version with all features
 function KnockbackComponent(_friction = 0.85, _threshold = 0.1) constructor {
+    // Core velocities
     x_velocity = 0;
     y_velocity = 0;
+    
+    // Physics settings
     friction = _friction;
     threshold = _threshold;
+    bounce_dampening = 1.1;
+    min_bounce_speed = 0;
+    
+    // Cooldowns
     cooldown = 0;
     cooldown_max = 10;
+    wall_bounce_cooldown = 0;
+    wall_hit_cooldown = 0;
+    
+    // Wall impact damage
+    min_impact_speed = 3;
+    impact_damage_multiplier = 0.1;
+    max_impact_damage = 999;
+    
+    // State tracking
+    is_active = false;
+    _power = 0;
+    has_transferred = false;
+    has_hit_wall = false;
+    last_bounce_dir = 0;
     
     /// @func Apply(_direction, _force)
     static Apply = function(_direction, _force) {
         x_velocity = lengthdir_x(_force, _direction);
         y_velocity = lengthdir_y(_force, _direction);
         cooldown = cooldown_max;
+        is_active = true;
+        has_transferred = false;
+        has_hit_wall = false;
     }
     
-    /// @func Update(_entity)
-    static Update = function(_entity) {
-        if (cooldown > 0) {
-            cooldown = timer_tick(cooldown);
-        }
+    /// @func AddForce(_x, _y)
+    static AddForce = function(_x, _y) {
+        x_velocity += _x;
+        y_velocity += _y;
+        is_active = true;
+    }
+    
+    /// @func Update(_entity, _delta = 1)
+    static Update = function(_entity, _delta = 1) {
+        // Update cooldowns
+        if (cooldown > 0) cooldown = timer_tick(cooldown);
+        if (wall_bounce_cooldown > 0) wall_bounce_cooldown = timer_tick(wall_bounce_cooldown);
+        if (wall_hit_cooldown > 0) wall_hit_cooldown = timer_tick(wall_hit_cooldown);
         
-        // Apply knockback movement
+        // Check if knockback is active
         if (abs(x_velocity) > threshold || abs(y_velocity) > threshold) {
-            var kb_delta = game_speed_delta();
+            is_active = true;
+            _power = point_distance(0, 0, x_velocity, y_velocity);
             
-            // Use 'with' to set the instance context
             with (_entity) {
-                var nextX = x + other.x_velocity * kb_delta;
-                var nextY = y + other.y_velocity * kb_delta;
+                var nextX = x + other.x_velocity * _delta;
+                var nextY = y + other.y_velocity * _delta;
                 
-                // Wall collision
-                if (place_meeting(nextX, nextY, obj_wall)) {
-                    if (place_meeting(nextX, y, obj_wall)) {
-                        other.x_velocity = -other.x_velocity * 0.5; // Bounce with dampening
+                var hit_wall = false;
+                var impact_speed = 0;
+                
+                // Horizontal collision check
+                if (place_meeting(nextX, y, obj_obstacle) && other.wall_bounce_cooldown == 0) {
+                    hit_wall = true;
+                    impact_speed = abs(other.x_velocity);
+                    
+                    // Wall damage check
+                    if (impact_speed > other.min_impact_speed && other.wall_hit_cooldown == 0) {
+                        var impact_damage = clamp(
+                            round(impact_speed * other.impact_damage_multiplier), 
+                            0, 
+                            other.max_impact_damage
+                        );
+                        
+                        // Apply damage if entity has damage system
+                        if (variable_instance_exists(id, "damage_sys")) {
+                            damage_sys.TakeDamage(impact_damage, obj_wall);
+                        }
+                        
+                        other.wall_hit_cooldown = 30;
+                        
+                        // Camera shake on hard impacts
+                        if (impact_speed > 8 && instance_exists(obj_player)) {
+                            with (obj_player) {
+                                if (variable_instance_exists(id, "camera")) {
+                                    camera.add_shake(impact_speed * 0.3);
+                                }
+                            }
+                        }
                     }
-                    if (place_meeting(x, nextY, obj_wall)) {
-                        other.y_velocity = -other.y_velocity * 0.5;
-                    }
-                } else {
+                    
+                    // Bounce
+                    other.x_velocity = (abs(other.x_velocity) > other.min_bounce_speed) 
+                        ? -other.x_velocity * other.bounce_dampening 
+                        : 0;
+                } else if (!place_meeting(nextX, y, obj_obstacle)) {
                     x = nextX;
+                }
+                
+                // Vertical collision check
+                if (place_meeting(x, nextY, obj_obstacle) && other.wall_bounce_cooldown == 0) {
+                    hit_wall = true;
+                    impact_speed = abs(other.y_velocity);
+                    
+                    // Wall damage check
+                    if (impact_speed > other.min_impact_speed && other.wall_hit_cooldown == 0) {
+                        var impact_damage = clamp(
+                            round(impact_speed * other.impact_damage_multiplier), 
+                            0, 
+                            other.max_impact_damage
+                        );
+                        
+
+                            damage_sys.TakeDamage(impact_damage, obj_wall);
+                        
+                        
+                        other.wall_hit_cooldown = 30;
+                        
+                        if (impact_speed > 8 && instance_exists(obj_player)) {
+                            with (obj_player) {
+
+                                    camera.add_shake(impact_speed * 0.3);
+                                
+                            }
+                        }
+                    }
+                    
+                    // Bounce
+                    other.y_velocity = (abs(other.y_velocity) > other.min_bounce_speed) 
+                        ? -other.y_velocity * other.bounce_dampening 
+                        : 0;
+                } else if (!place_meeting(x, nextY, obj_obstacle)) {
                     y = nextY;
+                }
+                
+                // Handle wall hit state
+                if (hit_wall) {
+                    other.wall_bounce_cooldown = 2;
+                    other.last_bounce_dir = point_direction(0, 0, other.x_velocity, other.y_velocity);
+                    other.has_hit_wall = true;
                 }
             }
             
             // Apply friction
-            x_velocity *= power(friction, kb_delta);
-            y_velocity *= power(friction, kb_delta);
+            x_velocity *= power(friction, _delta);
+            y_velocity *= power(friction, _delta);
             
-            // Stop if too slow
+            // Stop if below threshold
             if (abs(x_velocity) < threshold) x_velocity = 0;
             if (abs(y_velocity) < threshold) y_velocity = 0;
+            
+        } else {
+            // Reset state when stopped
+            x_velocity = 0;
+            y_velocity = 0;
+            is_active = false;
+            _power = 0;
+            has_transferred = false;
+            has_hit_wall = false;
+            if (wall_hit_cooldown > 0) wall_hit_cooldown = 0;
         }
     }
     
     /// @func IsActive()
     static IsActive = function() {
-        return abs(x_velocity) > threshold || abs(y_velocity) > threshold;
+        return is_active;
     }
     
     /// @func GetSpeed()
     static GetSpeed = function() {
-        return point_distance(0, 0, x_velocity, y_velocity);
+        return _power;
+    }
+    
+    /// @func GetVelocity()
+    static GetVelocity = function() {
+        return { x: x_velocity, y: y_velocity };
+    }
+    
+    /// @func Stop()
+    static Stop = function() {
+        x_velocity = 0;
+        y_velocity = 0;
+        is_active = false;
+        _power = 0;
+    }
+    
+    /// @func SetFriction(_friction)
+    static SetFriction = function(_friction) {
+        friction = _friction;
     }
 }
 
-
 // INVINCIBILITY COMPONENT
-
 function InvincibilityComponent(_duration = 60, _flash_speed = 4) constructor {
     active = false;
     timer = 0;
@@ -99,6 +227,7 @@ function InvincibilityComponent(_duration = 60, _flash_speed = 4) constructor {
     }
 }
 
+// DAMAGE COMPONENT
 function DamageComponent(_owner, _max_hp) constructor {
     owner = _owner;   // instance this belongs to
     hp = _max_hp;
@@ -160,6 +289,7 @@ function DamageComponent(_owner, _max_hp) constructor {
         last_damage = final_dmg;
         last_attacker = _attacker;
         damage_flash_timer = 10;
+		
 
         return hp;
     }
@@ -183,10 +313,7 @@ function DamageComponent(_owner, _max_hp) constructor {
     }
 }
 
-
-
 // TIMER COMPONENT
-
 function TimerComponent() constructor {
     timers = {}; // Struct to hold named timers
     

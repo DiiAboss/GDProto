@@ -25,8 +25,8 @@
   "nineSlice":null,
   "origin":4,
   "parent":{
-    "name":"Modifiers",
-    "path":"folders/Sprites/Modifiers.yy",
+    "name":"Modifier_Sprites",
+    "path":"folders/Modifiers_Folder/InGameModifiers/Modifier_Sprites.yy",
   },
   "preMultiplyAlpha":false,
   "resourceType":"GMSprite",

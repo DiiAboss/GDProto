@@ -4,32 +4,26 @@
 /// @param {instance} _source Who/what caused the damage
 /// @param {real} [_knockback_force] Optional knockback multiplier (default 1.0)
 function DealDamage(_target, _damage, _source, _knockback_force = 1.0) {
-    // Validate target
+   
+   // Validate target
     if (!instance_exists(_target) || _damage <= 0) return 0;
     
     // Check if target is already dead
-    if (variable_instance_exists(_target, "marked_for_death") && _target.marked_for_death) {
-        return 0;
-    }
+    if (_target.marked_for_death) return 0;
+    
     
     // Store damage info BEFORE applying
-    if (variable_instance_exists(_target, "last_hit_by")) {
-        _target.last_hit_by = _source;
-    }
-    if (variable_instance_exists(_target, "last_damage_taken")) {
-        _target.last_damage_taken = _damage;
-    }
+    _target.last_hit_by = _source;
+    _target.last_damage_taken = _damage;
     
-    // Track total damage for scoring
-    if (variable_instance_exists(_target, "total_damage_taken")) {
-        _target.total_damage_taken += _damage;
-    }
-    
+	// Track total damage for scoring
+	_target.total_damage_taken += _damage;
     
     // HANDLE PLAYER DAMAGE
     
     if (_target.object_index == obj_player) {
-        // Check invincibility
+        
+		// Check invincibility
         if (_target.invincibility.active) {
             return _target.hp; // No damage during invincibility
         }
@@ -42,10 +36,8 @@ function DealDamage(_target, _damage, _source, _knockback_force = 1.0) {
         _target.invincibility.Activate();
         
         // UI feedback
-        if (variable_instance_exists(_target, "timers")) {
-            _target.timers.Set("hp_bar", 120);
-        }
-        
+        _target.timers.Set("hp_bar", 120);
+       
         // Visual feedback
         _target.hitFlashTimer = 10;
         
@@ -63,12 +55,9 @@ function DealDamage(_target, _damage, _source, _knockback_force = 1.0) {
              object_is_ancestor(_target.object_index, obj_miniboss_parent)) {
         
         // Apply damage through component if exists, otherwise legacy
-        if (variable_instance_exists(_target, "damage_sys")) {
-            _target.damage_sys.TakeDamage(_damage, _source);
-            _target.hp = _target.damage_sys.hp;
-        } else {
-            _target.hp -= _damage;
-        }
+        _target.damage_sys.TakeDamage(_damage, _source);
+        _target.hp = _target.damage_sys.hp;
+
         
         // Visual feedback
         _target.hitFlashTimer = 10;
@@ -77,12 +66,7 @@ function DealDamage(_target, _damage, _source, _knockback_force = 1.0) {
         if (instance_exists(_source) && _knockback_force > 0) {
             var kb_dir = point_direction(_source.x, _source.y, _target.x, _target.y);
             var kb_power = 8 * _knockback_force;
-            
-            if (variable_instance_exists(_target, "knockbackX")) {
-                _target.knockbackX = lengthdir_x(kb_power, kb_dir);
-                _target.knockbackY = lengthdir_y(kb_power, kb_dir);
-                _target.knockbackCooldown = 10;
-            }
+            _target.knockback.Apply(kb_dir, kb_power);
         }
         
         // Damage number
@@ -112,7 +96,6 @@ function DealDamage(_target, _damage, _source, _knockback_force = 1.0) {
     
     
     // HANDLE OTHER OBJECTS
-    
     else {
         // Generic damage for destructibles, etc
         if (variable_instance_exists(_target, "hp")) {
@@ -144,19 +127,11 @@ function HealTarget(_target, _amount, _show_number = true) {
     
     var actual_heal = 0;
     
-    // Use component system if available
-    if (variable_instance_exists(_target, "damage_sys")) {
-        var old_hp = _target.damage_sys.hp;
-        _target.damage_sys.Heal(_amount);
-        actual_heal = _target.damage_sys.hp - old_hp;
-        _target.hp = _target.damage_sys.hp;
-    }
-    // Legacy healing
-    else if (variable_instance_exists(_target, "hp") && variable_instance_exists(_target, "maxHp")) {
-        var old_hp = _target.hp;
-        _target.hp = min(_target.hp + _amount, _target.maxHp);
-        actual_heal = _target.hp - old_hp;
-    }
+    // Use component system
+    var old_hp = _target.damage_sys.hp;
+    _target.damage_sys.Heal(_amount);
+    actual_heal = _target.damage_sys.hp - old_hp;
+    _target.hp = _target.damage_sys.hp;
     
     // Visual feedback
     if (_show_number && actual_heal > 0) {

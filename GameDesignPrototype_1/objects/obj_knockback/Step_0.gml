@@ -23,15 +23,11 @@ if (hit != noone) {
 	hit.damage_sys.TakeDamage(damage, owner);
 	//takeDamage(hit, damage, owner);
 	// Apply knockback using custom knockback variables
-	if (hit.knockbackCooldown <= 0) {
+	if (hit.knockback.cooldown <= 0) {
 		var knockbackDir = point_direction(owner.x, owner.y, hit.x, hit.y);
 		var knockbackForce = 5; // Stronger knockback with combo
         
 		// Set the enemy's knockback velocity
-		hit.knockbackX = lengthdir_x(knockbackForce, knockbackDir);
-		hit.knockbackY = lengthdir_y(knockbackForce, knockbackDir);
-        
-		// Set cooldown to prevent knockback stacking
-		hit.knockbackCooldown = hit.knockbackCooldownMax;
+		hit.knockback.Apply(knockbackDir, knockbackForce);
 	}
 }

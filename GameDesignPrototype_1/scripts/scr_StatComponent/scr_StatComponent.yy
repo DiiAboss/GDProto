@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"scr_StatComponent",
   "parent":{
-    "name":"CHARACTER_OBJECTS",
-    "path":"folders/Objects/In-Game/PLAYER_AND_WEAPON_OBJECTS/CHARACTER_OBJECTS.yy",
+    "name":"PlayerGroup",
+    "path":"folders/PlayerGroup.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

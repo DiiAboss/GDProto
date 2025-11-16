@@ -31,7 +31,7 @@
   "origin":4,
   "parent":{
     "name":"Enemy_Sprites",
-    "path":"folders/Sprites/Enemy_Sprites.yy",
+    "path":"folders/ENEMIES/Enemy_Sprites.yy",
   },
   "preMultiplyAlpha":false,
   "resourceType":"GMSprite",

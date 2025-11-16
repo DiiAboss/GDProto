@@ -26,7 +26,7 @@
   "origin":4,
   "parent":{
     "name":"VH_SPRITES",
-    "path":"folders/Sprites/Player_Characters/VH_SPRITES.yy",
+    "path":"folders/PlayerGroup/Sprites/Player_Characters/VH_SPRITES.yy",
   },
   "preMultiplyAlpha":false,
   "resourceType":"GMSprite",

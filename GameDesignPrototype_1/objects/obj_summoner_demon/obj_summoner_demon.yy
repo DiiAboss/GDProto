@@ -13,8 +13,8 @@
   "name":"obj_summoner_demon",
   "overriddenProperties":[],
   "parent":{
-    "name":"Enemies",
-    "path":"folders/Objects/In-Game/Enemies.yy",
+    "name":"Enemies_Objects",
+    "path":"folders/ENEMIES/Enemies_Objects.yy",
   },
   "parentObjectId":{
     "name":"obj_obstacle",

@@ -174,13 +174,10 @@ if (instance_exists(owner)) {
                 }
                 
                 // Apply knockback
-                if (hit.knockbackCooldown <= 0) {
+                if (hit.knockback.cooldown <= 0) {
                     var knockbackDir = point_direction(owner.x, owner.y, hit.x, hit.y);
                     var kbForce = knockbackForce;
-                    
-                    hit.knockbackX = lengthdir_x(kbForce, knockbackDir);
-                    hit.knockbackY = lengthdir_y(kbForce, knockbackDir);
-                    hit.knockbackCooldown = hit.knockbackCooldownMax;
+                    hit.knockback.Apply(knockbackDir, kbForce);
                 }
             }
         }

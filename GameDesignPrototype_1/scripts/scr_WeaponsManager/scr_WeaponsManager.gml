@@ -89,7 +89,7 @@ function GetWeaponStructById(_weapon_id) {
 function GetWeaponName(_weapon_enum) {
     // Use existing GetWeaponStructById function
     var weapon_struct = GetWeaponStructById(_weapon_enum);
-    return weapon_struct != noone ? weapon_struct.name : "Unknown Weapon";
+    return weapon_struct != noone ? weapon_struct.name : "None";
 }
 
 // WEAPON SWAP PROMPT SYSTEM
@@ -239,15 +239,11 @@ function DrawWeaponSwapPrompt() {
 
 
 // NOTIFICATION SYSTEM
-
-
 /// @function CreateWeaponNotification(_player, _weapon_struct, _action)
 /// @description Show a brief notification when weapon is equipped/swapped
 function CreateWeaponNotification(_player, _weapon_struct, _action) {
     // You can expand this to use your badge system from UI_MANAGER
     // For now, simple debug message
-    var message = _action + ": " + _weapon_struct.name;
-    show_debug_message(message);
     
     // If you have a badge system, use it:
     // if (instance_exists(obj_ui_manager)) {

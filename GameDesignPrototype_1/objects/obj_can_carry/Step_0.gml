@@ -266,10 +266,8 @@ function HandleProjectileHit(_enemy = noone) {
 		
         // Apply knockback
         var kb_dir = point_direction(xprevious, yprevious, x, y);
-        _enemy.knockbackX = lengthdir_x(damage * 0.5, kb_dir);
-        _enemy.knockbackY = lengthdir_y(damage * 0.5, kb_dir);
         _enemy.hitFlashTimer = 5;
-        
+        _enemy.knockback.Apply(kb_dir, damage * 0.5);
         // Impact particles
         SpawnImpactParticles(10, kb_dir);
         

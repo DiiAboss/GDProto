@@ -8,8 +8,8 @@
   "name":"obj_player_spawn",
   "overriddenProperties":[],
   "parent":{
-    "name":"Main Controller",
-    "path":"folders/Main Controller.yy",
+    "name":"Object",
+    "path":"folders/PlayerGroup/Object.yy",
   },
   "parentObjectId":null,
   "persistent":false,

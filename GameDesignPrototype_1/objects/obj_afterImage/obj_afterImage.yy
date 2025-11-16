@@ -10,8 +10,8 @@
   "name":"obj_afterImage",
   "overriddenProperties":[],
   "parent":{
-    "name":"PLAYER_AND_WEAPON_OBJECTS",
-    "path":"folders/Objects/In-Game/PLAYER_AND_WEAPON_OBJECTS.yy",
+    "name":"Object",
+    "path":"folders/PlayerGroup/Object.yy",
   },
   "parentObjectId":null,
   "persistent":false,

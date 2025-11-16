@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_PreGameModifiers",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_PreGameModifiers",
+  "parent":{
+    "name":"PreGameModifiers",
+    "path":"folders/Modifiers_Folder/PreGameModifiers.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

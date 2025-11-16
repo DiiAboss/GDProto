@@ -1,14 +1,23 @@
 /// @file scr_SkillTreeHelpers (add these functions)
 
-	/// @function GetCharacterLoadout(_character_class)
-	function GetCharacterLoadout(_character_class) {
-	    // Ensure character_loadouts exists
-
+function GetCharacterLoadout(_character_class) {
+    // Ensure structure exists
+    if (!variable_struct_exists(global.SaveData.career, "character_loadouts")) {
+        global.SaveData.career.character_loadouts = {};
+    }
     
-	    var key = string(_character_class);
-	    //global.SaveData.career.character_loadouts[$ key] = ["", "", "", "", ""];
-		return global.SaveData.career.character_loadouts[$ key];
-	}
+    var key = string(_character_class);
+    
+    // Return existing loadout or create default
+    if (variable_struct_exists(global.SaveData.career.character_loadouts, key)) {
+        return global.SaveData.career.character_loadouts[$ key];
+    } else {
+        // Create default loadout
+        var default_loadout = [noone, noone, noone, noone, noone];
+        global.SaveData.career.character_loadouts[$ key] = default_loadout;
+        return default_loadout;
+    }
+}
 
 	/// @function SaveCharacterLoadout(_character_class, _loadout_array)
 	function SaveCharacterLoadout(_character_class, _loadout_array) {
@@ -30,7 +39,7 @@
 	function CountEquippedMods(_loadout_array) {
 	    var count = 0;
 	    for (var i = 0; i < array_length(_loadout_array); i++) {
-	        if (_loadout_array[i] != "") count++;
+	        if (_loadout_array[i] != noone) count++;
 	    }
 	    return count;
 	}
@@ -45,7 +54,7 @@
 	        var node = global.SkillTree[$ key];
         
 	        // Only include unlocked mod_unlock type nodes
-	        if (node.type != "mod_unlock") continue;
+	        if (node.type != "pregame_mod_unlock") continue;
 	        if (!node.unlocked) continue;
         
 	        // Check character restriction
@@ -61,10 +70,21 @@
 	    return available_mods;
 	}
 
+	///// @function IsModEquipped(_mod_id, _loadout_array)
+	//function IsModEquipped(_mod_id, _loadout_array) {
+	//    return array_contains(_loadout_array, _mod_id);
+	//}
 	/// @function IsModEquipped(_mod_id, _loadout_array)
-	function IsModEquipped(_mod_id, _loadout_array) {
-	    return array_contains(_loadout_array, _mod_id);
-	}
+function IsModEquipped(_mod_id, _loadout_array) {
+    // Safety check
+    if (!is_array(_loadout_array)) {
+        show_debug_message("WARNING: IsModEquipped received non-array: " + string(_loadout_array));
+		show_debug_message("WARNING: IsModEquipped received non-array: " + string(typeof(_loadout_array)));
+        return false;
+    }
+    
+    return array_contains(_loadout_array, _mod_id);
+}
 
 	/// @function GetCharacterName(_character_class)
 	function GetCharacterName(_character_class) {
@@ -77,37 +97,36 @@
 	    }
 	}
 
-	/// @function ApplyLoadoutToPlayer(_player)
-	/// @description Apply the active loadout mods to the player using your existing AddModifier system
-	function ApplyLoadoutToPlayer(_player) {
-	    var loadout = global.SaveData.career.active_loadout;
-	    var applied_count = 0;
+function ApplyLoadoutToPlayer(_player) {
+    var loadout = global.SaveData.career.active_loadout;
+    var applied_count = 0;
     
-	    for (var i = 0; i < array_length(loadout); i++) {
-	        var mod_id = loadout[i];
-	        if (mod_id == "") continue;
+    for (var i = 0; i < array_length(loadout); i++) {
+        var node_id = loadout[i];
+        if (node_id == "" || node_id == noone) continue;
         
-	        // Get the skill tree node
-	        var node = global.SkillTree[$ mod_id];
+        var node = global.SkillTree[$ node_id];
+        if (node == noone) continue;
         
+        var modifier_key = GetModifierKeyFromNodeId(node_id);
         
-	        var mod_key = node.mod_key;
+        if (modifier_key == undefined) {
+            show_debug_message("WARNING: No modifier mapping for node: " + node_id);
+            continue;
+        }
         
-	        // Apply the modifier using your existing AddModifier function
-	        var mod_instance = AddModifier(_player, mod_key);
-        
-	        if (mod_instance != noone) {
-	            applied_count++;
-	            show_debug_message("Applied loadout mod: " + mod_key + " (from node: " + mod_id + ")");
-	        } else {
-	            show_debug_message("WARNING: Failed to apply modifier: " + mod_key);
-	        }
-	    }
+        var mod_instance = AddModifier(_player, modifier_key);
+        CalculateCachedStats(_player);
+        if (mod_instance != noone) {
+            applied_count++;
+            show_debug_message("Applied: " + node.name + " -> " + modifier_key);
+        }
+    }
     
-	    show_debug_message("=== Loadout Applied ===");
-	    show_debug_message("Applied " + string(applied_count) + " mods from loadout");
-	    show_debug_message("Player now has " + string(array_length(_player.mod_list)) + " total mods");
-	}
+    
+    
+    show_debug_message("=== Loadout Applied: " + string(applied_count) + " mods ===");
+}
 
 	/// @function ClearPlayerLoadoutMods(_player)
 	/// @description Remove all mods that came from the loadout (useful for testing/resetting)
@@ -121,7 +140,7 @@
 	    // Build list of mod keys to remove
 	    for (var i = 0; i < array_length(loadout); i++) {
 	        var node_id = loadout[i];
-	        if (node_id == "") continue;
+	        if (node_id == noone) continue;
         
 	        var node = global.SkillTree[$ node_id];
 	        if (node != noone && variable_struct_exists(node, "mod_key")) {

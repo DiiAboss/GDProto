@@ -3,7 +3,8 @@ enum CharacterClass {
     WARRIOR,
     HOLY_MAGE,
     VAMPIRE,
-	BASEBALL_PLAYER
+	BASEBALL_PLAYER,
+	ALCHEMIST
 }
 
 // scr_character_classes - Updated to avoid 'speed' conflict

@@ -39,6 +39,44 @@ global.WeaponStruct =
             return _attack;
         }
     },
+	BBallGun: {
+        name: "Bball Gun",
+        id: Weapon.BBallGun,
+        type: WeaponType.Range,
+        projectile_struct: global.Projectile_.Arrow,
+        default_element: ELEMENT.PHYSICAL,
+		synergy_tags: InitializeWeaponTags(Weapon.BBallGun),
+		sprite: spr_bball_gun,
+        primary_attack: function(_self, _direction, _range, _projectile_struct) {
+            var _attack = Shoot_Projectile(_self, _direction, _self, _range, _projectile_struct,53, 53);
+            _attack.speed = 6;
+			
+			// NEW: Apply synergy behaviors to projectile
+		    if (variable_instance_exists(_self, "active_combined_tags")) {
+		        ApplySynergyBehavior(_attack, _self.active_combined_tags, _self.active_synergies, _self);
+		    }
+
+			
+            var attack_event = CreateAttackEvent(_self, AttackType.RANGED, _direction, _attack);
+            TriggerModifiers(_self, MOD_TRIGGER.ON_ATTACK, attack_event);
+            
+            return _attack;
+        },
+        
+        secondary_attack: function(_self, _direction, _range, _projectile_struct) {
+           
+			
+			 var _attack = Lob_Projectile(_self, _direction, _range, _projectile_struct.object);
+			
+						// NEW: Apply synergy behaviors to projectile
+		    if (variable_instance_exists(_self, "active_combined_tags")) {
+		        ApplySynergyBehavior(_attack, _self.active_combined_tags, _self.active_synergies, _self);
+		    }
+
+			
+            return _attack;
+        }
+    },
 	
 	ChainWhip: {
     name: "Chain Whip",
@@ -243,8 +281,7 @@ global.WeaponStruct =
             var attack_data = combo_attacks[combo_count];
             
             if (attack_data.lunge) {
-                _self.knockbackX = lengthdir_x(attack_data.lunge_power, _direction);
-                _self.knockbackY = lengthdir_y(attack_data.lunge_power, _direction);
+				_self.knockback.Apply(_direction, attack_data.lunge_power);
             }
             
             var melee_attack = _self.attack * attack_data.damage_mult;
@@ -484,13 +521,11 @@ global.WeaponStruct =
             // Launch player backwards
             if (self_knockback) {
                 var recoil = self_knockback_force * charge_mult;
-                _self.knockbackX = lengthdir_x(-recoil, _direction);
-                _self.knockbackY = lengthdir_y(-recoil, _direction);
-                _self.knockbackPower = recoil;
+				_self.knockback.Apply(-_direction, recoil);
                 _self.isCannonBalling = true;
             }
             
-            var attack_event = CreateAttackEvent(_self, AttackType.CANNON, _direction, proj);
+        var attack_event = CreateAttackEvent(_self, AttackType.CANNON, _direction, proj);
 		attack_event.damage = proj.damage; // Override with charged damage
 		attack_event.charge_amount = charge_mult; // Add charge info for modifiers
             
@@ -512,7 +547,7 @@ global.WeaponStruct =
             // Update cannonball state
             if (_self.isCannonBalling) {
                 // Check if we've slowed down enough
-                if (abs(_self.knockbackX) < 2 && abs(_self.knockbackY) < 2) {
+                if (_self.knockback.Get_) {
                     _self.isCannonBalling = false;
                 }
                 

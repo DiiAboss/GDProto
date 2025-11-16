@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"scr_SaveGame",
   "parent":{
-    "name":"Scripts",
-    "path":"folders/Scripts.yy",
+    "name":"SaveLoadFunctions",
+    "path":"folders/SaveLoadFunctions.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

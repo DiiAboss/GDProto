@@ -9,7 +9,6 @@ depth = -y;
 if (global.gameSpeed == 0) exit;
 
 // COMPONENT UPDATES
-
 timers.Update();
 invincibility.Update();
 damage_sys.Update();
@@ -17,13 +16,10 @@ knockback.Update(self);
 class_component.Update(); // CLASS SYSTEM UPDATE
 
 
-
+img_xscale = (mouseDirection > 90 && mouseDirection < 270) ? -1 : 1; // For weapon directions
 
 // Sync legacy variables
 hp = damage_sys.hp;
-invincible = invincibility.active;
-invincible_timer = invincibility.timer;
-total_damage_taken = 0;
 
 
 while (experience_points >= exp_to_next_level) {
@@ -31,8 +27,6 @@ while (experience_points >= exp_to_next_level) {
     player_level += 1;
     exp_to_next_level = calculate_exp_requirement(player_level);
     
-    // NEW: Trigger level up with popup
-    //TriggerLevelUp();
 	on_level_up();
 }
 
@@ -40,15 +34,12 @@ while (experience_points >= exp_to_next_level) {
 
 /// @function TriggerLevelUp()
 function TriggerLevelUp() {
-    // Heal on level up
-    //hp = min(hp + (maxHp * 0.2), maxHp);
-    
     // Tell game manager to show popup
     var _gm = obj_game_manager;
     _gm.ShowLevelUpPopup(_gm.can_click);
     
+	// Update Mission Status
     UpdateMission("reach_level_5", 1);
-    show_debug_message("Level Up! Now level " + string(player_level));
 }
 
 
@@ -69,17 +60,10 @@ function on_level_up() {
     // Start slowdown sequence
     obj_game_manager.level_up_slowdown_active = true;
     obj_game_manager.level_up_slowdown_timer = 0;
-    
-    show_debug_message("Level Up! Starting slowdown sequence");
 }
 
 
-
-
-
-
 // DAMAGE DETECTION
-
 if (!invincibility.active) {
     CheckDamage();
 }
@@ -96,8 +80,6 @@ if (place_meeting(x, y, obj_coin)) {
 
 
 // INPUT UPDATE
-
-//input.Update(self);
 mouseDirection = input.Direction;
 mouseDistance = distance_to_point(mouse_x, mouse_y);
 
@@ -199,7 +181,7 @@ function HandleCarrying() {
     // THROW CARRIED OBJECT
     if (is_carrying && instance_exists(carried_object)) {
         if (input.FirePress) { // Left click to throw
-            ThrowCarriedObject();
+            ThrowCarriedObject(self, _carried_object);
             return;
         }
         
@@ -265,17 +247,17 @@ function AttemptPickup() {
 }
 
 /// @func ThrowCarriedObject()
-function ThrowCarriedObject() {
-    if (!instance_exists(carried_object)) {
-        is_carrying = false;
-        carried_object = noone;
+function ThrowCarriedObject(_self) {
+	if (!instance_exists(_self.carried_object)) {
+        _self.is_carrying	   = false;
+        _self.carried_object   = noone;
         return;
     }
     
-    var obj = carried_object;
+    var obj = _self.carried_object;
     
     // Release object
-    is_carrying = false;
+    _self.is_carrying = false;
     obj.is_being_carried = false;
     obj.carrier = noone;
     
@@ -373,7 +355,6 @@ if (keyboard_check_pressed(vk_f5)) camera.set_zoom(1.0);
 /// @func CheckDamage()
 function CheckDamage() {
 	
-	
 	if (just_hit > 0) just_hit--;
     // ===== ENEMY CONTACT =====
     var enemy = instance_place(x, y, obj_enemy);
@@ -381,16 +362,16 @@ function CheckDamage() {
         // Apply damage and activate invincibility
         damage_sys.TakeDamage(enemy.damage, enemy);
         invincibility.Activate();
-        just_hit = 30;
+        just_hit = max_just_hit;
+		alarm[0] = 1; // Check for death
         // Knockback from enemy
         var kbDir = point_direction(enemy.x, enemy.y, x, y);
-        knockback.Apply(kbDir, enemy.knockbackForce);
+        knockback.Apply(kbDir, enemy.knockback.GetSpeed());
         
         // Enemy bounce back
-        enemy.knockbackX = lengthdir_x(2, kbDir + 180);
-        enemy.knockbackY = lengthdir_y(2, kbDir + 180);
         enemy.hitFlashTimer = 5;
-        
+        enemy.knockback.Apply(kbDir + 180, 2);
+		
         // Show HP bar
         timers.Set("hp_bar", 120);
         
@@ -403,6 +384,7 @@ function CheckDamage() {
     if (projectile != noone) {
         damage_sys.TakeDamage(10, projectile);
         invincibility.Activate();
+		alarm[0] = 1;
         instance_destroy(projectile);
         timers.Set("hp_bar", 120);
         return;
@@ -426,7 +408,7 @@ function CheckDamage() {
             
             damage_sys.TakeDamage(round(damage), spike);
             invincibility.Activate();
-            
+            alarm[0] = 1;
             knockback.x_velocity = 0;
             knockback.y_velocity = 0;
             var bounceDir = point_direction(spike.x, spike.y, x, y);
@@ -454,6 +436,7 @@ function CheckDamage() {
         }
         
         if (canHit) {
+			alarm[0] = 1;
             damage_sys.TakeDamage(ball.damage, ball);
             invincibility.Activate();
             
@@ -535,23 +518,7 @@ if (keyboard_check_pressed(vk_f6)) {
 }
 
 
-// DEATH CHECK
 
-if (hp <= 0 && instance_exists(obj_main_controller) && !obj_main_controller.death_sequence_active) {
-    // Trigger death sequence through main controller
-    obj_main_controller.death_sequence.Trigger(
-    obj_game_manager,
-    obj_player,
-    obj_main_controller.highscore_system
-);
-    
-    // Stop player movement
-    hsp = 0;
-    vsp = 0;
-    
-    // Optional: Change sprite to death sprite if you have one
-    // sprite_index = spr_player_death;
-}
 
 
 // In obj_player Step_0

@@ -124,8 +124,7 @@ if (has_vacuum) {
         var enemy = vacuum_list[| i];
         if (!enemy.marked_for_death) {
             var pull_dir = point_direction(enemy.x, enemy.y, x, y);
-            enemy.knockbackX += lengthdir_x(vacuum_strength, pull_dir);
-            enemy.knockbackY += lengthdir_y(vacuum_strength, pull_dir);
+			enemy.knockback.Apply(pull_dir, vacuum_strength);
         }
     }
     

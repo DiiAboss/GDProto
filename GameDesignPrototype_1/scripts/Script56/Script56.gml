@@ -105,25 +105,14 @@ function UnlockModifier(_mod_key) {
 
 
 function GetSouls() {
-    if (!variable_struct_exists(global.SaveData, "career")) return 0;
-    if (!variable_struct_exists(global.SaveData.career, "currency")) return 0;
     return global.SaveData.career.currency.souls;
 }
 
 /// @function AddSouls(_amount)
 function AddSouls(_amount) {
-    if (!variable_struct_exists(global.SaveData, "career")) return;
-    if (!variable_struct_exists(global.SaveData.career, "currency")) {
-        global.SaveData.career.currency = {
-            souls: 0,
-            lifetime_souls: 0,
-            lifetime_gold: 0
-        };
-    }
-    
-    global.SaveData.career.currency.souls += _amount;
-    global.SaveData.career.currency.lifetime_souls += _amount;
-    SaveGame();
+
+    global.Souls += _amount;
+	SaveGame();
 }
 
 /// @function SpendSouls(_amount)

@@ -3,6 +3,10 @@
 /// @description Skill Tree - Meta Progression System (IMPROVED LAYOUT)
 /// Reorganized for cleaner connections and expanded content
 
+/// @file scr_SkillTreeData.gml
+/// @description Skill Tree - Meta Progression System
+/// Pre-game modifiers, character unlocks, weapon unlocks, level unlocks
+
 global.SkillTree = {
     
     // ==========================================
@@ -17,140 +21,13 @@ global.SkillTree = {
         cost: 0,
         unlocked: true,
         position: {x: 400, y: 300},
-        connections: ["warrior_path", "universal_path", "arsenal_path", "combat_path"],
+        connections: ["arsenal_path", "pregame_path", "character_path", "level_path", "prestige_path"],
         sprite: spr_vh_walk_south
     },
     
     // ==========================================
-    // NORTH-WEST: WARRIOR BRANCH (Aggressive melee)
-    // ==========================================
-    
-    warrior_path: {
-        id: "warrior_path",
-        type: "branch",
-        name: "Path of Fury",
-        description: "Warrior-specific enhancements",
-        cost: 0,
-        unlocked: false,
-        position: {x: 250, y: 200},
-        connections: ["root", "warrior_rage_1", "warrior_armor_1", "warrior_lifesteal"],
-        sprite: spr_mod_default
-    },
-    
-    warrior_rage_1: {
-        id: "warrior_rage_1",
-        type: "mod_unlock",
-        name: "Berserker Rage",
-        description: "Warrior: Rage builds 50% faster",
-        mod_key: "BerserkerRage",
-        required_character: CharacterClass.WARRIOR,
-        cost: 200,
-        unlocked: false,
-        position: {x: 180, y: 150},
-        connections: ["warrior_path", "warrior_rage_2"],
-        sprite: spr_mod_default
-    },
-    
-    warrior_rage_2: {
-        id: "warrior_rage_2",
-        type: "mod_unlock",
-        name: "Endless Fury",
-        description: "Warrior: Rage doesn't decay",
-        mod_key: "EndlessFury",
-        required_character: CharacterClass.WARRIOR,
-        cost: 400,
-        unlocked: false,
-        position: {x: 120, y: 120},
-        connections: ["warrior_rage_1", "warrior_rage_3"],
-        sprite: spr_mod_default
-    },
-    
-    warrior_rage_3: {
-        id: "warrior_rage_3",
-        type: "mod_unlock",
-        name: "Primal Scream",
-        description: "Warrior: At max rage, roar to fear nearby enemies",
-        mod_key: "PrimalScream",
-        required_character: CharacterClass.WARRIOR,
-        cost: 600,
-        unlocked: false,
-        position: {x: 80, y: 80},
-        connections: ["warrior_rage_2"],
-        sprite: spr_mod_default
-    },
-    
-    warrior_armor_1: {
-        id: "warrior_armor_1",
-        type: "mod_unlock",
-        name: "Iron Hide",
-        description: "Warrior: +3 Armor",
-        mod_key: "IronHide",
-        required_character: CharacterClass.WARRIOR,
-        cost: 250,
-        unlocked: false,
-        position: {x: 220, y: 120},
-        connections: ["warrior_path", "warrior_armor_2"],
-        sprite: spr_mod_default
-    },
-    
-    warrior_armor_2: {
-        id: "warrior_armor_2",
-        type: "mod_unlock",
-        name: "Unbreakable",
-        description: "Warrior: Cannot be interrupted while attacking",
-        mod_key: "Unbreakable",
-        required_character: CharacterClass.WARRIOR,
-        cost: 500,
-        unlocked: false,
-        position: {x: 180, y: 70},
-        connections: ["warrior_armor_1", "warrior_armor_3"],
-        sprite: spr_mod_default
-    },
-    
-    warrior_armor_3: {
-        id: "warrior_armor_3",
-        type: "mod_unlock",
-        name: "Retaliation",
-        description: "Warrior: Reflect 25% of damage taken",
-        mod_key: "Retaliation",
-        required_character: CharacterClass.WARRIOR,
-        cost: 700,
-        unlocked: false,
-        position: {x: 150, y: 30},
-        connections: ["warrior_armor_2"],
-        sprite: spr_mod_default
-    },
-    
-    warrior_lifesteal: {
-        id: "warrior_lifesteal",
-        type: "mod_unlock",
-        name: "Blood Drinker",
-        description: "Warrior: 10% lifesteal on melee hits",
-        mod_key: "BloodDrinker",
-        required_character: CharacterClass.WARRIOR,
-        cost: 300,
-        unlocked: false,
-        position: {x: 280, y: 140},
-        connections: ["warrior_path", "warrior_execute"],
-        sprite: spr_mod_default
-    },
-    
-    warrior_execute: {
-        id: "warrior_execute",
-        type: "mod_unlock",
-        name: "Execute",
-        description: "Warrior: Kills below 20% HP restore 50 HP",
-        mod_key: "Execute",
-        required_character: CharacterClass.WARRIOR,
-        cost: 450,
-        unlocked: false,
-        position: {x: 300, y: 90},
-        connections: ["warrior_lifesteal"],
-        sprite: spr_mod_default
-    },
-    
-    // ==========================================
-    // NORTH: ARSENAL BRANCH (Weapon unlocks)
+    // NORTH: ARSENAL BRANCH - Weapon Categories
+    // Position: Far North with sub-branches
     // ==========================================
     
     arsenal_path: {
@@ -160,8 +37,21 @@ global.SkillTree = {
         description: "Unlock new weapons",
         cost: 0,
         unlocked: false,
-        position: {x: 400, y: 180},
-        connections: ["root", "dagger_unlock", "bat_unlock", "boomerang_unlock"],
+        position: {x: 400, y: -100},
+        connections: ["root", "blade_branch", "blunt_branch", "thrown_branch", "ranged_branch", "exotic_branch"],
+        sprite: spr_mod_default
+    },
+    
+    // BLADE WEAPONS (Left side of Arsenal)
+    blade_branch: {
+        id: "blade_branch",
+        type: "branch",
+        name: "Bladed Weapons",
+        description: "Sharp and deadly",
+        cost: 0,
+        unlocked: false,
+        position: {x: 100, y: -200},
+        connections: ["arsenal_path", "dagger_unlock", "knife_unlock"],
         sprite: spr_mod_default
     },
     
@@ -173,34 +63,76 @@ global.SkillTree = {
         weapon: Weapon.Dagger,
         cost: 250,
         unlocked: false,
-        position: {x: 340, y: 130},
-        connections: ["arsenal_path", "dagger_mod_1"],
+        position: {x: 50, y: -300},
+        connections: ["blade_branch"],
         sprite: spr_dagger
     },
     
-    dagger_mod_1: {
-        id: "dagger_mod_1",
-        type: "mod_unlock",
-        name: "Assassin's Edge",
-        description: "Dagger attacks from behind deal 2x damage",
-        mod_key: "AssassinsEdge",
-        cost: 400,
+    knife_unlock: {
+        id: "knife_unlock",
+        type: "weapon_unlock",
+        name: "Unlock: Knife",
+        description: "Quick slashing attacks",
+        weapon: Weapon.Knife,
+        cost: 200,
         unlocked: false,
-        position: {x: 300, y: 80},
-        connections: ["dagger_unlock", "dagger_mod_2"],
+        position: {x: 150, y: -300},
+        connections: ["blade_branch", "throwing_knife_unlock"],
         sprite: spr_mod_default
     },
     
-    dagger_mod_2: {
-        id: "dagger_mod_2",
-        type: "mod_unlock",
-        name: "Shadow Step",
-        description: "Dagger lunge goes 2x farther",
-        mod_key: "ShadowStep",
-        cost: 550,
+    throwing_knife_unlock: {
+        id: "throwing_knife_unlock",
+        type: "weapon_unlock",
+        name: "Unlock: Throwing Knives",
+        description: "Rapid projectile barrage",
+        weapon: Weapon.ThrowingKnife,
+        cost: 300,
         unlocked: false,
-        position: {x: 270, y: 40},
-        connections: ["dagger_mod_1"],
+        position: {x: 150, y: -400},
+        connections: ["knife_unlock"],
+        sprite: spr_mod_default
+    },
+    
+    // SWORDS (Center-left of Arsenal)
+    sword_branch: {
+        id: "sword_branch",
+        type: "branch",
+        name: "Swords",
+        description: "The classics",
+        cost: 0,
+        unlocked: false,
+        position: {x: 250, y: -200},
+        connections: ["arsenal_path"],
+        sprite: spr_mod_default
+    },
+    
+    // Placeholder for future swords
+    // longsword_unlock, greatsword_unlock, etc.
+    
+    // BLUNT WEAPONS (Center of Arsenal)
+    blunt_branch: {
+        id: "blunt_branch",
+        type: "branch",
+        name: "Blunt Weapons",
+        description: "Crushing force",
+        cost: 0,
+        unlocked: false,
+        position: {x: 400, y: -200},
+        connections: ["arsenal_path", "club_unlock", "bat_unlock"],
+        sprite: spr_mod_default
+    },
+    
+    club_unlock: {
+        id: "club_unlock",
+        type: "weapon_unlock",
+        name: "Unlock: Club",
+        description: "Heavy overhead smash",
+        weapon: Weapon.Club,
+        cost: 250,
+        unlocked: false,
+        position: {x: 350, y: -300},
+        connections: ["blunt_branch"],
         sprite: spr_mod_default
     },
     
@@ -212,34 +144,34 @@ global.SkillTree = {
         weapon: Weapon.BaseballBat,
         cost: 350,
         unlocked: false,
-        position: {x: 400, y: 100},
-        connections: ["arsenal_path", "bat_mod_1"],
+        position: {x: 450, y: -300},
+        connections: ["blunt_branch", "homerun_bat_unlock"],
         sprite: spr_way_better_bat
     },
     
-    bat_mod_1: {
-        id: "bat_mod_1",
-        type: "mod_unlock",
-        name: "Homerun King",
-        description: "Bat hits launch enemies into others",
-        mod_key: "HomerunKing",
-        cost: 450,
+    homerun_bat_unlock: {
+        id: "homerun_bat_unlock",
+        type: "weapon_unlock",
+        name: "Unlock: Home Run Bat",
+        description: "Maximum knockback power",
+        weapon: Weapon.HomeRunBat,
+        cost: 500,
         unlocked: false,
-        position: {x: 400, y: 40},
-        connections: ["bat_unlock", "bat_mod_2"],
+        position: {x: 450, y: -400},
+        connections: ["bat_unlock"],
         sprite: spr_mod_default
     },
     
-    bat_mod_2: {
-        id: "bat_mod_2",
-        type: "mod_unlock",
-        name: "Grand Slam",
-        description: "3rd combo hit stuns enemies for 2 seconds",
-        mod_key: "GrandSlam",
-        cost: 600,
+    // THROWN WEAPONS (Center-right of Arsenal)
+    thrown_branch: {
+        id: "thrown_branch",
+        type: "branch",
+        name: "Thrown Weapons",
+        description: "Projectile power",
+        cost: 0,
         unlocked: false,
-        position: {x: 400, y: 0},
-        connections: ["bat_mod_1"],
+        position: {x: 550, y: -200},
+        connections: ["arsenal_path", "boomerang_unlock", "grenade_unlock"],
         sprite: spr_mod_default
     },
     
@@ -251,280 +183,124 @@ global.SkillTree = {
         weapon: Weapon.Boomerang,
         cost: 300,
         unlocked: false,
-        position: {x: 460, y: 130},
-        connections: ["arsenal_path", "boomerang_mod_1"],
+        position: {x: 500, y: -300},
+        connections: ["thrown_branch", "bomberang_unlock"],
         sprite: spr_boomerang
     },
     
-    boomerang_mod_1: {
-        id: "boomerang_mod_1",
-        type: "mod_unlock",
-        name: "Triple Throw",
-        description: "Throw 3 boomerangs at once",
-        mod_key: "TripleThrow",
+    bomberang_unlock: {
+        id: "bomberang_unlock",
+        type: "weapon_unlock",
+        name: "Unlock: Bomberang",
+        description: "Explosive boomerang",
+        weapon: Weapon.Bomberang,
         cost: 500,
         unlocked: false,
-        position: {x: 500, y: 80},
-        connections: ["boomerang_unlock", "boomerang_mod_2"],
+        position: {x: 500, y: -400},
+        connections: ["boomerang_unlock"],
         sprite: spr_mod_default
     },
     
-    boomerang_mod_2: {
-        id: "boomerang_mod_2",
-        type: "mod_unlock",
-        name: "Whirlwind",
-        description: "Boomerangs orbit you before returning",
-        mod_key: "Whirlwind",
-        cost: 650,
-        unlocked: false,
-        position: {x: 530, y: 40},
-        connections: ["boomerang_mod_1"],
-        sprite: spr_mod_default
-    },
-    
-    // ==========================================
-    // NORTH-EAST: COMBAT BRANCH (Universal combat mods)
-    // ==========================================
-    
-    combat_path: {
-        id: "combat_path",
-        type: "branch",
-        name: "Combat Mastery",
-        description: "Universal combat enhancements",
-        cost: 0,
-        unlocked: false,
-        position: {x: 550, y: 200},
-        connections: ["root", "multishot", "piercing", "critical_strike"],
-        sprite: spr_mod_default
-    },
-    
-    multishot: {
-        id: "multishot",
-        type: "mod_unlock",
-        name: "Multishot",
-        description: "+2 Projectiles on ranged attacks",
-        mod_key: "Multishot",
+    grenade_unlock: {
+        id: "grenade_unlock",
+        type: "weapon_unlock",
+        name: "Unlock: Grenade",
+        description: "AOE explosive damage",
+        weapon: Weapon.Grenade,
         cost: 400,
         unlocked: false,
-        position: {x: 620, y: 150},
-        connections: ["combat_path", "multishot_2"],
+        position: {x: 600, y: -300},
+        connections: ["thrown_branch"],
         sprite: spr_mod_default
     },
     
-    multishot_2: {
-        id: "multishot_2",
-        type: "mod_unlock",
-        name: "Barrage",
-        description: "+2 more projectiles (5 total)",
-        mod_key: "Barrage",
-        cost: 700,
+    holy_water_unlock: {
+        id: "holy_water_unlock",
+        type: "weapon_unlock",
+        name: "Unlock: Holy Water",
+        description: "Blessed projectile with area effect",
+        weapon: Weapon.Holy_Water,
+        cost: 450,
         unlocked: false,
-        position: {x: 670, y: 110},
-        connections: ["multishot"],
-        sprite: spr_mod_default
+        position: {x: 600, y: -400},
+        connections: ["thrown_branch"],
+        sprite: spr_holy_water
     },
     
-    piercing: {
-        id: "piercing",
-        type: "mod_unlock",
-        name: "Piercing Shot",
-        description: "Projectiles pierce 2 enemies",
-        mod_key: "PiercingShot",
-        cost: 350,
-        unlocked: false,
-        position: {x: 600, y: 120},
-        connections: ["combat_path", "piercing_2"],
-        sprite: spr_mod_default
-    },
-    
-    piercing_2: {
-        id: "piercing_2",
-        type: "mod_unlock",
-        name: "Impaling Shot",
-        description: "Pierce 5 enemies, pin last one",
-        mod_key: "ImpalingShot",
-        cost: 600,
-        unlocked: false,
-        position: {x: 640, y: 70},
-        connections: ["piercing"],
-        sprite: spr_mod_default
-    },
-    
-    critical_strike: {
-        id: "critical_strike",
-        type: "mod_unlock",
-        name: "Critical Strike",
-        description: "15% chance for 2x damage",
-        mod_key: "CriticalStrike",
-        cost: 300,
-        unlocked: false,
-        position: {x: 580, y: 140},
-        connections: ["combat_path", "critical_strike_2"],
-        sprite: spr_mod_default
-    },
-    
-    critical_strike_2: {
-        id: "critical_strike_2",
-        type: "mod_unlock",
-        name: "Deadly Precision",
-        description: "25% chance, 2.5x damage",
-        mod_key: "DeadlyPrecision",
-        cost: 600,
-        unlocked: false,
-        position: {x: 610, y: 90},
-        connections: ["critical_strike", "critical_strike_3"],
-        sprite: spr_mod_default
-    },
-    
-    critical_strike_3: {
-        id: "critical_strike_3",
-        type: "mod_unlock",
-        name: "Assassinate",
-        description: "Crits have 10% chance to instantly kill",
-        mod_key: "Assassinate",
-        cost: 900,
-        unlocked: false,
-        position: {x: 640, y: 40},
-        connections: ["critical_strike_2"],
-        sprite: spr_mod_default
-    },
-    
-    // ==========================================
-    // EAST: UNIVERSAL STATS BRANCH
-    // ==========================================
-    
-    universal_path: {
-        id: "universal_path",
+    // RANGED WEAPONS (Right side of Arsenal)
+    ranged_branch: {
+        id: "ranged_branch",
         type: "branch",
-        name: "Universal Skills",
-        description: "Stats usable by all characters",
+        name: "Ranged Weapons",
+        description: "Distance attacks",
         cost: 0,
         unlocked: false,
-        position: {x: 550, y: 300},
-        connections: ["root", "stat_hp_1", "stat_attack_1", "stat_speed_1"],
+        position: {x: 700, y: -200},
+        connections: ["arsenal_path", "bow_branch", "gun_branch"],
         sprite: spr_mod_default
     },
     
-    stat_hp_1: {
-        id: "stat_hp_1",
-        type: "mod_unlock",
-        name: "Vitality I",
-        description: "+20 Max HP",
-        mod_key: "Vitality1",
-        cost: 150,
+    // BOW SUB-BRANCH
+    bow_branch: {
+        id: "bow_branch",
+        type: "branch",
+        name: "Bows",
+        description: "Precision archery",
+        cost: 0,
         unlocked: false,
-        position: {x: 620, y: 280},
-        connections: ["universal_path", "stat_hp_2"],
+        position: {x: 650, y: -300},
+        connections: ["ranged_branch"],
         sprite: spr_mod_default
     },
     
-    stat_hp_2: {
-        id: "stat_hp_2",
-        type: "mod_unlock",
-        name: "Vitality II",
-        description: "+40 Max HP",
-        mod_key: "Vitality2",
-        cost: 300,
+    // Placeholder for bow, crossbow, multi-bow
+    
+    // GUN SUB-BRANCH
+    gun_branch: {
+        id: "gun_branch",
+        type: "branch",
+        name: "Firearms",
+        description: "Gunpowder weapons",
+        cost: 0,
         unlocked: false,
-        position: {x: 680, y: 270},
-        connections: ["stat_hp_1", "stat_hp_3"],
+        position: {x: 750, y: -300},
+        connections: ["ranged_branch"],
         sprite: spr_mod_default
     },
     
-    stat_hp_3: {
-        id: "stat_hp_3",
-        type: "mod_unlock",
-        name: "Vitality III",
-        description: "+60 Max HP",
-        mod_key: "Vitality3",
-        cost: 500,
+    // Placeholder for flintlock, revolver, burst pistol, snakeshot
+    
+    // EXOTIC WEAPONS (Far right of Arsenal)
+    exotic_branch: {
+        id: "exotic_branch",
+        type: "branch",
+        name: "Exotic Weapons",
+        description: "Rare and unusual",
+        cost: 0,
         unlocked: false,
-        position: {x: 730, y: 260},
-        connections: ["stat_hp_2"],
+        position: {x: 850, y: -200},
+        connections: ["arsenal_path"],
         sprite: spr_mod_default
     },
     
-    stat_attack_1: {
-        id: "stat_attack_1",
-        type: "mod_unlock",
-        name: "Strength I",
-        description: "+15% Attack Damage",
-        mod_key: "Strength1",
-        cost: 200,
-        unlocked: false,
-        position: {x: 620, y: 320},
-        connections: ["universal_path", "stat_attack_2"],
-        sprite: spr_mod_default
-    },
-    
-    stat_attack_2: {
-        id: "stat_attack_2",
-        type: "mod_unlock",
-        name: "Strength II",
-        description: "+30% Attack Damage",
-        mod_key: "Strength2",
-        cost: 400,
-        unlocked: false,
-        position: {x: 680, y: 330},
-        connections: ["stat_attack_1", "stat_attack_3"],
-        sprite: spr_mod_default
-    },
-    
-    stat_attack_3: {
-        id: "stat_attack_3",
-        type: "mod_unlock",
-        name: "Strength III",
-        description: "+50% Attack Damage",
-        mod_key: "Strength3",
-        cost: 650,
-        unlocked: false,
-        position: {x: 730, y: 340},
-        connections: ["stat_attack_2"],
-        sprite: spr_mod_default
-    },
-    
-    stat_speed_1: {
-        id: "stat_speed_1",
-        type: "mod_unlock",
-        name: "Swiftness I",
-        description: "+15% Movement Speed",
-        mod_key: "Swiftness1",
-        cost: 180,
-        unlocked: false,
-        position: {x: 600, y: 350},
-        connections: ["universal_path", "stat_speed_2"],
-        sprite: spr_mod_default
-    },
-    
-    stat_speed_2: {
-        id: "stat_speed_2",
-        type: "mod_unlock",
-        name: "Swiftness II",
-        description: "+30% Movement Speed",
-        mod_key: "Swiftness2",
-        cost: 350,
-        unlocked: false,
-        position: {x: 650, y: 370},
-        connections: ["stat_speed_1", "stat_speed_3"],
-        sprite: spr_mod_default
-    },
-    
-    stat_speed_3: {
-        id: "stat_speed_3",
-        type: "mod_unlock",
-        name: "Swiftness III",
-        description: "+50% Movement Speed",
-        mod_key: "Swiftness3",
-        cost: 550,
-        unlocked: false,
-        position: {x: 700, y: 390},
-        connections: ["stat_speed_2"],
-        sprite: spr_mod_default
-    },
+    // Placeholder for magic wands, crystal balls, weird stick, 
+    // inhaler, charge cannon, black hole gun, bags of items, etc.
     
     // ==========================================
-    // SOUTH-EAST: HOLY MAGE CHARACTER
+    // EAST: CHARACTER UNLOCKS
     // ==========================================
+    
+    character_path: {
+        id: "character_path",
+        type: "branch",
+        name: "Champions",
+        description: "Unlock new playable characters",
+        cost: 0,
+        unlocked: false,
+        position: {x: 850, y: 300},
+        connections: ["root", "holy_mage_unlock", "vampire_unlock", "baseball_player_unlock", "alchemist_unlock"],
+        sprite: spr_mod_default
+    },
     
     holy_mage_unlock: {
         id: "holy_mage_unlock",
@@ -534,124 +310,10 @@ global.SkillTree = {
         character: CharacterClass.HOLY_MAGE,
         cost: 800,
         unlocked: false,
-        position: {x: 550, y: 400},
-        connections: ["universal_path", "mage_path"],
+        position: {x: 1000, y: 200},
+        connections: ["character_path"],
         sprite: spr_vh_walk_south
     },
-    
-    mage_path: {
-        id: "mage_path",
-        type: "branch",
-        name: "Path of Divinity",
-        description: "Holy Mage enhancements",
-        cost: 0,
-        unlocked: false,
-        position: {x: 600, y: 450},
-        connections: ["holy_mage_unlock", "mage_mana_1", "mage_blessed_1", "mage_projectile"],
-        sprite: spr_mod_default
-    },
-    
-    mage_mana_1: {
-        id: "mage_mana_1",
-        type: "mod_unlock",
-        name: "Mana Overflow",
-        description: "Mage: +50 Max Mana, +50% regen",
-        mod_key: "ManaOverflow",
-        required_character: CharacterClass.HOLY_MAGE,
-        cost: 250,
-        unlocked: false,
-        position: {x: 650, y: 480},
-        connections: ["mage_path", "mage_mana_2"],
-        sprite: spr_mod_default
-    },
-    
-    mage_mana_2: {
-        id: "mage_mana_2",
-        type: "mod_unlock",
-        name: "Arcane Battery",
-        description: "Mage: Mana regens even while casting",
-        mod_key: "ArcaneBattery",
-        required_character: CharacterClass.HOLY_MAGE,
-        cost: 450,
-        unlocked: false,
-        position: {x: 680, y: 520},
-        connections: ["mage_mana_1"],
-        sprite: spr_mod_default
-    },
-    
-    mage_blessed_1: {
-        id: "mage_blessed_1",
-        type: "mod_unlock",
-        name: "Sanctified Ground",
-        description: "Mage: Blessed ground radius +50%",
-        mod_key: "SanctifiedGround",
-        required_character: CharacterClass.HOLY_MAGE,
-        cost: 300,
-        unlocked: false,
-        position: {x: 620, y: 500},
-        connections: ["mage_path", "mage_blessed_2"],
-        sprite: spr_mod_default
-    },
-    
-    mage_blessed_2: {
-        id: "mage_blessed_2",
-        type: "mod_unlock",
-        name: "Divine Wrath",
-        description: "Mage: Blessed ground damages enemies",
-        mod_key: "DivineWrath",
-        required_character: CharacterClass.HOLY_MAGE,
-        cost: 500,
-        unlocked: false,
-        position: {x: 640, y: 550},
-        connections: ["mage_blessed_1", "mage_blessed_3"],
-        sprite: spr_mod_default
-    },
-    
-    mage_blessed_3: {
-        id: "mage_blessed_3",
-        type: "mod_unlock",
-        name: "Sanctuary",
-        description: "Mage: Blessed ground makes you invincible",
-        mod_key: "Sanctuary",
-        required_character: CharacterClass.HOLY_MAGE,
-        cost: 800,
-        unlocked: false,
-        position: {x: 660, y: 590},
-        connections: ["mage_blessed_2"],
-        sprite: spr_mod_default
-    },
-    
-    mage_projectile: {
-        id: "mage_projectile",
-        type: "mod_unlock",
-        name: "Zealot's Fervor",
-        description: "Mage: Projectiles gain homing",
-        mod_key: "ZealotsFervor",
-        required_character: CharacterClass.HOLY_MAGE,
-        cost: 400,
-        unlocked: false,
-        position: {x: 560, y: 480},
-        connections: ["mage_path", "mage_projectile_2"],
-        sprite: spr_mod_default
-    },
-    
-    mage_projectile_2: {
-        id: "mage_projectile_2",
-        type: "mod_unlock",
-        name: "Holy Nova",
-        description: "Mage: Projectiles explode on hit",
-        mod_key: "HolyNova",
-        required_character: CharacterClass.HOLY_MAGE,
-        cost: 600,
-        unlocked: false,
-        position: {x: 520, y: 520},
-        connections: ["mage_projectile"],
-        sprite: spr_mod_default
-    },
-    
-    // ==========================================
-    // SOUTH-WEST: VAMPIRE CHARACTER
-    // ==========================================
     
     vampire_unlock: {
         id: "vampire_unlock",
@@ -661,419 +323,52 @@ global.SkillTree = {
         character: CharacterClass.VAMPIRE,
         cost: 1000,
         unlocked: false,
-        position: {x: 250, y: 400},
-        connections: ["universal_path", "vampire_path"],
+        position: {x: 1000, y: 300},
+        connections: ["character_path"],
         sprite: spr_vh_walk_south
     },
     
-    vampire_path: {
-        id: "vampire_path",
+    baseball_player_unlock: {
+        id: "baseball_player_unlock",
+        type: "character_unlock",
+        name: "Unlock: Baseball Player",
+        description: "Master of blunt weapons and home runs",
+        character: CharacterClass.BASEBALL_PLAYER,
+        cost: 1200,
+        unlocked: false,
+        position: {x: 1000, y: 400},
+        connections: ["character_path"],
+        sprite: spr_mod_default
+    },
+    
+    alchemist_unlock: {
+        id: "alchemist_unlock",
+        type: "character_unlock",
+        name: "Unlock: Alchemist",
+        description: "Potion master and explosive expert",
+        character: CharacterClass.ALCHEMIST,
+        cost: 1400,
+        unlocked: false,
+        position: {x: 1000, y: 500},
+        connections: ["character_path"],
+        sprite: spr_mod_default
+    },
+    
+    // ==========================================
+    // SOUTH: LEVEL UNLOCKS
+    // ==========================================
+    
+    level_path: {
+        id: "level_path",
         type: "branch",
-        name: "Path of Blood",
-        description: "Vampire enhancements",
+        name: "Arenas",
+        description: "Unlock new battlegrounds",
         cost: 0,
         unlocked: false,
-        position: {x: 200, y: 450},
-        connections: ["vampire_unlock", "vampire_lifesteal_1", "vampire_frenzy_1", "vampire_dash"],
+        position: {x: 400, y: 700},
+        connections: ["root", "arena_2_unlock", "arena_3_unlock"],
         sprite: spr_mod_default
     },
-    
-    vampire_lifesteal_1: {
-        id: "vampire_lifesteal_1",
-        type: "mod_unlock",
-        name: "Thirst",
-        description: "Vampire: +10% lifesteal",
-        mod_key: "Thirst",
-        required_character: CharacterClass.VAMPIRE,
-        cost: 300,
-        unlocked: false,
-        position: {x: 150, y: 480},
-        connections: ["vampire_path", "vampire_lifesteal_2"],
-        sprite: spr_mod_default
-    },
-    
-    vampire_lifesteal_2: {
-        id: "vampire_lifesteal_2",
-        type: "mod_unlock",
-        name: "Bloodlust",
-        description: "Vampire: Lifesteal grants temporary damage",
-        mod_key: "Bloodlust",
-        required_character: CharacterClass.VAMPIRE,
-        cost: 500,
-        unlocked: false,
-        position: {x: 120, y: 520},
-        connections: ["vampire_lifesteal_1", "vampire_lifesteal_3"],
-        sprite: spr_mod_default
-    },
-    
-    vampire_lifesteal_3: {
-        id: "vampire_lifesteal_3",
-        type: "mod_unlock",
-        name: "Crimson Pact",
-        description: "Vampire: Lifesteal heals double, but max HP -20%",
-        mod_key: "CrimsonPact",
-        required_character: CharacterClass.VAMPIRE,
-        cost: 700,
-        unlocked: false,
-        position: {x: 100, y: 560},
-        connections: ["vampire_lifesteal_2"],
-        sprite: spr_mod_default
-    },
-    
-    vampire_frenzy_1: {
-        id: "vampire_frenzy_1",
-        type: "mod_unlock",
-        name: "Extended Frenzy",
-        description: "Vampire: Blood frenzy lasts 2x longer",
-        mod_key: "ExtendedFrenzy",
-        required_character: CharacterClass.VAMPIRE,
-        cost: 350,
-        unlocked: false,
-        position: {x: 220, y: 500},
-        connections: ["vampire_path", "vampire_frenzy_2"],
-        sprite: spr_mod_default
-    },
-    
-    vampire_frenzy_2: {
-        id: "vampire_frenzy_2",
-        type: "mod_unlock",
-        name: "Bloodrage",
-        description: "Vampire: Frenzy grants immunity to CC",
-        mod_key: "Bloodrage",
-        required_character: CharacterClass.VAMPIRE,
-        cost: 550,
-        unlocked: false,
-        position: {x: 240, y: 550},
-        connections: ["vampire_frenzy_1"],
-        sprite: spr_mod_default
-    },
-    
-    vampire_dash: {
-        id: "vampire_dash",
-        type: "mod_unlock",
-        name: "Bat Form",
-        description: "Vampire: Dash cooldown -30%",
-        mod_key: "BatForm",
-        required_character: CharacterClass.VAMPIRE,
-        cost: 400,
-        unlocked: false,
-        position: {x: 180, y: 520},
-        connections: ["vampire_path", "vampire_dash_2"],
-        sprite: spr_mod_default
-    },
-    
-    vampire_dash_2: {
-        id: "vampire_dash_2",
-        type: "mod_unlock",
-        name: "Mist Walker",
-        description: "Vampire: Dash through enemies, dealing damage",
-        mod_key: "MistWalker",
-        required_character: CharacterClass.VAMPIRE,
-        cost: 650,
-        unlocked: false,
-        position: {x: 160, y: 570},
-        connections: ["vampire_dash"],
-        sprite: spr_mod_default
-    },
-    
-    // ==========================================
-    // SOUTH: ELEMENTAL BRANCH
-    // ==========================================
-    
-    elemental_path: {
-        id: "elemental_path",
-        type: "branch",
-        name: "Elemental Arts",
-        description: "Fire, Ice, Lightning enchantments",
-        cost: 0,
-        unlocked: false,
-        position: {x: 400, y: 420},
-        connections: ["root", "fire_enchant", "ice_enchant", "lightning_enchant"],
-        sprite: spr_mod_default
-    },
-    
-    fire_enchant: {
-        id: "fire_enchant",
-        type: "mod_unlock",
-        name: "Fire Enchantment",
-        description: "Attacks burn enemies over time",
-        mod_key: "FireEnchantment",
-        cost: 300,
-        unlocked: false,
-        position: {x: 340, y: 470},
-        connections: ["elemental_path", "fire_enchant_2"],
-        sprite: spr_mod_default
-    },
-    
-    fire_enchant_2: {
-        id: "fire_enchant_2",
-        type: "mod_unlock",
-        name: "Inferno",
-        description: "Burn spreads to nearby enemies",
-        mod_key: "Inferno",
-        cost: 500,
-        unlocked: false,
-        position: {x: 310, y: 520},
-        connections: ["fire_enchant", "fire_enchant_3"],
-        sprite: spr_mod_default
-    },
-    
-    fire_enchant_3: {
-        id: "fire_enchant_3",
-        type: "mod_unlock",
-        name: "Pyroclasm",
-        description: "Burning enemies explode on death",
-        mod_key: "Pyroclasm",
-        cost: 750,
-        unlocked: false,
-        position: {x: 290, y: 570},
-        connections: ["fire_enchant_2"],
-        sprite: spr_mod_default
-    },
-    
-    ice_enchant: {
-        id: "ice_enchant",
-        type: "mod_unlock",
-        name: "Ice Enchantment",
-        description: "Attacks slow enemies by 50%",
-        mod_key: "IceEnchantment",
-        cost: 300,
-        unlocked: false,
-        position: {x: 400, y: 490},
-        connections: ["elemental_path", "ice_enchant_2"],
-        sprite: spr_mod_default
-    },
-    
-    ice_enchant_2: {
-        id: "ice_enchant_2",
-        type: "mod_unlock",
-        name: "Deep Freeze",
-        description: "Slowed enemies can be frozen solid",
-        mod_key: "DeepFreeze",
-        cost: 500,
-        unlocked: false,
-        position: {x: 400, y: 550},
-        connections: ["ice_enchant", "ice_enchant_3"],
-        sprite: spr_mod_default
-    },
-    
-    ice_enchant_3: {
-        id: "ice_enchant_3",
-        type: "mod_unlock",
-        name: "Shatter",
-        description: "Frozen enemies explode when hit",
-        mod_key: "Shatter",
-        cost: 750,
-        unlocked: false,
-        position: {x: 400, y: 600},
-        connections: ["ice_enchant_2"],
-        sprite: spr_mod_default
-    },
-    
-    lightning_enchant: {
-        id: "lightning_enchant",
-        type: "mod_unlock",
-        name: "Lightning Enchantment",
-        description: "Attacks shock enemies",
-        mod_key: "LightningEnchantment",
-        cost: 300,
-        unlocked: false,
-        position: {x: 460, y: 470},
-        connections: ["elemental_path", "lightning_enchant_2"],
-        sprite: spr_mod_default
-    },
-    
-    lightning_enchant_2: {
-        id: "lightning_enchant_2",
-        type: "mod_unlock",
-        name: "Chain Lightning",
-        description: "Lightning chains to 4 nearby enemies",
-        mod_key: "ChainLightning",
-        cost: 500,
-        unlocked: false,
-        position: {x: 490, y: 520},
-        connections: ["lightning_enchant", "lightning_enchant_3"],
-        sprite: spr_mod_default
-    },
-    
-    lightning_enchant_3: {
-        id: "lightning_enchant_3",
-        type: "mod_unlock",
-        name: "Storm Caller",
-        description: "Chance to summon lightning strikes",
-        mod_key: "StormCaller",
-        cost: 750,
-        unlocked: false,
-        position: {x: 510, y: 570},
-        connections: ["lightning_enchant_2"],
-        sprite: spr_mod_default
-    },
-    
-    // ==========================================
-    // WEST: DEFENSIVE / UTILITY BRANCH
-    // ==========================================
-    
-    defensive_path: {
-        id: "defensive_path",
-        type: "branch",
-        name: "Survival",
-        description: "Defensive and utility options",
-        cost: 0,
-        unlocked: false,
-        position: {x: 250, y: 300},
-        connections: ["root", "regen_1", "dodge_1", "shield_1"],
-        sprite: spr_mod_default
-    },
-    
-    regen_1: {
-        id: "regen_1",
-        type: "mod_unlock",
-        name: "Regeneration",
-        description: "Heal 1 HP every 3 seconds",
-        mod_key: "Regeneration",
-        cost: 200,
-        unlocked: false,
-        position: {x: 180, y: 280},
-        connections: ["defensive_path", "regen_2"],
-        sprite: spr_mod_default
-    },
-    
-    regen_2: {
-        id: "regen_2",
-        type: "mod_unlock",
-        name: "Fast Healing",
-        description: "Heal 2 HP every 2 seconds",
-        mod_key: "FastHealing",
-        cost: 400,
-        unlocked: false,
-        position: {x: 130, y: 260},
-        connections: ["regen_1", "regen_3"],
-        sprite: spr_mod_default
-    },
-    
-    regen_3: {
-        id: "regen_3",
-        type: "mod_unlock",
-        name: "Troll Blood",
-        description: "Heal 5 HP every second",
-        mod_key: "TrollBlood",
-        cost: 700,
-        unlocked: false,
-        position: {x: 90, y: 240},
-        connections: ["regen_2"],
-        sprite: spr_mod_default
-    },
-    
-    dodge_1: {
-        id: "dodge_1",
-        type: "mod_unlock",
-        name: "Evasion",
-        description: "10% chance to dodge attacks",
-        mod_key: "Evasion",
-        cost: 250,
-        unlocked: false,
-        position: {x: 200, y: 320},
-        connections: ["defensive_path", "dodge_2"],
-        sprite: spr_mod_default
-    },
-    
-    dodge_2: {
-        id: "dodge_2",
-        type: "mod_unlock",
-        name: "Acrobat",
-        description: "20% dodge chance",
-        mod_key: "Acrobat",
-        cost: 500,
-        unlocked: false,
-        position: {x: 150, y: 350},
-        connections: ["dodge_1"],
-        sprite: spr_mod_default
-    },
-    
-    shield_1: {
-        id: "shield_1",
-        type: "mod_unlock",
-        name: "Barrier",
-        description: "Absorb 50 damage before taking HP damage",
-        mod_key: "Barrier",
-        cost: 300,
-        unlocked: false,
-        position: {x: 180, y: 350},
-        connections: ["defensive_path", "shield_2"],
-        sprite: spr_mod_default
-    },
-    
-    shield_2: {
-        id: "shield_2",
-        type: "mod_unlock",
-        name: "Fortified",
-        description: "Shield regenerates over time",
-        mod_key: "Fortified",
-        cost: 550,
-        unlocked: false,
-        position: {x: 130, y: 380},
-        connections: ["shield_1"],
-        sprite: spr_mod_default
-    },
-    
-    // ==========================================
-    // SPECIAL: CHAIN/PROC EFFECTS
-    // ==========================================
-    
-    chain_path: {
-        id: "chain_path",
-        type: "branch",
-        name: "Chain Effects",
-        description: "Powerful proc-based abilities",
-        cost: 0,
-        unlocked: false,
-        position: {x: 300, y: 360},
-        connections: ["root", "corpse_explosion", "lifesteal_universal"],
-        sprite: spr_mod_default
-    },
-    
-    corpse_explosion: {
-        id: "corpse_explosion",
-        type: "mod_unlock",
-        name: "Corpse Explosion",
-        description: "25% chance enemies explode on death",
-        mod_key: "CorpseExplosion",
-        cost: 450,
-        unlocked: false,
-        position: {x: 280, y: 410},
-        connections: ["chain_path", "corpse_explosion_2"],
-        sprite: spr_mod_default
-    },
-    
-    corpse_explosion_2: {
-        id: "corpse_explosion_2",
-        type: "mod_unlock",
-        name: "Chain Reaction",
-        description: "Explosions can trigger more explosions",
-        mod_key: "ChainReaction",
-        cost: 700,
-        unlocked: false,
-        position: {x: 260, y: 460},
-        connections: ["corpse_explosion"],
-        sprite: spr_mod_default
-    },
-    
-    lifesteal_universal: {
-        id: "lifesteal_universal",
-        type: "mod_unlock",
-        name: "Life Drain",
-        description: "5% lifesteal on all attacks",
-        mod_key: "LifeDrain",
-        cost: 350,
-        unlocked: false,
-        position: {x: 320, y: 410},
-        connections: ["chain_path"],
-        sprite: spr_mod_default
-    },
-    
-    // ==========================================
-    // LEVEL UNLOCKS
-    // ==========================================
     
     arena_2_unlock: {
         id: "arena_2_unlock",
@@ -1083,8 +378,8 @@ global.SkillTree = {
         level_id: "arena_2",
         cost: 1500,
         unlocked: false,
-        position: {x: 500, y: 360},
-        connections: ["root", "arena_3_unlock"],
+        position: {x: 300, y: 850},
+        connections: ["level_path"],
         sprite: spr_mod_default
     },
     
@@ -1096,13 +391,565 @@ global.SkillTree = {
         level_id: "arena_3",
         cost: 3000,
         unlocked: false,
-        position: {x: 500, y: 420},
-        connections: ["arena_2_unlock"],
+        position: {x: 500, y: 850},
+        connections: ["level_path"],
+        sprite: spr_mod_default
+    },
+    
+    // ==========================================
+    // WEST: PRE-GAME MODIFIER PATH
+    // ==========================================
+    
+    pregame_path: {
+        id: "pregame_path",
+        type: "branch",
+        name: "Pre-Game Advantages",
+        description: "Permanent modifiers for all runs",
+        cost: 0,
+        unlocked: false,
+        position: {x: -200, y: 300},
+        connections: ["root", "pregame_physics_branch", "pregame_combat_branch", "pregame_movement_branch", "pregame_economy_branch"],
+        sprite: spr_mod_default
+    },
+    
+    // ==========================================
+    // NORTHWEST: PHYSICS BRANCH
+    // ==========================================
+    
+    pregame_physics_branch: {
+        id: "pregame_physics_branch",
+        type: "branch",
+        name: "Physics Manipulators",
+        description: "Change how entities interact",
+        cost: 0,
+        unlocked: false,
+        position: {x: -400, y: 100},
+        connections: ["pregame_path", "pregame_bouncy", "pregame_meteor", "pregame_heavy_hitter", "pregame_featherweight", "pregame_gravity_well"],
+        sprite: spr_mod_default
+    },
+    
+    pregame_bouncy: {
+        id: "pregame_bouncy",
+        type: "pregame_mod_unlock",
+        name: "Bouncy Castle",
+        description: "All entities have 50% increased knockback",
+        mod_id: PreGameMod.BOUNCY,
+        cost: 500,
+        unlocked: false,
+        position: {x: -550, y: 50},
+        connections: ["pregame_physics_branch"],
+        sprite: spr_mod_default
+    },
+    
+    pregame_meteor: {
+        id: "pregame_meteor",
+        type: "pregame_mod_unlock",
+        name: "Meteor Strike",
+        description: "Enemies that hit walls at high speed explode",
+        mod_id: PreGameMod.METEOR,
+        cost: 600,
+        unlocked: false,
+        position: {x: -550, y: 150},
+        connections: ["pregame_physics_branch"],
+        sprite: spr_mod_default
+    },
+    
+    pregame_heavy_hitter: {
+        id: "pregame_heavy_hitter",
+        type: "pregame_mod_unlock",
+        name: "Heavy Hitter",
+        description: "Attacks 30% slower but knock enemies 3x farther",
+        mod_id: PreGameMod.HEAVY_HITTER,
+        cost: 550,
+        unlocked: false,
+        position: {x: -450, y: 0},
+        connections: ["pregame_physics_branch"],
+        sprite: spr_mod_default
+    },
+    
+    pregame_featherweight: {
+        id: "pregame_featherweight",
+        type: "pregame_mod_unlock",
+        name: "Featherweight",
+        description: "Move 25% faster, attacks knock enemies 50% less",
+        mod_id: PreGameMod.FEATHERWEIGHT,
+        cost: 500,
+        unlocked: false,
+        position: {x: -350, y: 0},
+        connections: ["pregame_physics_branch"],
+        sprite: spr_mod_default
+    },
+    
+    pregame_gravity_well: {
+        id: "pregame_gravity_well",
+        type: "pregame_mod_unlock",
+        name: "Gravity Well",
+        description: "Killed enemies pull nearby enemies toward death location",
+        mod_id: PreGameMod.GRAVITY_WELL,
+        cost: 650,
+        unlocked: false,
+        position: {x: -450, y: 200},
+        connections: ["pregame_physics_branch"],
+        sprite: spr_mod_default
+    },
+    
+    pregame_ice_rink: {
+        id: "pregame_ice_rink",
+        type: "pregame_mod_unlock",
+        name: "Ice Rink",
+        description: "All entities slide after moving (momentum physics)",
+        mod_id: PreGameMod.ICE_RINK,
+        cost: 600,
+        unlocked: false,
+        position: {x: -350, y: 200},
+        connections: ["pregame_physics_branch"],
+        sprite: spr_mod_default
+    },
+    
+    pregame_pinball_mode: {
+        id: "pregame_pinball_mode",
+        type: "pregame_mod_unlock",
+        name: "Pinball Wizard",
+        description: "Enemies bounce off screen edges",
+        mod_id: PreGameMod.PINBALL_MODE,
+        cost: 700,
+        unlocked: false,
+        position: {x: -400, y: -50},
+        connections: ["pregame_physics_branch"],
+        sprite: spr_mod_default
+    },
+    
+    pregame_dash_strike: {
+        id: "pregame_dash_strike",
+        type: "pregame_mod_unlock",
+        name: "Dash Strike",
+        description: "Dashing through enemies sends them flying and deals damage",
+        mod_id: PreGameMod.DASH_STRIKE,
+        cost: 550,
+        unlocked: false,
+        position: {x: -300, y: 100},
+        connections: ["pregame_physics_branch"],
+        sprite: spr_mod_default
+    },
+    
+    pregame_big_weapon: {
+        id: "pregame_big_weapon",
+        type: "pregame_mod_unlock",
+        name: "Heavyweight Champion",
+        description: "Weapons are 2x bigger but 1.5x slower",
+        mod_id: PreGameMod.BIG_WEAPON,
+        cost: 650,
+        unlocked: false,
+        position: {x: -500, y: 100},
+        connections: ["pregame_physics_branch"],
+        sprite: spr_mod_default
+    },
+    
+    // ==========================================
+    // NORTH FROM PREGAME: MOVEMENT BRANCH (Straight up)
+    // ==========================================
+    
+    pregame_movement_branch: {
+        id: "pregame_movement_branch",
+        type: "branch",
+        name: "Movement & Utility",
+        description: "Enhance mobility and utility",
+        cost: 0,
+        unlocked: false,
+        position: {x: -200, y: -100},
+        connections: ["pregame_path", "pregame_time_slow", "pregame_speed_demon", "pregame_teleport", "pregame_hover_boots"],
+        sprite: spr_mod_default
+    },
+    
+    pregame_time_slow: {
+        id: "pregame_time_slow",
+        type: "pregame_mod_unlock",
+        name: "Bullet Time",
+        description: "Dash = 5s bullet time (10s cooldown). You move normal speed",
+        mod_id: PreGameMod.TIME_SLOW,
+        cost: 800,
+        unlocked: false,
+        position: {x: -250, y: -250},
+        connections: ["pregame_movement_branch"],
+        sprite: spr_mod_default
+    },
+    
+    pregame_hover_boots: {
+        id: "pregame_hover_boots",
+        type: "pregame_mod_unlock",
+        name: "Hover Boots",
+        description: "Float over pits before falling",
+        mod_id: PreGameMod.HOVER_BOOTS,
+        cost: 500,
+        unlocked: false,
+        position: {x: -150, y: -250},
+        connections: ["pregame_movement_branch"],
+        sprite: spr_mod_default
+    },
+    
+    pregame_teleport: {
+        id: "pregame_teleport",
+        type: "pregame_mod_unlock",
+        name: "Blink",
+        description: "Dash = short teleport (no i-frames)",
+        mod_id: PreGameMod.TELEPORT,
+        cost: 700,
+        unlocked: false,
+        position: {x: -200, y: -350},
+        connections: ["pregame_movement_branch"],
+        sprite: spr_mod_default
+    },
+    
+    pregame_speed_demon: {
+        id: "pregame_speed_demon",
+        type: "pregame_mod_unlock",
+        name: "Speed Demon",
+        description: "+50% move speed, -50% HP and weight",
+        mod_id: PreGameMod.SPEED_DEMON,
+        cost: 650,
+        unlocked: false,
+        position: {x: -300, y: -200},
+        connections: ["pregame_movement_branch"],
+        sprite: spr_mod_default
+    },
+    
+    pregame_magnetic_field: {
+        id: "pregame_magnetic_field",
+        type: "pregame_mod_unlock",
+        name: "Magnetic Field",
+        description: "Pickups pulled from 2x farther",
+        mod_id: PreGameMod.MAGNETIC_FIELD,
+        cost: 450,
+        unlocked: false,
+        position: {x: -100, y: -200},
+        connections: ["pregame_movement_branch"],
+        sprite: spr_mod_default
+    },
+    
+    pregame_charge_dash: {
+        id: "pregame_charge_dash",
+        type: "pregame_mod_unlock",
+        name: "Charge Dash",
+        description: "Hold dash to charge, release to launch",
+        mod_id: PreGameMod.CHARGE_DASH,
+        cost: 750,
+        unlocked: false,
+        position: {x: -250, y: -150},
+        connections: ["pregame_movement_branch"],
+        sprite: spr_mod_default
+    },
+    
+    // ==========================================
+    // SOUTHWEST: COMBAT BRANCH
+    // ==========================================
+    
+    pregame_combat_branch: {
+        id: "pregame_combat_branch",
+        type: "branch",
+        name: "Combat Modifiers",
+        description: "Enhance your damage and abilities",
+        cost: 0,
+        unlocked: false,
+        position: {x: -400, y: 500},
+        connections: ["pregame_path", "pregame_glass_cannon", "pregame_berserk", "pregame_crit_addict", "pregame_auto_aim"],
+        sprite: spr_mod_default
+    },
+    
+    pregame_glass_cannon: {
+        id: "pregame_glass_cannon",
+        type: "pregame_mod_unlock",
+        name: "Glass Cannon",
+        description: "Deal 2x damage but have 50% HP",
+        mod_id: PreGameMod.GLASS_CANNON,
+        cost: 600,
+        unlocked: false,
+        position: {x: -550, y: 450},
+        connections: ["pregame_combat_branch"],
+        sprite: spr_mod_default
+    },
+    
+    pregame_auto_aim: {
+        id: "pregame_auto_aim",
+        type: "pregame_mod_unlock",
+        name: "Auto Aim",
+        description: "Projectiles home toward nearest enemy",
+        mod_id: PreGameMod.AUTO_AIM,
+        cost: 550,
+        unlocked: false,
+        position: {x: -350, y: 600},
+        connections: ["pregame_combat_branch"],
+        sprite: spr_mod_default
+    },
+    
+    pregame_dual_wield: {
+        id: "pregame_dual_wield",
+        type: "pregame_mod_unlock",
+        name: "Dual Wield",
+        description: "Secondary weapon activates with right click",
+        mod_id: PreGameMod.DUAL_WIELD,
+        cost: 700,
+        unlocked: false,
+        position: {x: -450, y: 600},
+        connections: ["pregame_combat_branch"],
+        sprite: spr_mod_default
+    },
+    
+    pregame_lifesteal: {
+        id: "pregame_lifesteal",
+        type: "pregame_mod_unlock",
+        name: "Vampiric",
+        description: "Heal 1% of damage dealt, drain 0.33 HP/sec",
+        mod_id: PreGameMod.LIFESTEAL,
+        cost: 500,
+        unlocked: false,
+        position: {x: -550, y: 550},
+        connections: ["pregame_combat_branch"],
+        sprite: spr_mod_default
+    },
+    
+    pregame_ricochet: {
+        id: "pregame_ricochet",
+        type: "pregame_mod_unlock",
+        name: "Ricochet",
+        description: "Projectiles bounce off walls and enemies",
+        mod_id: PreGameMod.RICOCHET,
+        cost: 600,
+        unlocked: false,
+        position: {x: -300, y: 500},
+        connections: ["pregame_combat_branch"],
+        sprite: spr_mod_default
+    },
+    
+    pregame_berserk: {
+        id: "pregame_berserk",
+        type: "pregame_mod_unlock",
+        name: "Berserk",
+        description: "Start 50% damage. At 1% HP, 3x damage (scales with missing HP)",
+        mod_id: PreGameMod.BERSERK,
+        cost: 650,
+        unlocked: false,
+        position: {x: -450, y: 400},
+        connections: ["pregame_combat_branch"],
+        sprite: spr_mod_default
+    },
+    
+    pregame_execute_base: {
+        id: "pregame_execute_base",
+        type: "pregame_mod_unlock",
+        name: "Executioner",
+        description: "Instantly kill base enemies below 20% HP",
+        mod_id: PreGameMod.EXECUTE_BASE,
+        cost: 700,
+        unlocked: false,
+        position: {x: -500, y: 650},
+        connections: ["pregame_combat_branch", "pregame_execute_boss"],
+        sprite: spr_mod_default
+    },
+    
+    pregame_execute_boss: {
+        id: "pregame_execute_boss",
+        type: "pregame_mod_unlock",
+        name: "Regicide",
+        description: "Instantly kill boss enemies below 20% HP",
+        mod_id: PreGameMod.EXECUTE_BOSS,
+        cost: 1000,
+        unlocked: false,
+        position: {x: -500, y: 750},
+        connections: ["pregame_execute_base"],
+        sprite: spr_mod_default
+    },
+    
+    pregame_crit_addict: {
+        id: "pregame_crit_addict",
+        type: "pregame_mod_unlock",
+        name: "Crit Addict",
+        description: "50% crit chance, normal attacks -30% damage",
+        mod_id: PreGameMod.CRIT_ADDICT,
+        cost: 650,
+        unlocked: false,
+        position: {x: -350, y: 400},
+        connections: ["pregame_combat_branch"],
+        sprite: spr_mod_default
+    },
+    
+    pregame_multi_hit: {
+        id: "pregame_multi_hit",
+        type: "pregame_mod_unlock",
+        name: "Double Tap",
+        description: "Attacks hit twice, 50% damage each",
+        mod_id: PreGameMod.MULTI_HIT,
+        cost: 600,
+        unlocked: false,
+        position: {x: -300, y: 400},
+        connections: ["pregame_combat_branch"],
+        sprite: spr_mod_default
+    },
+    
+    pregame_sharpshooter: {
+        id: "pregame_sharpshooter",
+        type: "pregame_mod_unlock",
+        name: "Sharpshooter",
+        description: "+100% damage to enemies off-screen",
+        mod_id: PreGameMod.SHARPSHOOTER,
+        cost: 550,
+        unlocked: false,
+        position: {x: -400, y: 650},
+        connections: ["pregame_combat_branch"],
+        sprite: spr_mod_default
+    },
+    
+    // ==========================================
+    // SOUTH FROM PREGAME: ECONOMY BRANCH (Straight down)
+    // ==========================================
+    
+    pregame_economy_branch: {
+        id: "pregame_economy_branch",
+        type: "branch",
+        name: "Economy & Progression",
+        description: "Boost rewards and growth",
+        cost: 0,
+        unlocked: false,
+        position: {x: -200, y: 700},
+        connections: ["pregame_path", "pregame_souls_2x", "pregame_lucky", "pregame_investor", "pregame_stat_hp"],
+        sprite: spr_mod_default
+    },
+    
+    pregame_souls_2x: {
+        id: "pregame_souls_2x",
+        type: "pregame_mod_unlock",
+        name: "Soul Harvest",
+        description: "Earn 2x souls per run",
+        mod_id: PreGameMod.SOULS_2X,
+        cost: 0,
+        unlocked: false,
+        position: {x: -150, y: 850},
+        connections: ["pregame_economy_branch"],
+        sprite: spr_mod_default
+    },
+    
+    pregame_exp_2x: {
+        id: "pregame_exp_2x",
+        type: "pregame_mod_unlock",
+        name: "Adrenaline Rush",
+        description: "2x EXP, expires after 10 seconds",
+        mod_id: PreGameMod.EXP_2X,
+        cost: 400,
+        unlocked: false,
+        position: {x: -250, y: 850},
+        connections: ["pregame_economy_branch"],
+        sprite: spr_mod_default
+    },
+    
+    pregame_lucky: {
+        id: "pregame_lucky",
+        type: "pregame_mod_unlock",
+        name: "Lucky",
+        description: "50% increased drop rates",
+        mod_id: PreGameMod.LUCKY,
+        cost: 500,
+        unlocked: false,
+        position: {x: -200, y: 950},
+        connections: ["pregame_economy_branch"],
+        sprite: spr_mod_default
+    },
+    
+    pregame_random_mod: {
+        id: "pregame_random_mod",
+        type: "pregame_mod_unlock",
+        name: "Wild Card",
+        description: "Start with random in-game mod (Lvl 1-5)",
+        mod_id: PreGameMod.RANDOM_MOD,
+        cost: 600,
+        unlocked: false,
+        position: {x: -100, y: 950},
+        connections: ["pregame_economy_branch"],
+        sprite: spr_mod_default
+    },
+    
+    pregame_stat_hp: {
+        id: "pregame_stat_hp",
+        type: "pregame_mod_unlock",
+        name: "Vitality Boost",
+        description: "+10% Max HP",
+        mod_id: PreGameMod.STAT_HP,
+        cost: 300,
+        unlocked: false,
+        position: {x: -100, y: 750},
+        connections: ["pregame_economy_branch"],
+        sprite: spr_mod_default
+    },
+    
+    pregame_stat_damage: {
+        id: "pregame_stat_damage",
+        type: "pregame_mod_unlock",
+        name: "Power Boost",
+        description: "+10% Damage",
+        mod_id: PreGameMod.STAT_DAMAGE,
+        cost: 300,
+        unlocked: false,
+        position: {x: -200, y: 800},
+        connections: ["pregame_economy_branch"],
+        sprite: spr_mod_default
+    },
+    
+    pregame_stat_speed: {
+        id: "pregame_stat_speed",
+        type: "pregame_mod_unlock",
+        name: "Agility Boost",
+        description: "+10% Move Speed",
+        mod_id: PreGameMod.STAT_SPEED,
+        cost: 300,
+        unlocked: false,
+        position: {x: -300, y: 750},
+        connections: ["pregame_economy_branch"],
+        sprite: spr_mod_default
+    },
+    
+    pregame_investor: {
+        id: "pregame_investor",
+        type: "pregame_mod_unlock",
+        name: "Investor",
+        description: "Gold generates 1% interest/sec (max 2x)",
+        mod_id: PreGameMod.INVESTOR,
+        cost: 700,
+        unlocked: false,
+        position: {x: -100, y: 850},
+        connections: ["pregame_economy_branch", "pregame_compounding"],
+        sprite: spr_mod_default
+    },
+    
+    pregame_compounding: {
+        id: "pregame_compounding",
+        type: "pregame_mod_unlock",
+        name: "Compounding Interest",
+        description: "Each kill +1% soul gain (stacks infinitely)",
+        mod_id: PreGameMod.COMPOUNDING,
+        cost: 800,
+        unlocked: false,
+        position: {x: 0, y: 950},
+        connections: ["pregame_investor"],
+        sprite: spr_mod_default
+    },
+    
+    // ==========================================
+    // FAR EAST: PRESTIGE PATH (Locked - In Development)
+    // ==========================================
+    
+    prestige_path: {
+        id: "prestige_path",
+        type: "branch",
+        name: "PRESTIGE [LOCKED]",
+        description: "Advanced meta progression (Coming Soon)",
+        cost: 0,
+        unlocked: false,
+        position: {x: 1200, y: 300},
+        connections: ["root"],
         sprite: spr_mod_default
     }
+    
+    // Prestige nodes will go here later
 };
 
-// In your player's stat recalculation (obj_player Step or wherever you calculate stats)
 function ApplySkillTreeBonuses() {
     var bonus_hp = 0;
     var bonus_attack = 0;
@@ -1138,17 +985,12 @@ function ApplySkillTreeBonuses() {
     mySpeed *= (1 + bonus_speed);
 }
 
-//// Add particle effects when unlocking
-//function SpawnUnlockParticles(_x, _y) {
-//    part_particles_create(global.particle_system, _x, _y, global.pt_spark, 20);
-//}
 
 //// Add sound effects
 //function PlayUnlockSound() {
 //    audio_play_sound(snd_skill_unlock, 1, false);
 //}
 
-/// @file scr_SkillTreeSystem
 /// @description Interactive web-like skill tree with pan/zoom navigation
 
 function SkillTreeSystem() constructor {
@@ -1496,8 +1338,8 @@ static CanUnlockNode = function(_node_id) {
                 ApplyStatBoost(_node_id, _node);
                 break;
                 
-            case "mod_unlock":
-                UnlockModifier(_node.mod_key);
+            case "pregame_mod_unlock":
+                UnlockModifier(_node.id);
                 break;
                 
             case "level_unlock":
@@ -1864,7 +1706,7 @@ static DrawConnections = function(_w, _h) {
             case "character_unlock": return "CHARACTER";
             case "weapon_unlock": return "WEAPON";
             case "stat_boost": return "STAT";
-            case "mod_unlock": return "MODIFIER";
+            case "pregame_mod_unlock": return "MODIFIER";
             case "level_unlock": return "LEVEL";
             case "branch": return "PATH";
             default: return "UNKNOWN";
@@ -1877,7 +1719,7 @@ static DrawConnections = function(_w, _h) {
             case "character_unlock": return c_purple;
             case "weapon_unlock": return c_orange;
             case "stat_boost": return c_aqua;
-            case "mod_unlock": return c_lime;
+            case "pregame_mod_unlock": return c_lime;
             case "level_unlock": return c_yellow;
             case "branch": return c_gray;
             default: return c_white;

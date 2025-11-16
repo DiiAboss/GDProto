@@ -18,7 +18,16 @@ enum Weapon {
 	Axe,
 	Staff,
 	Whip,
-	Spear
+	Spear,
+	Knife,
+	ThrowingKnife,
+	Club,
+	HomeRunBat,
+	Bomberang,
+	Grenade,
+	Fists,
+	BBallGun,
+	
 }
 
 enum AttackType {

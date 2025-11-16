@@ -26,7 +26,7 @@
   "origin":4,
   "parent":{
     "name":"FIRE_MODS_SPRITES",
-    "path":"folders/Sprites/Modifiers/FIRE_MODS_SPRITES.yy",
+    "path":"folders/Modifiers_Folder/InGameModifiers/Modifier_Sprites/FIRE_MODS_SPRITES.yy",
   },
   "preMultiplyAlpha":false,
   "resourceType":"GMSprite",

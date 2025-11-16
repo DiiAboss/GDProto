@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_LoadAvailablMods",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_LoadAvailablMods",
+  "parent":{
+    "name":"Modifer_Scripts",
+    "path":"folders/Modifiers_Folder/InGameModifiers/Modifer_Scripts.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

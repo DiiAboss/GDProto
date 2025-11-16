@@ -149,15 +149,7 @@ function PushbackEnemies(_x, _y, _radius, _force) {
         if (dist <= _radius && dist > 0) {
             var push_dir = point_direction(_x, _y, x, y);
             var push_strength = _force * (1 - (dist / _radius)); // Falloff
-            
-            // Apply knockback (adjust based on your enemy knockback system)
-            if (variable_instance_exists(id, "knockbackX")) {
-                knockbackX = lengthdir_x(push_strength, push_dir);
-                knockbackY = lengthdir_y(push_strength, push_dir);
-            } else {
-                hspeed += lengthdir_x(push_strength, push_dir);
-                vspeed += lengthdir_y(push_strength, push_dir);
-            }
+			knockback.Apply(push_dir, push_strength);
         }
     }
 }

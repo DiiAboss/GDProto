@@ -26,7 +26,7 @@
   "origin":4,
   "parent":{
     "name":"LIGHTNING_MOD_SPRITES",
-    "path":"folders/Sprites/Modifiers/LIGHTNING_MOD_SPRITES.yy",
+    "path":"folders/Modifiers_Folder/InGameModifiers/Modifier_Sprites/LIGHTNING_MOD_SPRITES.yy",
   },
   "preMultiplyAlpha":false,
   "resourceType":"GMSprite",

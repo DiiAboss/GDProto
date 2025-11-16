@@ -37,7 +37,10 @@ if (hp < maxHp || timers.IsActive("hp_bar")) {
     draw_player_hp_bar(x, y, hp, maxHp);
 }
 
-
+if (variable_struct_exists(weaponCurrent, "sprite"))
+{
+	draw_sprite_ext(weaponCurrent.sprite, 0, x, y, 1, img_xscale, mouseDirection, c_white, 1);
+}
 
 // CLASS-SPECIFIC VISUALS (only when not falling)
 //if (!is_falling_in_pit) {

@@ -58,17 +58,15 @@ switch (state) {
         var hit = instance_place(x, y, obj_player);
         if (hit != noone) {
             var kbDir = point_direction(x, y, hit.x, hit.y);
-            hit.knockbackX = lengthdir_x(dashSpeed * 2, kbDir);
-            hit.knockbackY = lengthdir_y(dashSpeed * 2, kbDir);
             hit.damage_sys.TakeDamage(10, self);
+			hit.knockback.Apply(kbDir, dashSpeed * 2);
         }
 
         // Check for other enemies with knockback
         with (obj_enemy) {
             if (id != other.id && point_distance(x, y, other.x, other.y) < sprite_width) {
                 var kbDir = point_direction(other.x, other.y, x, y);
-                knockbackX = lengthdir_x(6, kbDir);
-                knockbackY = lengthdir_y(6, kbDir);
+				knockback.Apply(kbDir, 6);
             }
         }
     break;

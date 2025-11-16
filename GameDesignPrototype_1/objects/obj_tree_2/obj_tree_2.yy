@@ -1,7 +1,10 @@
 {
   "$GMObject":"",
   "%Name":"obj_tree_2",
-  "eventList":[],
+  "eventList":[
+    {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":0,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
+    {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":8,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
+  ],
   "managed":true,
   "name":"obj_tree_2",
   "overriddenProperties":[],
@@ -10,8 +13,8 @@
     "path":"folders/Objects/In-Game/ENIRONMENT_OBJECTS.yy",
   },
   "parentObjectId":{
-    "name":"obj_wall",
-    "path":"objects/obj_wall/obj_wall.yy",
+    "name":"obj_obstacle",
+    "path":"objects/obj_obstacle/obj_obstacle.yy",
   },
   "persistent":false,
   "physicsAngularDamping":0.1,

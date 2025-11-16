@@ -135,6 +135,7 @@ function CalculateCachedStats(_entity) {
     if (!variable_instance_exists(_entity.damage_sys, "base_max_hp")) {
         _entity.damage_sys.base_max_hp = _entity.damage_sys.max_hp;
     }
+	
     
     // Start fresh from base stats
     var damage_bonus = 0;
@@ -142,6 +143,7 @@ function CalculateCachedStats(_entity) {
     var speed_bonus = 0;
     var speed_mult = 1.0;
     var max_hp_bonus = 0;
+	var max_hp_mult = 1.0;
     
     // Loop through all modifiers
     for (var i = 0; i < array_length(_entity.mod_list); i++) {
@@ -172,13 +174,16 @@ function CalculateCachedStats(_entity) {
             if (variable_struct_exists(stats, "max_hp_bonus")) {
                 max_hp_bonus += GetStackedValue(stats.max_hp_bonus, stack);
             }
+			if (variable_struct_exists(stats, "max_hp_mult")) {
+                max_hp_mult *= GetStackedValue(stats.max_hp_mult, stack);
+            }
         }
     }
     
     // APPLY calculated stats to component system
     _entity.stats.attack = (_entity.stats.base_attack + damage_bonus) * damage_mult;
     _entity.stats.speed = (_entity.stats.base_speed + speed_bonus) * speed_mult;
-    _entity.damage_sys.max_hp = _entity.damage_sys.base_max_hp + max_hp_bonus;
+    _entity.damage_sys.max_hp = (_entity.damage_sys.base_max_hp + max_hp_bonus) * max_hp_mult;
     
     // Sync legacy variables
     _entity.attack = _entity.stats.attack;

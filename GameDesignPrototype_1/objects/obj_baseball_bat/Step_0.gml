@@ -57,10 +57,7 @@ if (swinging) { // Use 'swinging' not 'isSwinging'
             var kb_dir = point_direction(owner.x, owner.y, sweet_spot_hit.x, sweet_spot_hit.y);
             var homerun_kb = (knockbackForce * homerun_knockback_mult) + (comboCount * 1);
             
-            sweet_spot_hit.knockbackX = lengthdir_x(homerun_kb, kb_dir);
-            sweet_spot_hit.knockbackY = lengthdir_y(homerun_kb, kb_dir);
-            sweet_spot_hit.knockbackCooldown = sweet_spot_hit.knockbackCooldownMax;
-            
+            sweet_spot_hit.knockback.Apply(kb_dir, homerun_kb);
             // Visual feedback
             sweet_spot_hit.hitFlashTimer = 15;
             if (variable_instance_exists(sweet_spot_hit, "flash_color")) {

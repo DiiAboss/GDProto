@@ -29,7 +29,7 @@
   "origin":4,
   "parent":{
     "name":"BOSS",
-    "path":"folders/Objects/In-Game/Enemies/BOSS.yy",
+    "path":"folders/ENEMIES/Enemies_Objects/BOSS.yy",
   },
   "preMultiplyAlpha":false,
   "resourceType":"GMSprite",

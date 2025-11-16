@@ -210,85 +210,6 @@ function createAfterImage(_self, _timer, _framesPerImage, _sprite, _image_index)
 	return noone;
 }
 
-
-
-
-
-function KnockbackController() constructor
-{
-	knockbackX = 0;
-	knockbackY = 0;
-	knockbackForce = 0;
-	knockbackFriction = 0;
-	
-	collisionList = [obj_solid];
-	
-	static Update = function(_self)
-	{
-		if (abs(knockbackX) > 0.1 || abs(knockbackY) > 0.1)
-		{
-			// Store original position
-		    var prevX = _self.x;
-		    var prevY = _self.y;
-			
-			// Try to move
-		    var nextX = _self.x + knockbackX;
-		    var nextY = _self.y + knockbackY;
-    
-		    var hitHorizontal = false;
-		    var hitVertical   = false;
-    
-		    // Check both axes simultaneously for corner detection
-		    if (place_meeting(nextX * 1.01, nextY * 1.01, obj_wall)) {
-		        // We hit something, figure out what
-        
-		        // Check horizontal collision
-		        if (place_meeting(nextX * 1.01, _self.y, obj_wall)) {
-		            hitHorizontal = true;
-		        }
-        
-		        // Check vertical collision
-		        if (place_meeting(_self.x, nextY * 1.01, obj_wall)) {
-		            hitVertical = true;
-		        }
-        
-		        // Apply bounces with dampening
-		        if (hitHorizontal && abs(knockbackX)) {
-		            knockbackX = -knockbackX;
-		        } else if (hitHorizontal) {
-		            knockbackX = 0;
-		        }
-        
-		        if (hitVertical && abs(knockbackY)) {
-		            knockbackY = -knockbackY;
-		        } else if (hitVertical) {
-		            knockbackY = 0;
-		        }
-        
-		    }
-    
-		    // Move to new position if not blocked
-		    if (!place_meeting(_self.x + knockbackX, _self.y, obj_wall)) {
-		        _self.x += knockbackX;
-		    }
-		    if (!place_meeting(_self.x, _self.y + knockbackY, obj_wall)) {
-		        _self.y += knockbackY;
-		    }
-	
-		    knockbackX *= knockbackFriction;
-		    knockbackY *= knockbackFriction;
-				}
-			}	
-}
-
-
-
-
-
-
-
-
-
 function SpriteHandler(_leftSprite, _rightSprite, _upSprite, _downSprite) constructor
 {
 	drawDirection = EAST;
@@ -357,3 +278,5 @@ function SpriteHandler(_leftSprite, _rightSprite, _upSprite, _downSprite) constr
 		draw_sprite_ext(_sprite, _self.image_index, _self.x, _self.y, 1, 1, 0, c_white, 1);
 	}
 }
+
+

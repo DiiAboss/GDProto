@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_draw_hollow_circle",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_draw_hollow_circle",
+  "parent":{
+    "name":"In-Game",
+    "path":"folders/Objects/In-Game.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

@@ -21,19 +21,16 @@ if (overlap > 0) {
 }
 
 if (hitPlayer.isCannonBalling) {
-    var playerSpeed = point_distance(0, 0, hitPlayer.knockbackX, hitPlayer.knockbackY);
+    var playerSpeed = knockback.GetSpeed();
     if (playerSpeed > 10) {
         var transferDir = point_direction(hitPlayer.x, hitPlayer.y, x, y);
         var transferForce = playerSpeed * 0.75;
         
-        knockbackX = lengthdir_x(transferForce, transferDir);
-        knockbackY = lengthdir_y(transferForce, transferDir);
-        knockbackCooldown = 10;
+        knockback.Apply(transferDir, transferForce);
         
         var impactDamage = round(playerSpeed * 2);
         DealDamage(self, impactDamage, hitPlayer);
         
-        hitPlayer.knockbackX *= 0.5;
-        hitPlayer.knockbackY *= 0.5;
+        hitPlayer.knockback.AddForce(hitPlayer.knockback.x *0.5, hitPlayer.knockback.y *0.5);
     }
 }

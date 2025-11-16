@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"scr_PitAvoidance",
   "parent":{
-    "name":"Enemies",
-    "path":"folders/Objects/In-Game/Enemies.yy",
+    "name":"Enemies_Objects",
+    "path":"folders/ENEMIES/Enemies_Objects.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

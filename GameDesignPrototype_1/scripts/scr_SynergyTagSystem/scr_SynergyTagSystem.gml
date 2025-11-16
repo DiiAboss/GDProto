@@ -218,6 +218,8 @@ function InitializeWeaponTags(_weapon_id) {
 		case Weapon.ThrowableItem:
 		    tags.AddTag(SYNERGY_TAG.THROWABLE, "weapon_innate");
 		    break;
+		default:
+			break;
     }
     
     return tags;

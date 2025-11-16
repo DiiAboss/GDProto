@@ -102,9 +102,10 @@ spriteHandler = new SpriteHandler(spr_vh_walk_west, spr_vh_walk_east, spr_vh_wal
 currentSprite = spr_vh_walk_west;
 image_speed = 1;
 
-
+img_xscale = 1;
 
 // WEAPON SYSTEM
+max_just_hit = 30;
 
 melee_weapon = noone;
 weapon_slots = class_stats.weapon_slots;
@@ -114,7 +115,7 @@ current_weapon_index = 0;
 // Give starting weapon
 
 weapons[1] = noone;
-weapons[0] = global.WeaponStruct.Dagger; // Or whatever starting weapon
+weapons[0] = global.WeaponStruct.BBallGun; // Or whatever starting weapon
 weaponCurrent = weapons[0];
 
 previous_weapon_instance = weaponCurrent;
@@ -345,7 +346,7 @@ RespawnFromPit = function() {
     show_debug_message("PLAYER RESPAWNED at " + string(x) + ", " + string(y));
 }
 
-SpawnWeaponPickup(x, y - 64, global.WeaponStruct.HolyWater);
+SpawnWeaponPickup(x, y - 64, global.WeaponStruct.BBallGun);
 
 
 is_dead = false;

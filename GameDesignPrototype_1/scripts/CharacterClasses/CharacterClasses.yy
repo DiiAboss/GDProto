@@ -6,7 +6,7 @@
   "name":"CharacterClasses",
   "parent":{
     "name":"PLAYER_SCRIPTS",
-    "path":"folders/Scripts/PLAYER_SCRIPTS.yy",
+    "path":"folders/PlayerGroup/Sprites/PLAYER_SCRIPTS.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

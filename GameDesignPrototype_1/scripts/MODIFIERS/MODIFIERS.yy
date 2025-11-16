@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"MODIFIERS",
   "parent":{
-    "name":"Modifiers",
-    "path":"folders/Scripts/Modifiers.yy",
+    "name":"Modifer_Scripts",
+    "path":"folders/Modifiers_Folder/InGameModifiers/Modifer_Scripts.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

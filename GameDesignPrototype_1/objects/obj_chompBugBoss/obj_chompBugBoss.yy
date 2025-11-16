@@ -7,7 +7,7 @@
   "overriddenProperties":[],
   "parent":{
     "name":"BOSS",
-    "path":"folders/Objects/In-Game/Enemies/BOSS.yy",
+    "path":"folders/ENEMIES/Enemies_Objects/BOSS.yy",
   },
   "parentObjectId":null,
   "persistent":false,

@@ -23,9 +23,7 @@ if (abs(moveX) > speed_threshold || abs(moveY) > speed_threshold) {
             
             // Knockback
             var hit_dir = point_direction(x, y, hit.x, hit.y);
-            hit.knockbackX = lengthdir_x(velocity * knockback_multiplier, hit_dir);
-            hit.knockbackY = lengthdir_y(velocity * knockback_multiplier, hit_dir);
-            
+            hit.knockback.Apply(hit_dir, velocity * knockback_multiplier);
             // Bounce
             moveX *= -0.6;
             moveY *= -0.6;

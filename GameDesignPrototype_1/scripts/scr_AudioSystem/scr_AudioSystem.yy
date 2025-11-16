@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"scr_AudioSystem",
   "parent":{
-    "name":"Main Controller",
-    "path":"folders/Main Controller.yy",
+    "name":"Sounds",
+    "path":"folders/Sounds.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

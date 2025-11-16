@@ -11,8 +11,8 @@
   "name":"obj_death_sequence",
   "overriddenProperties":[],
   "parent":{
-    "name":"CHARACTER_OBJECTS",
-    "path":"folders/Objects/In-Game/PLAYER_AND_WEAPON_OBJECTS/CHARACTER_OBJECTS.yy",
+    "name":"Object",
+    "path":"folders/PlayerGroup/Object.yy",
   },
   "parentObjectId":null,
   "persistent":false,

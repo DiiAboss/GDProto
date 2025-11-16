@@ -5,7 +5,7 @@
 // SAVE DATA STRUCT
 global.SaveData = {
     // Meta info
-    version:     "0.0.1",
+    version:     "1.0.1",
     last_played: date_current_datetime(),
     
     // Settings
@@ -69,15 +69,19 @@ global.SaveData = {
         },
         
         // Per-character stats
-        character_stats: {},
+        character_stats: {
+		 runs : 0,
+		},
 		
 		skill_tree: {
 		    unlocked_nodes: ["root"], // Array of node IDs
 		    node_stacks: {} // For stackable stat boosts: {hp_boost_1: 3}
 		},
 		character_loadouts: {},
-		active_loadout: ["", "", "", "", ""],
+		active_loadout: [noone, noone, noone, noone, noone],
 		character_weapon_loadouts: {},
+		pregame_loadouts: {},             // Pre-game mods (from skill tree)
+		active_loadout: [noone, noone, noone, noone, noone]  // Active pre-game
 	},
 	
 };
@@ -97,21 +101,34 @@ for (var i = 0; i < array_length(char_classes); i++) {
 }
 
 
-// SAVE FUNCTIONS
 /// @function GetCharacterWeaponLoadout(_character_class)
 function GetCharacterWeaponLoadout(_character_class) {
-
+    
+    // DON'T reset the entire loadouts structure!
+    // Ensure it exists as a STRUCT, not an array
+    if (!variable_struct_exists(global.SaveData.career, "character_weapon_loadouts") || 
+        !is_struct(global.SaveData.career.character_weapon_loadouts)) {
+        global.SaveData.career.character_weapon_loadouts = {}; // ← STRUCT, not array
+    }
     
     var key = string(_character_class);
-    //var default_weapons = GetDefaultWeaponsForCharacter(_character_class);
-    //    global.SaveData.career.character_weapon_loadouts[$ key] = default_weapons;
-		
+    
+    // If this character doesn't have a loadout yet, create default
+    if (!variable_struct_exists(global.SaveData.career.character_weapon_loadouts, key)) {
+        var default_weapons = GetDefaultWeaponsForCharacter(_character_class);
+        global.SaveData.career.character_weapon_loadouts[$ key] = default_weapons;
+    }
+    
     return global.SaveData.career.character_weapon_loadouts[$ key];
 }
 
 /// @function SaveCharacterWeaponLoadout(_character_class, _weapon_array)
 function SaveCharacterWeaponLoadout(_character_class, _weapon_array) {
-    global.SaveData.career.character_weapon_loadouts = {};
+    // Ensure the structure exists
+    if (!variable_struct_exists(global.SaveData.career, "character_weapon_loadouts") || 
+        !is_struct(global.SaveData.career.character_weapon_loadouts)) {
+        global.SaveData.career.character_weapon_loadouts = {};
+    }
     
     var key = string(_character_class);
     global.SaveData.career.character_weapon_loadouts[$ key] = _weapon_array;
@@ -120,21 +137,19 @@ function SaveCharacterWeaponLoadout(_character_class, _weapon_array) {
 
 /// @function GetDefaultWeaponsForCharacter(_character_class)
 function GetDefaultWeaponsForCharacter(_character_class) {
+    // Return default weapon array for each character
     switch (_character_class) {
         case CharacterClass.WARRIOR:
-            return [Weapon.Sword, noone]; // Start with sword
+            return [Weapon.Sword, Weapon.Fists]; // Example
             
         case CharacterClass.HOLY_MAGE:
-            return [Weapon.Staff, noone]; // Start with staff
+            return [Weapon.Bow, Weapon.Fists]; // Example
             
         case CharacterClass.VAMPIRE:
-            return [Weapon.Whip, noone]; // Start with whip
-            
-        case CharacterClass.BASEBALL_PLAYER:
-            return [Weapon.BaseballBat, noone]; // Start with bat
+            return [Weapon.Dagger, Weapon.Fists]; // Example
             
         default:
-            return [Weapon.Sword, noone];
+            return [Weapon.Fists, noone];
     }
 }
 
@@ -179,21 +194,6 @@ function GetUnlockedWeaponsForCharacter(_character_class) {
     return unlocked_weapons;
 }
 
-///// @function GetWeaponName(_weapon_enum)
-//function GetWeaponName(_weapon_enum) {
-//    switch (_weapon_enum) {
-//        case Weapon.Sword: return "Sword";
-//        case Weapon.Axe: return "Axe";
-//        case Weapon.Staff: return "Staff";
-//        case Weapon.Dagger: return "Dagger";
-//        case Weapon.Boomerang: return "Boomerang";
-//        case Weapon.BaseballBat: return "Baseball Bat";
-//        case Weapon.Whip: return "Whip";
-//        case Weapon.Spear: return "Spear";
-//        case Weapon.Bow: return "Bow";
-//        default: return "Unknown";
-//    }
-//}
 
 /// @function GetWeaponSprite(_weapon_enum)
 function GetWeaponSprite(_weapon_enum) {
@@ -246,9 +246,8 @@ function SaveGame() {
     }
     
     // === SYNC SOULS ===
-    if (variable_global_exists("Souls")) {
-        global.SaveData.career.currency.souls = global.Souls;
-    }
+    global.SaveData.career.currency.souls = global.Souls;
+    
     
     // === SYNC CHARACTER LOADOUTS ===
     if (variable_struct_exists(global.SaveData, "character_weapon_loadouts")) {
@@ -317,6 +316,11 @@ function MergeSaveData(_loaded) {
     if (variable_struct_exists(_loaded, "unlocks")) {
         global.SaveData.unlocks = _loaded.unlocks;
     }
+	
+	// After loading SaveData from JSON
+	if (!variable_struct_exists(global.SaveData.career, "active_loadout")) {
+	    global.SaveData.career.active_loadout = [noone, noone, noone, noone, noone];
+	}
     
     // Career stats
     if (variable_struct_exists(_loaded, "career")) {
@@ -459,13 +463,33 @@ function GetGold() {
 // STAT TRACKING FUNCTIONS
 
 
-/// @function RecordRunStart(_character)
-function RecordRunStart(_character) {
-    global.SaveData.career.total_runs++;
-    global.SaveData.career.character_stats[$ _character].runs++;
+/// @function RecordRunStart(_character_class)
+function RecordRunStart(_character_class) {
+    // Ensure character_stats exists
+    if (!variable_struct_exists(global.SaveData.career, "character_stats")) {
+        global.SaveData.career.character_stats = {};
+    }
     
-    // Track start time for playtime calculation
-    global.run_start_time = current_time;
+    var key = string(_character_class);
+    
+    // Ensure this character has a stats entry
+    if (!variable_struct_exists(global.SaveData.career.character_stats, key)) {
+        global.SaveData.career.character_stats[$ key] = {
+            runs: 0,
+            kills: 0,
+            deaths: 0,
+            total_score: 0,
+            best_score: 0,
+            total_time_seconds: 0,
+            best_time_seconds: 0
+        };
+    }
+    
+    // Increment run counter
+    global.SaveData.career.character_stats[$ key].runs++;
+    global.SaveData.career.total_runs++;
+    
+    show_debug_message("Run started for " + string(_character_class) + " (Run #" + string(global.SaveData.career.character_stats[$ key].runs) + ")");
 }
 
 /// @function RecordRunEnd(_character, _score, _time_seconds, _kills)
@@ -557,3 +581,108 @@ function InitializeSaveSystem() {
     show_debug_message("=== SAVE SYSTEM READY ===");
 }
 
+    
+/// @function ResetSaveData()
+function ResetSaveData() {
+    // Delete the save file
+    if (file_exists("save.json")) {
+        file_delete("save.json");
+    }
+    
+    // Reinitialize global save data with YOUR ACTUAL STRUCTURE
+    global.SaveData = {
+        // Meta info
+        version: "1.0.1",
+        last_played: date_current_datetime(),
+        
+        // Settings
+        settings: {
+            master_volume: 1.0,
+            music_volume: 0.8,
+            sfx_volume: 1.0,
+            voice_volume: 1.0,
+            screen_shake: true
+        },
+        
+        // Unlocks
+        unlocks: {
+            characters: [CharacterClass.WARRIOR],
+            levels: ["arena_1"],
+            weapons: [Weapon.Sword, Weapon.Bow],
+            modifiers: []
+        },
+        
+        // Career Stats
+        career: {
+            total_runs: 0,
+            total_kills: 0,
+            total_deaths: 0,
+            total_score: 0,
+            total_playtime_seconds: 0,
+            
+            currency: {
+                souls: 0,
+                lifetime_souls: 0,
+                lifetime_gold: 0
+            },
+            
+            best_score: 0,
+            best_time_seconds: 0,
+            best_character: CharacterClass.WARRIOR,
+            
+            medals: {
+                Dominoes: 0,
+                Dribble: 0,
+                Fore: 0,
+                Pocket: 0,
+                Bump: 0,
+                Bulltrue: 0,
+                ToSender: 0,
+                BatBack: 0,
+                Closed: 0,
+                ClosedForSeason: 0,
+                TotemActivated: 0,
+                GoodLuck: 0,
+                DoubleKill: 0,
+                TripleKill: 0,
+                MultiKill: 0,
+                MegaKill: 0,
+                MonsterKill: 0,
+                SpikeKill: 0,
+                WallSplat: 0,
+                PitFall: 0
+            },
+            
+            character_stats: {},
+            
+            skill_tree: {
+                unlocked_nodes: ["root"],
+                node_stacks: {}
+            },
+            
+            character_loadouts: {},
+            active_loadout: [noone, noone, noone, noone, noone],
+            character_weapon_loadouts: {},
+            pregame_loadouts: {},
+            //active_loadout: [noone, noone, noone, noone, noone]
+        }
+    };
+    
+    // Reset global souls
+    global.Souls = 0;
+    
+    // Reset skill tree
+    var node_keys = variable_struct_get_names(global.SkillTree);
+    for (var i = 0; i < array_length(node_keys); i++) {
+        var key = node_keys[i];
+        var node = global.SkillTree[$ key];
+        node.unlocked = (key == "root");
+        if (variable_struct_exists(node, "current_stacks")) {
+            node.current_stacks = 0;
+        }
+    }
+    
+    SaveGame();
+    
+    show_debug_message("Save data reset!");
+}
