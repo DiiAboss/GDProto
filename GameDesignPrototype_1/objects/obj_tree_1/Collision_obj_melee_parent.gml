@@ -1,7 +1,7 @@
 /// @description Insert description here
 // You can write your code in this editor
 // You can write your code in this editor
-if (other.isSwinging && !justhit && !is_dead)
+if (other.isSwinging && !justhit)
 {
 	hp -= other.attack;
 	obj_player.knockback.Apply(point_direction(x, y, obj_player.x, obj_player.y), 2);

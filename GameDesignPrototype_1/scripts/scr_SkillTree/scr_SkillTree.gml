@@ -945,7 +945,59 @@ global.SkillTree = {
         position: {x: 1200, y: 300},
         connections: ["root"],
         sprite: spr_mod_default
-    }
+    },
+	
+	prestige_path: {
+    id: "prestige_path",
+    type: "branch",
+    name: "PRESTIGE",
+    description: "Advanced meta progression for experienced players",
+    cost: 5000,  // ← Costs 5000 souls to unlock!
+    unlocked: false,
+    position: {x: 1200, y: 300},
+    connections: ["root", "pregame_investor", "pregame_compounding"],  // ← Connect to these nodes
+    sprite: spr_mod_default
+},
+
+// Move these nodes to connect to prestige_path
+pregame_investor: {
+    id: "pregame_investor",
+    type: "pregame_mod_unlock",
+    name: "Investor",
+    description: "Gold generates 1% interest/sec (max 2x starting gold)",
+    mod_id: PreGameMod.INVESTOR,
+    cost: 700,
+    unlocked: false,
+    position: {x: 1200, y: 450},  // ← NEW POSITION (near prestige)
+    connections: ["prestige_path", "pregame_compounding"],  // ← CHANGE CONNECTION
+    sprite: spr_mod_default
+},
+
+pregame_compounding: {
+    id: "pregame_compounding",
+    type: "pregame_mod_unlock",
+    name: "Compounding Interest",
+    description: "Each kill +1% soul gain (stacks infinitely)",
+    mod_id: PreGameMod.COMPOUNDING,
+    cost: 800,
+    unlocked: false,
+    position: {x: 1200, y: 550},  // ← NEW POSITION
+    connections: ["pregame_investor"],  // Chains from Investor
+    sprite: spr_mod_default
+},
+
+// REMOVE these from pregame_economy_branch connections
+pregame_economy_branch: {
+    id: "pregame_economy_branch",
+    type: "branch",
+    name: "Economy & Progression",
+    description: "Boost rewards and growth",
+    cost: 0,
+    unlocked: false,
+    position: {x: -200, y: 700},
+    connections: ["pregame_path", "pregame_souls_2x", "pregame_lucky", "pregame_stat_hp"],  // ← REMOVED investor
+    sprite: spr_mod_default
+},
     
     // Prestige nodes will go here later
 };

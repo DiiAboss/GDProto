@@ -19,7 +19,7 @@ if (marked_for_death) {
 
 
 // COMPONENT UPDATES (from base enemy)
-
+knockback.Update(self);
 damage_sys.Update();
 hp = damage_sys.hp;
 
@@ -70,82 +70,11 @@ if (damage_sys.IsDead() && !marked_for_death) {
 
 // TIMER UPDATES
 
-if (knockbackCooldown > 0) knockbackCooldown = timer_tick(knockbackCooldown);
+
 if (wallBounceCooldown > 0) wallBounceCooldown = timer_tick(wallBounceCooldown);
 if (wallHitCooldown > 0) wallHitCooldown = timer_tick(wallHitCooldown);
 if (hitFlashTimer > 0) hitFlashTimer = timer_tick(hitFlashTimer);
 if (attackTimer > 0) attackTimer = timer_tick(attackTimer);
-
-
-// KNOCKBACK PHYSICS (inherited)
-
-if (abs(knockbackX) > knockbackThreshold || abs(knockbackY) > knockbackThreshold) {
-    isKnockingBack = true;
-    knockbackPower = point_distance(0, 0, knockbackX, knockbackY);
-    
-    var nextX = x + knockbackX * _delta;
-    var nextY = y + knockbackY * _delta;
-    
-    var hitWall = false;
-    var impactSpeed = 0;
-    
-    // Horizontal collision
-    if (place_meeting(nextX, y, obj_obstacle) && wallBounceCooldown == 0) {
-        hitWall = true;
-        impactSpeed = abs(knockbackX);
-        
-        if (impactSpeed > minImpactSpeed && wallHitCooldown == 0) {
-            var impactDamage = clamp(round(impactSpeed * impactDamageMultiplier), 0, maxImpactDamage);
-            damage_sys.TakeDamage(impactDamage, obj_wall);
-            wallHitCooldown = 30;
-            
-            if (impactSpeed > 8 && _player_exists) {
-                _player_instance.camera.add_shake(impactSpeed * 0.3);
-            }
-        }
-        
-        knockbackX = (abs(knockbackX) > minBounceSpeed) ? -knockbackX * bounceDampening : 0;
-    } else if (!place_meeting(nextX, y, obj_obstacle)) {
-        x = nextX;
-    }
-    
-    // Vertical collision
-    if (place_meeting(x, nextY, obj_obstacle) && wallBounceCooldown == 0) {
-        hitWall = true;
-        impactSpeed = abs(knockbackY);
-        
-        if (impactSpeed > minImpactSpeed && wallHitCooldown == 0) {
-            var impactDamage = clamp(round(impactSpeed * impactDamageMultiplier), 0, maxImpactDamage);
-            damage_sys.TakeDamage(impactDamage, obj_wall);
-            wallHitCooldown = 30;
-            
-            if (impactSpeed > 8 && _player_exists) {
-                _player_instance.camera.add_shake(impactSpeed * 0.3);
-            }
-        }
-        
-        knockbackY = (abs(knockbackY) > minBounceSpeed) ? -knockbackY * bounceDampening : 0;
-    } else if (!place_meeting(x, nextY, obj_obstacle)) {
-        y = nextY;
-    }
-    
-    if (hitWall) {
-        wallBounceCooldown = 2;
-        lastBounceDir = point_direction(0, 0, knockbackX, knockbackY);
-        hasHitWall = true;
-    }
-    
-    knockbackX *= power(knockbackFriction, _delta);
-    knockbackY *= power(knockbackFriction, _delta);
-} else {
-    knockbackX = 0;
-    knockbackY = 0;
-    isKnockingBack = false;
-    knockbackPower = 0;
-    hasTransferredKnockback = false;
-    hasHitWall = false;
-    if (wallHitCooldown > 0) wallHitCooldown = 0;
-}
 
 
 // MINIBOSS STATE MACHINE
@@ -170,15 +99,6 @@ if (!_player_exists) {
             isCharging = false;
             chargeScale = 1.0;
             
-            // Normal movement when not being knocked back
-            if (knockbackCooldown <= 0 && abs(knockbackX) < 1 && abs(knockbackY) < 1) {
-                var _spd = scale_movement(moveSpeed);
-                var moveX = lengthdir_x(_spd, _dir);
-                var moveY = lengthdir_y(_spd, _dir);
-                
-                if (!place_meeting(x + moveX, y, obj_obstacle)) x += moveX;
-                if (!place_meeting(x, y + moveY, obj_obstacle)) y += moveY;
-            }
             
             // Check attack range
             if (_dist < attackRange && attackTimer <= 0) {
@@ -290,9 +210,8 @@ function FireProjectiles(_direction) {
         }
     }
     
-    // Optional: Camera shake on attack
-    if (instance_exists(obj_player) && variable_instance_exists(obj_player, "camera")) {
+
         obj_player.camera.add_shake(3);
-    }
+    
 }
 

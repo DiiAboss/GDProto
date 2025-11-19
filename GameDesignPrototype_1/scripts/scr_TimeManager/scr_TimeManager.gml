@@ -178,11 +178,12 @@ function TimeManager() constructor {
     /// @param {function} _callback Function to call
     /// @param {bool} _repeat Whether to repeat (default true)
     static RegisterInterval = function(_name, _seconds, _callback, _repeat = true) {
-        intervals[$ _name] = {
+        intervals[$ _name] =
+		{
+            repeats: _repeat,
             interval: _seconds * 60, // Convert to frames
             timer: _seconds * 60,
             callback: _callback,
-            repeat: _repeat,
             active: true
         };
     }
@@ -228,7 +229,7 @@ function TimeManager() constructor {
                 // Trigger callback
                 interval.callback();
                 
-                if (interval.repeat) {
+                if (interval.repeats) {
                     // Reset timer
                     interval.timer = interval.interval;
                 } else {

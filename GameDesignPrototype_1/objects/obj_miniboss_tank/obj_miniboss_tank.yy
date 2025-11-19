@@ -36,8 +36,8 @@
   "resourceVersion":"2.0",
   "solid":false,
   "spriteId":{
-    "name":"spr_mini_boss_1",
-    "path":"sprites/spr_mini_boss_1/spr_mini_boss_1.yy",
+    "name":"spr_mini_boss_head",
+    "path":"sprites/spr_mini_boss_head/spr_mini_boss_head.yy",
   },
   "spriteMaskId":null,
   "visible":true,

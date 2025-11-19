@@ -5,6 +5,12 @@ global.Projectile_ =
         description: "Basic Arrow",
         object: obj_arrow
     },
+	
+	Bball: {
+        name: "bball",
+        description: "Baseball",
+        object: obj_arrow
+    },
     
     Cannonball: {
         name: "cannonball",
@@ -22,11 +28,19 @@ global.Projectile_ =
         description: "Thrown dagger",
         object: obj_knife  // or obj_projectile if you don't have obj_knife yet
     },
-		Holy_Water: {
+	
+	Holy_Water: {
         name: "Holy Water",
         description: "Lobbed Bottle Of Holy Water",
         object: obj_holy_water  // or obj_projectile if you don't have obj_holy_water yet
     },
+	
+	Potion_Bomb: {
+        name: "Potion bomb",
+        description: "Lobbed Potion",
+        object: obj_potion_toss // or obj_projectile if you don't have obj_holy_water yet
+    },
+	
 	ChainKnife: {
     name: "Chain Knife",
     object: obj_chain_knife,

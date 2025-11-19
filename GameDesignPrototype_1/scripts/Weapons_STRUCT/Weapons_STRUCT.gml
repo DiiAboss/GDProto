@@ -377,6 +377,47 @@ global.WeaponStruct =
             return _attack;
         }
     },
+	PotionBomb: {
+        name: "Potion_Bomb",
+        id: Weapon.PotionBomb,
+        type: WeaponType.Range,
+        projectile_struct: global.Projectile_.Potion_Bomb,
+        default_element: ELEMENT.PHYSICAL,
+		synergy_tags: InitializeWeaponTags(Weapon.PotionBomb),
+
+       primary_attack: function(_self, _direction, _range, _projectile_struct) {
+		    var proj = Lob_Projectile(_self, _direction, _range, projectile_struct.object);
+		    
+		    // NEW: Apply synergies to projectile
+		    if (variable_instance_exists(_self, "active_combined_tags") && 
+		        variable_instance_exists(_self, "active_synergies")) {
+		        ApplySynergyBehavior(proj, _self.active_combined_tags, _self.active_synergies, _self);
+		    }
+		    
+		    // Existing modifier trigger
+		    var attack_event = CreateAttackEvent(_self, AttackType.RANGED, _direction, proj);
+		    TriggerModifiers(_self, MOD_TRIGGER.ON_ATTACK, attack_event);
+		    
+		    return proj;
+		},
+        
+        secondary_attack: function(_self, _direction, _range, _projectile_struct) {
+            var _attack = Lob_Projectile(_self, _direction, _range, projectile_struct.object);
+			
+			
+			// NEW: Apply synergies to projectile
+		    if (variable_instance_exists(_self, "active_combined_tags") && 
+		        variable_instance_exists(_self, "active_synergies")) {
+		        ApplySynergyBehavior(_attack, _self.active_combined_tags, _self.active_synergies, _self);
+		    }
+		    
+		    // Existing modifier trigger
+		    var attack_event = CreateAttackEvent(_self, AttackType.RANGED, _direction, _attack);
+		    TriggerModifiers(_self, MOD_TRIGGER.ON_ATTACK, attack_event);
+			
+            return _attack;
+        }
+    },
     
 	BaseballBat: {
     name: "Baseball Bat",

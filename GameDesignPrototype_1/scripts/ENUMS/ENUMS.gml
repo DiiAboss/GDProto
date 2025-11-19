@@ -27,6 +27,7 @@ enum Weapon {
 	Grenade,
 	Fists,
 	BBallGun,
+	PotionBomb,
 	
 }
 

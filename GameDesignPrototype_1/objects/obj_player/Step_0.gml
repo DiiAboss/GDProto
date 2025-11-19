@@ -13,7 +13,11 @@ timers.Update();
 invincibility.Update();
 damage_sys.Update();
 knockback.Update(self);
-class_component.Update(); // CLASS SYSTEM UPDATE
+
+
+// Trigger passive modifiers 
+stats.ResetTemporaryMods();
+TriggerModifiers(self, MOD_TRIGGER.PASSIVE, EventData());
 
 
 img_xscale = (mouseDirection > 90 && mouseDirection < 270) ? -1 : 1; // For weapon directions
@@ -181,7 +185,7 @@ function HandleCarrying() {
     // THROW CARRIED OBJECT
     if (is_carrying && instance_exists(carried_object)) {
         if (input.FirePress) { // Left click to throw
-            ThrowCarriedObject(self, _carried_object);
+            ThrowCarriedObject(self, carried_object);
             return;
         }
         

@@ -31,6 +31,10 @@ function SpawnWeaponPickup(_x, _y, _weapon_struct) {
 		case Weapon.BBallGun:
 			pickup.weapon_sprite = spr_bball_gun;
         break;
+		case Weapon.PotionBomb:
+			pickup.weapon_sprite = spr_potions;
+			pickup.image_index = 0;
+        break;
         default:
             pickup.weapon_sprite = spr_knife;
             break;

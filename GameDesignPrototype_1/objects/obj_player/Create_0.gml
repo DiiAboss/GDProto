@@ -6,40 +6,34 @@ crosshair = instance_create_depth(x, y, depth, obj_crosshair);
 
 // CHARACTER CLASS SETUP
 
-// Get selected class FIRST (before anything else uses it)
-// Get from the persistent main controller instead of global
-
+// Get selected class
+// Get from the persistent main controller
 character_class = GetSelectedCharacterClass(obj_main_controller);
-
-show_debug_message("PLAYER CREATED WITH CLASS: " + string(character_class));
-show_debug_message("0=WARRIOR, 1=HOLY_MAGE, 2=VAMPIRE");
-
 // Now get stats based on correct class
 class_stats = GetCharacterStats(character_class);
-
-// Initialize character synergy tags
-synergy_tags = InitializeCharacterTags(character_class);
-
-// Container for temporary mod tags
-active_mod_tags = new SynergyTags();
-
-// Cache for current weapon combo
-active_combined_tags = new SynergyTags();
-active_synergies = [];
-
-show_debug_message("Player Tags Initialized: " + synergy_tags.DebugPrint());
-
-status = new StatusEffectComponent(self);
-
-
 // CORE COMPONENTS
 
+// CORE COMPONENTS
 stats = new StatsComponent(
     class_stats.attack_base,
     class_stats.hp_max,
     class_stats.move_speed,
-    5
+    5,
+    class_stats.strength,
+    class_stats.weight,  
+    class_stats.dexterity 
 );
+
+// Initialize character synergy tags
+synergy_tags = InitializeCharacterTags(character_class);
+
+
+
+
+status = new StatusEffectComponent(self);
+
+
+
 
 
 switch_near_enemy = 0;
@@ -52,9 +46,6 @@ timers		  = new TimerComponent();
 
 
 // CHARACTER CLASS COMPONENT
-
-// Create class component AFTER stats and damage_sys exist
-class_component = CreateCharacterClass(character_class, stats, damage_sys, class_stats);
 
 
 // Legacy compatibility (remove once fully refactored)
@@ -119,6 +110,25 @@ weapons[0] = global.WeaponStruct.BBallGun; // Or whatever starting weapon
 weaponCurrent = weapons[0];
 
 previous_weapon_instance = weaponCurrent;
+
+
+
+// Container for temporary mod tags
+active_mod_tags = new SynergyTags();
+
+// Apply innate class modifiers
+var innate_mods = GetClassInnateModifiers(character_class);
+for (var i = 0; i < array_length(innate_mods); i++) {
+    AddModifier(self, innate_mods[i]);
+    show_debug_message("Applied innate mod: " + innate_mods[i]);
+}
+
+// Initial stat calculation
+CalculateCachedStats(self);
+
+// Update combined tags with modifiers
+active_combined_tags = GetCombinedTags(self, weaponCurrent);
+active_synergies = DetectSynergies(active_combined_tags);
 
 
 // Charge weapon
@@ -325,7 +335,7 @@ RespawnFromPit = function() {
     pit_grace_timer = 0;
     
     // Apply invincibility
-    invincibility.Activate(pit_respawn_invincibility);
+    invincibility.Activate();
     
     // Take damage
     damage_sys.TakeDamage(20, noone);
@@ -346,7 +356,7 @@ RespawnFromPit = function() {
     show_debug_message("PLAYER RESPAWNED at " + string(x) + ", " + string(y));
 }
 
-SpawnWeaponPickup(x, y - 64, global.WeaponStruct.BBallGun);
+SpawnWeaponPickup(x, y - 64, global.WeaponStruct.PotionBomb);
 
 
 is_dead = false;

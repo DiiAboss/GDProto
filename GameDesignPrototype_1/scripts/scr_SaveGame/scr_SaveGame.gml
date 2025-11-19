@@ -83,6 +83,12 @@ global.SaveData = {
 		pregame_loadouts: {},             // Pre-game mods (from skill tree)
 		active_loadout: [noone, noone, noone, noone, noone]  // Active pre-game
 	},
+	discovered_doors: {
+        forest: {},
+        desert: {},
+        hell: {},
+        tutorial: {}
+    },
 	
 };
 
@@ -135,23 +141,7 @@ function SaveCharacterWeaponLoadout(_character_class, _weapon_array) {
     SaveGame();
 }
 
-/// @function GetDefaultWeaponsForCharacter(_character_class)
-function GetDefaultWeaponsForCharacter(_character_class) {
-    // Return default weapon array for each character
-    switch (_character_class) {
-        case CharacterClass.WARRIOR:
-            return [Weapon.Sword, Weapon.Fists]; // Example
-            
-        case CharacterClass.HOLY_MAGE:
-            return [Weapon.Bow, Weapon.Fists]; // Example
-            
-        case CharacterClass.VAMPIRE:
-            return [Weapon.Dagger, Weapon.Fists]; // Example
-            
-        default:
-            return [Weapon.Fists, noone];
-    }
-}
+
 
 /// @function GetUnlockedWeaponsForCharacter(_character_class)
 function GetUnlockedWeaponsForCharacter(_character_class) {
@@ -370,89 +360,6 @@ function MergeSaveData(_loaded) {
 }
 
 
-// UNLOCK FUNCTIONS
-
-
-///// @function IsCharacterUnlocked(_class)
-//function IsCharacterUnlocked(_class) {
-//    return array_contains(global.SaveData.unlocks.characters, _class);
-//}
-
-///// @function UnlockCharacter(_class)
-//function UnlockCharacter(_class) {
-//    if (!IsCharacterUnlocked(_class)) {
-//        array_push(global.SaveData.unlocks.characters, _class);
-//        SaveGame();
-//        show_debug_message("Unlocked character: " + string(_class));
-//        return true;
-//    }
-//    return false;
-//}
-
-///// @function IsLevelUnlocked(_level_id)
-//function IsLevelUnlocked(_level_id) {
-//    return array_contains(global.SaveData.unlocks.levels, _level_id);
-//}
-
-///// @function UnlockLevel(_level_id)
-//function UnlockLevel(_level_id) {
-//    if (!IsLevelUnlocked(_level_id)) {
-//        array_push(global.SaveData.unlocks.levels, _level_id);
-//        SaveGame();
-//        show_debug_message("Unlocked level: " + _level_id);
-//        return true;
-//    }
-//    return false;
-//}
-
-
-// ==========================================
-// CURRENCY FUNCTIONS
-// ==========================================
-
-///// @function AddSouls(_amount)
-///// @description Add souls (meta currency) to player's account
-//function AddSouls(_amount) {
-//    global.SaveData.career.currency.souls += _amount;
-//    global.SaveData.career.currency.lifetime_souls += _amount;
-//    SaveGame();
-    
-//    show_debug_message("Gained " + string(_amount) + " souls! Total: " + string(global.SaveData.career.currency.souls));
-//}
-
-///// @function AddGold(_amount)
-///// @description Add gold (in-run currency) - NOT saved between runs
-//function AddGold(_amount) {
-//    // Gold is tracked in run, not saved directly
-//    if (instance_exists(obj_game_manager)) {
-//        obj_game_manager.current_gold += _amount;
-//    }
-    
-//    // Track lifetime total
-//    global.SaveData.career.currency.lifetime_gold += _amount;
-//}
-
-///// @function SpendSouls(_amount)
-///// @returns {bool} Success
-//function SpendSouls(_amount) {
-//    if (global.SaveData.career.currency.souls >= _amount) {
-//        global.SaveData.career.currency.souls -= _amount;
-//        SaveGame();
-//        show_debug_message("Spent " + string(_amount) + " souls! Remaining: " + string(global.SaveData.career.currency.souls));
-//        return true;
-//    }
-//    show_debug_message("Not enough souls! Need " + string(_amount) + ", have " + string(global.SaveData.career.currency.souls));
-//    return false;
-//}
-
-/// @function GetSouls()
-/// @returns {real} Current soul count
-//function GetSouls() {
-//    return global.SaveData.career.currency.souls;
-//}
-
-/// @function GetGold()
-/// @returns {real} Current run gold
 function GetGold() {
 
         return obj_game_manager.current_gold;

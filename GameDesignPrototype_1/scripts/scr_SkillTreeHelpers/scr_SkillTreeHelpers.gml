@@ -86,16 +86,7 @@ function IsModEquipped(_mod_id, _loadout_array) {
     return array_contains(_loadout_array, _mod_id);
 }
 
-	/// @function GetCharacterName(_character_class)
-	function GetCharacterName(_character_class) {
-	    switch (_character_class) {
-	        case CharacterClass.WARRIOR: return "WARRIOR";
-	        case CharacterClass.HOLY_MAGE: return "HOLY MAGE";
-	        case CharacterClass.VAMPIRE: return "VAMPIRE";
-	        case CharacterClass.BASEBALL_PLAYER: return "BASEBALL PLAYER";
-	        default: return "UNKNOWN";
-	    }
-	}
+
 
 function ApplyLoadoutToPlayer(_player) {
     var loadout = global.SaveData.career.active_loadout;

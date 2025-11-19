@@ -118,9 +118,9 @@ function KnockbackComponent(_friction = 0.85, _threshold = 0.1) constructor {
                             other.max_impact_damage
                         );
                         
-
+						if (variable_instance_exists(id, "damage_sys")) {
                             damage_sys.TakeDamage(impact_damage, obj_wall);
-                        
+						}
                         
                         other.wall_hit_cooldown = 30;
                         

@@ -7,7 +7,7 @@ event_inherited();
 
 // OVERRIDE BASE ENEMY VALUES
 
-mySprite = spr_mini_boss_1;
+mySprite = spr_mini_boss_head;
 size = sprite_get_height(mySprite);
 
 // Enhanced stats

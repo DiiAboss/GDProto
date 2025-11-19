@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_PlayerClassComponent",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_PlayerClassComponent",
+  "parent":{
+    "name":"PlayerGroup",
+    "path":"folders/PlayerGroup.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

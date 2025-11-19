@@ -3,7 +3,7 @@ timer++;
 
 x += lengthdir_x(speed, direction);
 y += lengthdir_y(speed, direction);
-speed *= friction_amount;
+//speed *= friction_amount;
 
 if (gravity_strength != 0) {
     vspeed += gravity_strength;

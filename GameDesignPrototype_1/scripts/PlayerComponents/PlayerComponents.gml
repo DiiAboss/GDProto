@@ -212,7 +212,7 @@ function createAfterImage(_self, _timer, _framesPerImage, _sprite, _image_index)
 
 function SpriteHandler(_leftSprite, _rightSprite, _upSprite, _downSprite) constructor
 {
-	drawDirection = EAST;
+	static drawDirection = EAST;
 	
 	static eastSprite    = _rightSprite;
 	static northSprite   = _upSprite;

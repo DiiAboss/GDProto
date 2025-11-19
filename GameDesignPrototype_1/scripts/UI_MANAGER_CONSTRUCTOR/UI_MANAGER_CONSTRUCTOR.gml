@@ -278,50 +278,112 @@ static draw = function() {
 /// @method draw_collected_modifiers()
 static draw_collected_modifiers = function() {
     if (!instance_exists(player)) return;
-    if (array_length(player.mod_list) == 0) return;
     
-    var total_width = (array_length(player.mod_list) * modifier_icon_size) + 
-                      ((array_length(player.mod_list) - 1) * modifier_icon_spacing);
+    var mod_count = array_length(player.mod_list);
+    
+    // Get frame sprite dimensions
+    var frame_sprite = spr_mod_frame_1;
+    var frame_width = sprite_get_width(frame_sprite);
+    var frame_height = sprite_get_height(frame_sprite);
+    
+    // Calculate scaling to match modifier icon size
+    var frame_scale = modifier_icon_size / frame_width;
+    var scaled_frame_width = frame_width * frame_scale;
+    
+    // Calculate total width including end caps
+    // End caps + (number of mods * middle frame width)
+    var total_width = (scaled_frame_width * 2) + (mod_count * (modifier_icon_size + modifier_icon_spacing));
+    if (mod_count > 0) total_width -= modifier_icon_spacing; // Remove extra spacing at end
+    
     var start_x = center_x - (total_width / 2);
     
-    for (var i = 0; i < array_length(player.mod_list); i++) {
-        var _mod = player.mod_list[i];
+    // Draw LEFT end cap (frame 0) - ALWAYS visible
+    draw_sprite_ext(
+        frame_sprite,
+        0,
+        start_x + (scaled_frame_width / 2),
+        modifier_icon_y,
+        frame_scale,
+        frame_scale,
+        0,
+        c_white,
+        1
+    );
+    
+    // Draw modifiers and middle frames
+    if (mod_count > 0) {
+        var mods_start_x = start_x + scaled_frame_width;
         
-        // Call the global function properly
-        var mod_sprite = -1;
-        if (instance_exists(obj_game_manager)) {
-            mod_sprite = obj_game_manager.GetModifierSprite(_mod.template_key);
+        // Draw modifiers first (background layer)
+        for (var i = 0; i < mod_count; i++) {
+            var _mod = player.mod_list[i];
+            
+            var mod_sprite = -1;
+            if (instance_exists(obj_game_manager)) {
+                mod_sprite = obj_game_manager.GetModifierSprite(_mod.template_key);
+            }
+            
+            var draw_x = mods_start_x + (i * (modifier_icon_size + modifier_icon_spacing)) + (modifier_icon_size / 2);
+            var draw_y = modifier_icon_y;
+            
+            // Draw the modifier sprite
+            if (sprite_exists(mod_sprite) && mod_sprite != -1) {
+                draw_sprite_ext(
+                    mod_sprite,
+                    0,
+                    draw_x,
+                    draw_y,
+                    modifier_icon_size / sprite_get_width(mod_sprite),
+                    modifier_icon_size / sprite_get_height(mod_sprite),
+                    0,
+                    c_white,
+                    1
+                );
+            } else {
+                // Fallback circle if sprite missing
+                draw_set_color(c_dkgray);
+                draw_circle(draw_x, draw_y, modifier_icon_size / 2, false);
+                draw_set_color(c_white);
+                draw_circle(draw_x, draw_y, modifier_icon_size / 2, true);
+            }
         }
         
-        var draw_x = start_x + (i * (modifier_icon_size + modifier_icon_spacing)) + (modifier_icon_size / 2);
-        var draw_y = modifier_icon_y;
-        
-        // Draw the modifier sprite
-        if (sprite_exists(mod_sprite) && mod_sprite != -1) {
+        // Now draw middle frames on top (frame 1)
+        for (var i = 0; i < mod_count; i++) {
+            var draw_x = mods_start_x + (i * (modifier_icon_size + modifier_icon_spacing)) + (modifier_icon_size / 2);
+            var draw_y = modifier_icon_y;
+            
+            // Draw middle frame
             draw_sprite_ext(
-                mod_sprite,
-                0,
+                frame_sprite,
+                1,
                 draw_x,
                 draw_y,
-                modifier_icon_size / sprite_get_width(mod_sprite),
-                modifier_icon_size / sprite_get_height(mod_sprite),
+                frame_scale,
+                frame_scale,
                 0,
                 c_white,
                 1
             );
-        } else {
-            // Fallback circle if sprite missing
-            draw_set_color(c_dkgray);
-            draw_circle(draw_x, draw_y, modifier_icon_size / 2, false);
-            draw_set_color(c_white);
-            draw_circle(draw_x, draw_y, modifier_icon_size / 2, true);
         }
     }
     
+    // Draw RIGHT end cap (frame 2) - ALWAYS visible
+    var right_cap_x = start_x + total_width - (scaled_frame_width / 2);
+    draw_sprite_ext(
+        frame_sprite,
+        2,
+        right_cap_x,
+        modifier_icon_y,
+        frame_scale,
+        frame_scale,
+        0,
+        c_white,
+        1
+    );
+    
     draw_set_color(c_white);
 }
-	
-	
 static draw_score = function() {
     if (!instance_exists(player)) return;
     

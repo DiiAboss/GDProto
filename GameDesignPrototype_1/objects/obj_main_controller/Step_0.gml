@@ -2,6 +2,11 @@
 var mx = device_mouse_x_to_gui(0);
 var my = device_mouse_y_to_gui(0);
 
+if !(instance_exists(input_caller))
+{
+	input_caller = self;
+}
+
 player_input.Update(input_caller);
 _audio_system.Update();
 
@@ -19,7 +24,11 @@ if (room == rm_main_menu) {
 		UnlockCharacter(CharacterClass.VAMPIRE);
 		UnlockCharacter(CharacterClass.HOLY_MAGE);
 	}
+	
 	exit;
+	
+	
+
 }
 else
 {
@@ -41,11 +50,6 @@ else
 
 
 
-
-if (keyboard_check_pressed(ord("G")))
-{
-	obj_player.input.InputType = INPUT.GAMEPAD;
-}
 
 
 // DEBUG: Save system testing

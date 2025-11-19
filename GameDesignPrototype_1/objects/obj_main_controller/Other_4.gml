@@ -17,6 +17,8 @@ death_fade_alpha = 0;
 death_stats_alpha = 0;
 death_player_fade = 0;
 
+var roomtype = "";
+
 
 switch(room) {
     case rm_main_menu:
@@ -50,4 +52,33 @@ switch(room) {
         
         menu_state = MENU_STATE.MAIN;
         break;
+		
+	case rm_forest_challenge:
+        
+        var game_manager = instance_create_layer(x, y, "Instances", obj_game_manager);
+        alarm[0] = 1;
+    
+        // Start gameplay music with fade in
+        _audio_system.PlayMusic(Sound2, true, 120); // 2 second fade in
+        
+        // Play ambient sounds for atmosphere
+        // audio_system.PlayAmbient(snd_wind_ambient, 0.3);
+        // audio_system.PlayAmbient(snd_cave_drip, 0.2);
+        
+        menu_state = MENU_STATE.MAIN;
+    break;
+	
+	default:
+	var game_manager = instance_create_layer(x, y, "Instances", obj_game_manager);
+        alarm[0] = 1;
+    
+        // Start gameplay music with fade in
+        _audio_system.PlayMusic(Sound2, true, 120); // 2 second fade in
+        
+        // Play ambient sounds for atmosphere
+        // audio_system.PlayAmbient(snd_wind_ambient, 0.3);
+        // audio_system.PlayAmbient(snd_cave_drip, 0.2);
+        
+        menu_state = MENU_STATE.MAIN;
+    break;
 }

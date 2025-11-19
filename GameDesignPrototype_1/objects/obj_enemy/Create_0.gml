@@ -393,31 +393,8 @@ controller_step_dead = function(_delta) {
             CreateFireworkEffect(x, y);
         }
         
-        var orbCount = irandom_range(1, 3);
-        for (var i = 0; i < orbCount; i++) {
-            var _exp = instance_create_depth(x, y, depth - 1, obj_exp);
-            var _coin = instance_create_depth(x, y, depth - 1, obj_coin);
-            _exp.direction = irandom(359);
-            _exp.speed = 3;
-        }
-        	// Drop souls based on enemy type
-			var soul_amount = 1; // Base amount
-
-			// Scale by enemy type/difficulty
-			if (object_index == obj_enemy_bomber) soul_amount = 2;
-			if (object_index == obj_summoner_demon) soul_amount = 5;
-			// Add more enemy types as needed
-
-			// Create soul drops
-			for (var i = 0; i < soul_amount; i++) {
-			    var soul = instance_create_depth(
-			        x + random_range(-16, 16), 
-			        y + random_range(-16, 16), 
-			        depth - 1, 
-			        obj_soul_drop
-			    );
-			    soul.z_velocity = random_range(-3, -1);
-			}
+       // Drop rewards using new system
+        DropEnemyRewards(x, y, object_index);
 			
 			// Track kill for missions
 			UpdateMission("first_kill");

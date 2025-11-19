@@ -111,7 +111,7 @@ function GetSouls() {
 /// @function AddSouls(_amount)
 function AddSouls(_amount) {
 
-    global.Souls += _amount;
+    GiveSouls(_amount);
 	SaveGame();
 }
 

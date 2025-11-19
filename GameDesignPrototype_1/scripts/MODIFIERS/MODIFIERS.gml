@@ -456,6 +456,251 @@ global.Modifiers.Regeneration = {
     }
 };
 
+global.Modifiers.warrior_rage = {
+    name: "Warrior Rage",
+    description: "Gain +100% damage when below 50% HP",
+    triggers: [MOD_TRIGGER.PASSIVE],
+    is_innate: true,  // Can't be removed
+    synergy_tags: [SYNERGY_TAG.BRUTAL],
+    
+    stats: {
+        // Calculated dynamically in action
+    },
+    
+    action: function(_entity, _event) {
+        if (!instance_exists(_entity)) return;
+        if (!variable_instance_exists(_entity, "damage_sys")) return;
+        
+        var health_percent = _entity.damage_sys.hp / _entity.damage_sys.max_hp;
+        
+        if (health_percent < 0.5) {
+            var rage_bonus = (0.5 - health_percent) * 2; // 0 to 1.0 (100%)
+            _entity.stats.temp_attack_mult *= (1 + rage_bonus);
+        }
+    }
+};
+
+global.Modifiers.armor_plating = {
+    name: "Armor Plating",
+    description: "+2 Armor (reduces damage taken)",
+    triggers: [MOD_TRIGGER.PASSIVE],
+    is_innate: true,
+    synergy_tags: [SYNERGY_TAG.TANKY],
+    
+    stats: {
+        armor: 2
+    },
+    
+    action: function(_entity, _event) {
+        // Applied via CalculateCachedStats
+        if (!variable_instance_exists(_entity.stats, "armor")) {
+            _entity.stats.armor = 0;
+        }
+        _entity.stats.armor += stats.armor;
+    }
+};
+
+// MAGE CLASS MODIFIERS
+
+global.Modifiers.mana_system = {
+    name: "Mana Pool",
+    description: "100 mana, regenerates 0.5 per frame",
+    triggers: [MOD_TRIGGER.PASSIVE],
+    is_innate: true,
+    synergy_tags: [SYNERGY_TAG.MAGE],
+    
+    mana_max: 100,
+    mana_regen: 0.5,
+    
+    action: function(_entity, _event) {
+        // Initialize mana if first time
+        if (!variable_instance_exists(_entity.stats, "mana")) {
+            _entity.stats.mana = mana_max;
+            _entity.stats.mana_max = mana_max;
+            _entity.stats.mana_regen = mana_regen;
+        }
+        
+        // Regenerate mana
+        if (_entity.stats.mana < _entity.stats.mana_max) {
+            _entity.stats.mana += _entity.stats.mana_regen * game_speed_delta();
+            _entity.stats.mana = min(_entity.stats.mana, _entity.stats.mana_max);
+        }
+    }
+};
+
+global.Modifiers.blessed_ground = {
+    name: "Blessed Ground",
+    description: "Standing in holy water heals 1 HP/sec",
+    triggers: [MOD_TRIGGER.PASSIVE],
+    is_innate: true,
+    synergy_tags: [SYNERGY_TAG.HOLY],
+    
+    heal_per_second: 1,
+    
+    action: function(_entity, _event) {
+        // Check if standing in blessed ground (you'll need to implement detection)
+        if (variable_instance_exists(_entity.stats, "on_blessed_ground") && 
+            _entity.stats.on_blessed_ground) {
+            
+            var heal_amount = (heal_per_second / room_speed) * game_speed_delta();
+            _entity.damage_sys.Heal(heal_amount);
+        }
+    }
+};
+
+// VAMPIRE CLASS MODIFIERS
+
+global.Modifiers.lifesteal_passive = {
+    name: "Lifesteal",
+    description: "15% of damage dealt heals you",
+    triggers: [MOD_TRIGGER.ON_HIT],
+    is_innate: true,
+    synergy_tags: [SYNERGY_TAG.LIFESTEAL, SYNERGY_TAG.VAMPIRE],
+    
+    lifesteal_percent: 0.15,
+    
+    action: function(_entity, _event) {
+        if (!variable_struct_exists(_event, "damage")) return;
+        
+        var heal_amount = _event.damage * lifesteal_percent;
+        _entity.damage_sys.Heal(heal_amount);
+        
+        // Visual feedback
+        spawn_damage_number(_entity.x, _entity.y - 32, floor(heal_amount), c_red, false);
+    }
+};
+
+global.Modifiers.blood_frenzy = {
+    name: "Blood Frenzy",
+    description: "Killing enemies grants +50% speed for 3 seconds",
+    triggers: [MOD_TRIGGER.ON_KILL, MOD_TRIGGER.PASSIVE],
+    is_innate: true,
+    synergy_tags: [SYNERGY_TAG.VAMPIRE, SYNERGY_TAG.SPEED],
+    
+    speed_bonus: 0.5,
+    duration: 180,  // 3 seconds at 60fps
+    
+    action: function(_entity, _event) {
+        // ON_KILL: Activate blood frenzy
+        if (_event.trigger == MOD_TRIGGER.ON_KILL) {
+            if (!variable_instance_exists(_entity.stats, "blood_frenzy_timer")) {
+                _entity.stats.blood_frenzy_timer = 0;
+            }
+            _entity.stats.blood_frenzy_timer = duration;
+        }
+        
+        // PASSIVE: Apply speed buff if active
+        if (_event.trigger == MOD_TRIGGER.PASSIVE) {
+            if (variable_instance_exists(_entity.stats, "blood_frenzy_timer") && 
+                _entity.stats.blood_frenzy_timer > 0) {
+                
+                _entity.stats.blood_frenzy_timer = timer_tick(_entity.stats.blood_frenzy_timer);
+                _entity.stats.temp_speed_mult *= (1 + speed_bonus);
+                
+                _entity.stats.blood_frenzy_active = true;
+            } else {
+                _entity.stats.blood_frenzy_active = false;
+            }
+        }
+    }
+};
+
+// ===========================================
+// LUCKY - Better drop rates AND gold amounts
+// ===========================================
+
+global.Modifiers.Lucky = {
+    name: "Lucky",
+    description: "50% increased drop rates and gold amounts",
+    triggers: [],  // ← REMOVE PASSIVE TRIGGER
+    synergy_tags: [],
+    stats: {
+        drop_rate_mult: 1.5,
+        gold_mult: 1.3
+    }
+};
+// ===========================================
+// EXP BOOST - Better: Every kill gives bonus XP
+// ===========================================
+
+global.Modifiers.ExpBoost = {
+    name: "Adrenaline Rush",
+    description: "+100% XP gain from kills",
+    triggers: [],  // ← REMOVE PASSIVE TRIGGER
+    synergy_tags: [],
+    stats: { experience_mult: 2.0 }
+};
+
+
+
+global.Modifiers.Investor = {
+    name: "Investor",
+    description: "Gold generates 1% interest per second (max 2x starting gold)",
+    triggers: [MOD_TRIGGER.PASSIVE],
+    synergy_tags: [],
+    
+    interest_rate: 0.01,  // 1% per second
+    max_multiplier: 2.0,  // Can't exceed 2x starting gold
+    
+    action: function(_entity, _event) {
+        // Track starting gold if not set
+        if (!variable_instance_exists(_entity, "investor_starting_gold")) {
+            _entity.investor_starting_gold = _entity.gold;
+            _entity.investor_max_gold = _entity.gold * max_multiplier;
+        }
+        
+        // Calculate interest (only if below max)
+        if (_entity.gold < _entity.investor_max_gold) {
+            var interest_gain = _entity.gold * interest_rate * (1 / 60);
+            _entity.gold += interest_gain;
+            
+            // Cap at max
+            _entity.gold = min(_entity.gold, _entity.investor_max_gold);
+        }
+    }
+};
+
+// ===========================================
+// COMPOUNDING - Stacking soul multiplier
+// ===========================================
+
+global.Modifiers.Compounding = {
+    name: "Compounding Interest",
+    description: "Each kill increases soul gain by 1% (stacks infinitely)",
+    triggers: [MOD_TRIGGER.ON_KILL],
+    synergy_tags: [],
+    
+    bonus_per_kill: 0.01,  // 1% per kill
+    
+    action: function(_entity, _event) {
+        // Initialize compounding bonus
+        if (!variable_instance_exists(_entity.stats, "compounding_bonus")) {
+            _entity.stats.compounding_bonus = 0;
+        }
+        
+        // Add bonus
+        _entity.stats.compounding_bonus += bonus_per_kill;
+        
+        // Apply to soul multiplier
+        if (!variable_instance_exists(_entity.stats, "soul_mult")) {
+            _entity.stats.soul_mult = 1.0;
+        }
+        
+        // Add the compounding bonus (multiplicative with base)
+        _entity.stats.soul_mult = (1.0 + _entity.stats.compounding_bonus);
+        
+        // Visual feedback every 10 kills
+        if (_entity.stats.compounding_bonus % 0.1 < 0.011) {  // Close to 10% milestone
+            var percent = floor(_entity.stats.compounding_bonus * 100);
+            show_debug_message("Compounding: +" + string(percent) + "% soul gain!");
+        }
+    }
+};
+
+
+
+
+
 
 // SYNERGY TAG REFERENCE
 
@@ -497,6 +742,10 @@ SYNERGY_TAG.TANKY        - High defense
 function GetModifierKeyFromNodeId(_node_id) {
     var mapping = {
         "pregame_souls_2x": "Souls2x",
+        "pregame_exp_2x": "Exp2x",
+        "pregame_lucky": "Lucky",
+		"pregame_investor": "Investor",
+        "pregame_compounding": "Compounding",
         "pregame_stat_hp": "StatHP",
         "pregame_stat_damage": "StatDamage",
         "pregame_stat_speed": "StatSpeed",

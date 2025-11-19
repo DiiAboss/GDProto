@@ -26,6 +26,9 @@ if instance_exists(target)
 			//		take_damage();
 			//	}
 			//}
+			var _dir = point_direction(x, y, target.x, target.y);
+			
+			target.knockback.Apply(_dir, 8);
 			takeDamage(target, 10, self);
 		
 	}
@@ -41,7 +44,10 @@ if instance_exists(target)
 			//		take_damage();
 			//	}
 			//}
+			
 			var _enemy = (collision_circle(x, y, outer_radius, obj_enemy, false, true));
+			var _dir = point_direction(x, y, _enemy.x, _enemy.y);
+			_enemy.knockback.Apply(_dir, 8);
 			takeDamage(_enemy, 10, self);
 		
 	}

@@ -1607,109 +1607,262 @@ static CalculateStatModsFromLoadout = function(_loadout) {
     // LEVEL SELECT
     // ==========================================
     
-    /// @function DrawLevelSelect(_w, _h, _cx, _cy)
-    static DrawLevelSelect = function(_w, _h, _cx, _cy) {
-        draw_set_color(c_black);
-        draw_set_alpha(0.8);
-        draw_rectangle(0, 0, _w, _h, false);
-        draw_set_alpha(menu_alpha);
-        
-        draw_set_halign(fa_center);
-        draw_set_valign(fa_middle);
-        
-        // Title
-        draw_set_font(fnt_large);
-        draw_set_color(c_yellow);
-        draw_text(_cx, 80, "SELECT LEVEL");
-        
-        // Level cards
-        var card_width = 180;
-        var card_height = 240;
-        var card_spacing = 220;
-        
-        for (var i = 0; i < array_length(level_options); i++) {
-            var level_data = level_options[i];
-            var xx = _cx + (i - 1) * card_spacing;
-            var yy = _cy + 20;
-            var is_selected = (i == selected_level);
-            var scale = is_selected ? 1.1 : 1.0;
-            var unlocked = IsLevelUnlocked(level_data.id);
-            
-            // Card background
-            var card_alpha = unlocked ? (is_selected ? 0.8 : 0.5) : 0.3;
-            draw_set_alpha(menu_alpha * card_alpha);
-            
-            var card_color = unlocked ? c_dkgray : c_black;
-            draw_rectangle_color(
-                xx - card_width/2 * scale, yy - card_height/2 * scale,
-                xx + card_width/2 * scale, yy + card_height/2 * scale,
-                card_color, card_color, c_black, c_black, false
-            );
-            
-            // Border
-            draw_set_alpha(menu_alpha);
-            var border_color = is_selected ? c_yellow : c_white;
-            draw_set_color(border_color);
-            draw_rectangle(
-                xx - card_width/2 * scale, yy - card_height/2 * scale,
-                xx + card_width/2 * scale, yy + card_height/2 * scale,
-                true
-            );
-            
-            // Level preview
-            if (unlocked) {
-                draw_set_alpha(menu_alpha * 0.6);
-                draw_set_color(make_color_hsv((i * 40) mod 255, 100, 200));
-                draw_rectangle(xx - 60, yy - 70, xx + 60, yy - 10, false);
-                draw_set_alpha(menu_alpha);
-            } else {
-                draw_set_alpha(menu_alpha * 0.5);
-                draw_set_color(c_red);
-                draw_circle(xx, yy - 40, 30, false);
-                draw_set_color(c_white);
-                draw_set_font(fnt_large);
-                draw_text(xx, yy - 40, "?");
-            }
-            
-            draw_set_alpha(menu_alpha);
-            
-            // Level info
-            draw_set_font(fnt_default);
-            draw_set_color(unlocked ? c_white : c_gray);
-            draw_text(xx, yy - 96, level_data.name);
-            
-            // Difficulty color
-            var diff_color = c_white;
-            switch(level_data.difficulty) {
-                case "Normal": diff_color = c_lime; break;
-                case "Hard": diff_color = c_orange; break;
-                case "Nightmare": diff_color = c_red; break;
-            }
-            draw_set_color(diff_color);
-            draw_text(xx, yy - 82, level_data.difficulty);
-            
-            // Description
-            draw_set_color(c_ltgray);
-			
-            draw_text_ext(xx, yy + 60, level_data.description, 14, 150);
-            
-            // Lock requirement
-            if (!unlocked && variable_struct_exists(level_data, "unlock_requirement")) {
-                draw_set_color(c_red);
-                draw_text(xx, yy + 112, level_data.unlock_requirement);
-            }
-        }
-        
-        // Instructions
-        draw_set_font(fnt_default);
-        draw_set_halign(fa_center);
-        draw_set_color(c_white);
-        draw_text(_cx, _h - 60, "[A/D] Select Level");
-        draw_text(_cx, _h - 40, "[ENTER] Start Game  [ESC] Back");
-        
-        draw_set_alpha(1);
-    }
+	/// @function DrawLevelSelect(_w, _h, _cx, _cy)
+	static DrawLevelSelect = function(_w, _h, _cx, _cy) {
+	    draw_set_color(c_black);
+	    draw_set_alpha(0.8);
+	    draw_rectangle(0, 0, _w, _h, false);
+	    draw_set_alpha(menu_alpha);
     
+	    draw_set_halign(fa_center);
+	    draw_set_valign(fa_middle);
+    
+	    // Title
+	    draw_set_font(fnt_large);
+	    draw_set_color(c_yellow);
+	    draw_text(_cx, 80, "SELECT LEVEL");
+    
+	    // Level cards
+	    var card_width = 180;
+	    var card_height = 240;
+	    var card_spacing = 220;
+    
+	    for (var i = 0; i < array_length(level_options); i++) {
+	        var level_data = level_options[i];
+	        var xx = _cx + (i - 1) * card_spacing;
+	        var yy = _cy + 20;
+	        var is_selected = (i == selected_level);
+	        var scale = is_selected ? 1.1 : 1.0;
+	        var unlocked = IsLevelUnlocked(level_data.id);
+        
+	        // Card background
+	        var card_alpha = unlocked ? (is_selected ? 0.8 : 0.5) : 0.3;
+	        draw_set_alpha(menu_alpha * card_alpha);
+        
+	        var card_color = unlocked ? c_dkgray : c_black;
+	        draw_rectangle_color(
+	            xx - card_width/2 * scale, yy - card_height/2 * scale,
+	            xx + card_width/2 * scale, yy + card_height/2 * scale,
+	            card_color, card_color, c_black, c_black, false
+	        );
+        
+	        // Border
+	        draw_set_alpha(menu_alpha);
+	        var border_color = is_selected ? c_yellow : c_white;
+	        draw_set_color(border_color);
+	        draw_rectangle(
+	            xx - card_width/2 * scale, yy - card_height/2 * scale,
+	            xx + card_width/2 * scale, yy + card_height/2 * scale,
+	            true
+	        );
+        
+	        // Level preview
+	        if (unlocked) {
+	            draw_set_alpha(menu_alpha * 0.6);
+	            draw_set_color(make_color_hsv((i * 40) mod 255, 100, 200));
+	            draw_rectangle(xx - 60, yy - 70, xx + 60, yy - 10, false);
+	            draw_set_alpha(menu_alpha);
+	        } else {
+	            draw_set_alpha(menu_alpha * 0.5);
+	            draw_set_color(c_red);
+	            draw_circle(xx, yy - 40, 30, false);
+	            draw_set_color(c_white);
+	            draw_set_font(fnt_large);
+	            draw_text(xx, yy - 40, "?");
+	        }
+        
+	        draw_set_alpha(menu_alpha);
+        
+	        // Level info
+	        draw_set_font(fnt_default);
+	        draw_set_color(unlocked ? c_white : c_gray);
+	        draw_text(xx, yy - 96, level_data.name);
+        
+	        // Difficulty color
+	        var diff_color = c_white;
+	        switch(level_data.difficulty) {
+	            case "Normal": diff_color = c_lime; break;
+	            case "Hard": diff_color = c_orange; break;
+	            case "Nightmare": diff_color = c_red; break;
+	        }
+	        draw_set_color(diff_color);
+	        draw_text(xx, yy - 82, level_data.difficulty);
+        
+	        // Description
+	        draw_set_color(c_ltgray);
+	        draw_text_ext(xx, yy + 60, level_data.description, 14, 150);
+        
+	        // Lock requirement
+	        if (!unlocked && variable_struct_exists(level_data, "unlock_requirement")) {
+	            draw_set_color(c_red);
+	            draw_text(xx, yy + 112, level_data.unlock_requirement);
+	        }
+        
+	        // === NEW: SUB-ROOM DISCOVERY ICONS (Only on selected card) ===
+	        if (is_selected && unlocked) {
+	            DrawSubRoomIcons(xx, yy + 140, level_data);
+	        }
+	    }
+    
+	    // Instructions
+	    draw_set_font(fnt_default);
+	    draw_set_halign(fa_center);
+	    draw_set_color(c_white);
+	    draw_text(_cx, _h - 60, "[A/D] Select Level");
+	    draw_text(_cx, _h - 40, "[ENTER] Start Game  [ESC] Back");
+    
+	    draw_set_alpha(1);
+	}
+
+	/// @function DrawSubRoomIcons(_x, _y, _level_data)
+	static DrawSubRoomIcons = function(_x, _y, _level_data) {
+	    // Get zone key from level data
+	    var zone_key = GetZoneKeyFromLevelID(_level_data.id);
+    
+	    if (zone_key == "") return; // Not a zone with sub-rooms
+    
+	    // Get discovered doors for this zone
+	    var doors = global.SaveData.discovered_doors[$ zone_key];
+    
+	    // Icon properties
+	    var icon_size = 16;
+	    var icon_spacing = 24;
+	    var start_x = _x - (icon_spacing * 1.5); // Center 3 icons
+    
+	    // Arena icon
+	    var arena_discovered = variable_struct_exists(doors, "arena") && doors.arena;
+	    var arena_x = start_x;
+	    DrawSubRoomIcon(arena_x, _y, icon_size, arena_discovered, c_red, "A");
+    
+	    // Challenge icon
+	    var challenge_discovered = variable_struct_exists(doors, "challenge") && doors.challenge;
+	    var challenge_x = start_x + icon_spacing;
+	    DrawSubRoomIcon(challenge_x, _y, icon_size, challenge_discovered, c_orange, "C");
+    
+	    // Boss icon
+	    var boss_discovered = variable_struct_exists(doors, "boss") && doors.boss;
+	    var boss_x = start_x + (icon_spacing * 2);
+	    DrawSubRoomIcon(boss_x, _y, icon_size, boss_discovered, c_purple, "B");
+    
+	    // Optional: Add label below icons
+	    draw_set_font(fnt_default);
+	    draw_set_halign(fa_center);
+	    draw_set_color(c_gray);
+	    draw_text(_x, _y + 20, "Sub-Rooms");
+	}
+
+	/// @function DrawSubRoomIcon(_x, _y, _size, _discovered, _color, _letter)
+	static DrawSubRoomIcon = function(_x, _y, _size, _discovered, _color, _letter) {
+	    draw_set_halign(fa_center);
+	    draw_set_valign(fa_middle);
+    
+	    if (_discovered) {
+	        // Discovered: Filled circle with bright color
+	        draw_set_alpha(0.7);
+	        draw_set_color(_color);
+	        draw_circle(_x, _y, _size / 2, false);
+	        draw_set_alpha(1);
+        
+	        // Border
+	        draw_set_color(c_white);
+	        draw_circle(_x, _y, _size / 2, true);
+        
+	        // Letter
+	        draw_set_font(fnt_default);
+	        draw_set_color(c_white);
+	        draw_text(_x, _y, _letter);
+	    } else {
+	        // Not discovered: Gray outline with question mark
+	        draw_set_alpha(0.5);
+	        draw_set_color(c_dkgray);
+	        draw_circle(_x, _y, _size / 2, false);
+	        draw_set_alpha(1);
+        
+	        draw_set_color(c_gray);
+	        draw_circle(_x, _y, _size / 2, true);
+        
+	        draw_set_font(fnt_default);
+	        draw_set_color(c_gray);
+	        draw_text(_x, _y, "?");
+	    }
+	}
+
+	/// @function GetZoneKeyFromLevelID(_level_id)
+	static GetZoneKeyFromLevelID = function(_level_id) {
+	    switch(_level_id) {
+	        case "arena_1": return "forest";
+	        case "arena_2": return "desert";
+	        case "arena_3": return "hell";
+	        default: return "";
+	    }
+	}
+	
+	/// @function DrawSubRoomIcons(_x, _y, _level_data)
+	static DrawSubRoomIcons = function(_x, _y, _level_data) {
+	    var zone_key = GetZoneKeyFromLevelID(_level_data.id);
+	    if (zone_key == "") return;
+    
+	    var doors = global.SaveData.discovered_doors[$ zone_key];
+	    var icon_size = 16;
+	    var icon_spacing = 24;
+	    var start_x = _x - (icon_spacing * 1.5);
+    
+	    var mx = device_mouse_x_to_gui(0);
+	    var my = device_mouse_y_to_gui(0);
+    
+	    // Arena
+	    var arena_discovered = variable_struct_exists(doors, "arena") && doors.arena;
+	    var arena_x = start_x;
+	    DrawSubRoomIcon(arena_x, _y, icon_size, arena_discovered, c_red, "A");
+    
+	    if (point_distance(mx, my, arena_x, _y) < icon_size) {
+	        DrawIconTooltip(mx, my, arena_discovered ? "Arena Unlocked" : "Arena - Not Discovered");
+	    }
+    
+	    // Challenge
+	    var challenge_discovered = variable_struct_exists(doors, "challenge") && doors.challenge;
+	    var challenge_x = start_x + icon_spacing;
+	    DrawSubRoomIcon(challenge_x, _y, icon_size, challenge_discovered, c_orange, "C");
+    
+	    if (point_distance(mx, my, challenge_x, _y) < icon_size) {
+	        DrawIconTooltip(mx, my, challenge_discovered ? "Challenge Unlocked" : "Challenge - Not Discovered");
+	    }
+    
+	    // Boss
+	    var boss_discovered = variable_struct_exists(doors, "boss") && doors.boss;
+	    var boss_x = start_x + (icon_spacing * 2);
+	    DrawSubRoomIcon(boss_x, _y, icon_size, boss_discovered, c_purple, "B");
+    
+	    if (point_distance(mx, my, boss_x, _y) < icon_size) {
+	        DrawIconTooltip(mx, my, boss_discovered ? "Boss Unlocked" : "Boss - Not Discovered");
+	    }
+    
+	    draw_set_font(fnt_default);
+	    draw_set_halign(fa_center);
+	    draw_set_color(c_gray);
+	    draw_text(_x, _y + 20, "Sub-Rooms");
+	}
+
+	/// @function DrawIconTooltip(_x, _y, _text)
+	static DrawIconTooltip = function(_x, _y, _text) {
+	    var tooltip_w = string_width(_text) + 20;
+	    var tooltip_h = 30;
+    
+	    draw_set_alpha(0.9);
+	    draw_set_color(c_black);
+	    draw_rectangle(_x - tooltip_w/2, _y - 40, _x + tooltip_w/2, _y - 40 + tooltip_h, false);
+	    draw_set_alpha(1);
+    
+	    draw_set_color(c_white);
+	    draw_rectangle(_x - tooltip_w/2, _y - 40, _x + tooltip_w/2, _y - 40 + tooltip_h, true);
+    
+	    draw_set_halign(fa_center);
+	    draw_set_valign(fa_middle);
+	    draw_set_font(fnt_default);
+	    draw_set_color(c_white);
+	    draw_text(_x, _y - 25, _text);
+	}	
+	
     /// @function HandleLevelSelect(_input, _audio, _mx, _my)
     static HandleLevelSelect = function(_input, _audio, _mx, _my) {
         var cx = display_get_gui_width() / 2;
@@ -1742,14 +1895,14 @@ static CalculateStatModsFromLoadout = function(_loadout) {
                 }
                 
                 if (_input.FirePress) {
-                    TryStartGame(_audio);
+                    TryStartGame(_audio, level_options[selected_level]);
                 }
             }
         }
         
         // Confirm
         if (_input.Action) {
-            TryStartGame(_audio);
+            TryStartGame(_audio, level_options[selected_level]);
         }
         
         // Back
@@ -1760,8 +1913,8 @@ static CalculateStatModsFromLoadout = function(_loadout) {
     }
     
     /// @function TryStartGame(_audio)
-    static TryStartGame = function(_audio) {
-        var level_data = level_options[selected_level];
+    static TryStartGame = function(_audio, _level) {
+        var level_data = _level;// = level_options[selected_level];
         
         if (!IsLevelUnlocked(level_data.id)) {
             _audio.PlayUISound(snd_menu_select);

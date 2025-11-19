@@ -382,16 +382,14 @@ global.PreGameModifiers = {
 
 global.Modifiers.Souls2x = {
     name: "Soul Harvest",
-    description: "Earn 2x souls from kills",
-    triggers: [MOD_TRIGGER.ON_KILL],
+    description: "Earn 2x souls per run",
+    triggers: [],  // ← NO TRIGGERS! It's a passive stat bonus
     synergy_tags: [],
     
-    soul_multiplier: 2.0,
-    
-    action: function(_entity, _event) {
-        // Check when awarding souls in your kill handling code
-        // if (has_modifier("Souls2x")) souls *= 2;
+    stats: {
+        soul_mult: 2.0
     }
+    // No action function needed!
 };
 
 global.Modifiers.StatHP = {

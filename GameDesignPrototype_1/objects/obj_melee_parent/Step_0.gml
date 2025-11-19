@@ -22,6 +22,9 @@ if (instance_exists(owner)) {
         hasHitThisSwing = false;
         ds_list_clear(hitList);
         
+		var swing_sound = choose(snd_swing_1, snd_swing_2, snd_swing_3);
+		obj_main_controller._audio_system.PlaySFX(swing_sound);
+		
         // Determine swing direction
         if (currentPosition == SwingPosition.Down) {
             targetPosition = SwingPosition.Up;
@@ -127,6 +130,7 @@ if (instance_exists(owner)) {
         
         if (hit != noone && ds_list_find_index(hitList, hit) == -1) {
             // Skip dead enemies
+			obj_main_controller._audio_system.PlaySFX(snd_hit_sound);
             if (variable_instance_exists(hit, "marked_for_death") && hit.marked_for_death) {
                 // Don't process this hit
             } else {

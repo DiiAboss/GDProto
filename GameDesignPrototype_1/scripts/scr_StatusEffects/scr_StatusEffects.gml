@@ -144,6 +144,10 @@ function CalculateCachedStats(_entity) {
     var speed_mult = 1.0;
     var max_hp_bonus = 0;
 	var max_hp_mult = 1.0;
+	var soul_mult = 1.0;
+    var gold_mult = 1.0;
+    var drop_mult = 1.0;
+    var exp_mult = 1.0;
     
     // Loop through all modifiers
     for (var i = 0; i < array_length(_entity.mod_list); i++) {
@@ -177,6 +181,22 @@ function CalculateCachedStats(_entity) {
 			if (variable_struct_exists(stats, "max_hp_mult")) {
                 max_hp_mult *= GetStackedValue(stats.max_hp_mult, stack);
             }
+			 // Apply stat bonuses
+	        if (variable_struct_exists(stats, "soul_mult")) {
+	            soul_mult *= GetStackedValue(stats.soul_mult, stack);
+	        }
+        
+	        if (variable_struct_exists(stats, "gold_mult")) {
+	            gold_mult *= GetStackedValue(tats.gold_mult, stack);
+	        }
+        
+	        if (variable_struct_exists(stats, "drop_rate_mult")) {
+	            drop_mult *= GetStackedValue(stats.drop_rate_mult, stack);
+	        }
+        
+	        if (variable_struct_exists(stats, "experience_mult")) {
+	            exp_mult *= GetStackedValue(stats.experience_mult, stack);
+	        }
         }
     }
     
@@ -184,7 +204,12 @@ function CalculateCachedStats(_entity) {
     _entity.stats.attack = (_entity.stats.base_attack + damage_bonus) * damage_mult;
     _entity.stats.speed = (_entity.stats.base_speed + speed_bonus) * speed_mult;
     _entity.damage_sys.max_hp = (_entity.damage_sys.base_max_hp + max_hp_bonus) * max_hp_mult;
-    
+    _entity.stats.soul_mult = soul_mult;
+    _entity.stats.gold_mult = gold_mult;
+    _entity.stats.drop_rate_mult = drop_mult;
+    _entity.stats.experience_mult = exp_mult;
+	
+	
     // Sync legacy variables
     _entity.attack = _entity.stats.attack;
     _entity.mySpeed = _entity.stats.speed;

@@ -27,32 +27,33 @@ function calculate_stats(self, base_attack, base_hp, base_knockback, base_spd) {
 function takeDamage(_self, _damage, _source) {
     with (_self) {
         // Fast: check object type once
-        var is_player = (object_index == obj_player);
+        var is_player = (_self == obj_player);
         
         // Players have invincibility
-        if (is_player && invincibility.active) {
-            return hp; // Still invincible
+        if (is_player && _self.invincibility.active) {
+            return _self.hp; // Still invincible
         }
         	
 
         // Apply damage
-		_self.total_damage_taken += _damage;
-        damage_sys.TakeDamage(_damage, _source);
-        hp = damage_sys.hp;
+		//_self.total_damage_taken += _damage;
+        _self.damage_sys.TakeDamage(_damage, _source);
+        var _hp = damage_sys.hp;
+		_self.hp = _hp;
         
         // Player-specific
         if (is_player) {
-            invincibility.Activate();
-            timers.Set("hp_bar", 120);
+            _self.invincibility.Activate();
+            _self.timers.Set("hp_bar", 120);
         }
         
         // Everyone can flash
-        hitFlashTimer = 10;
+        _self.hitFlashTimer = 10;
         
         // Track damage
-        last_hit_by = _source;
-        took_damage = _damage;
+        _self.last_hit_by = _source;
+        _self.took_damage = _damage;
         
-        return hp;
+        return _hp;
     }
 }

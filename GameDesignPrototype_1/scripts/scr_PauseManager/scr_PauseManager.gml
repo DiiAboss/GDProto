@@ -99,7 +99,7 @@ function PauseManager() constructor {
         // Smoothly lerp to target speed
         if (current_speed != target_speed) {
             var diff = target_speed - current_speed;
-            show_debug_message("Target_Speed: " + string(target_speed));
+            
             if (abs(diff) < 0.01) {
                 current_speed = target_speed;
             } else {

@@ -13,56 +13,55 @@ score_display.Update(game_speed_delta());
 if (global.gameSpeed > 0)
 {
 	if (instance_exists(obj_exp))
-{
-    with (obj_exp)
-    {
-    	if (settled)
-    	{
-    		var _dist_to_player = point_distance(x, y, obj_player.x, obj_player.y);
-    		if (_dist_to_player <= 128)
-    		{
-    			direction = point_direction(x, y, obj_player.x, obj_player.y);
-    			speed += 0.1 * game_speed_delta();
+	{
+	    with (obj_exp)
+	    {
+	    	if (settled)
+	    	{
+	    		var _dist_to_player = point_distance(x, y, obj_player.x, obj_player.y);
+	    		if (_dist_to_player <= 128)
+	    		{
+	    			direction = point_direction(x, y, obj_player.x, obj_player.y);
+	    			speed += 0.1 * game_speed_delta();
     			
-    			if (_dist_to_player <= 4)
-    			{
-    				obj_player.experience_points += obj_exp.amount;
-    				instance_destroy();
-    			}
-    		}
-    		else
-    		{
-    			speed = 0;
-    		}
-    	}
-    }
-}
+	    			// Step event or collision with player
+					if (place_meeting(x, y, obj_player)) {
+					    GiveExperience(obj_player, obj_exp.amount);  // exp_value = how much this orb gives
+					    instance_destroy();
+					}
+	    		}
+	    		else
+	    		{
+	    			speed = 0;
+	    		}
+	    	}
+	    }
+	}
 
-if (instance_exists(obj_coin))
-{
-    with (obj_coin)
-    {
-        if (settled)
-        {
-            var _dist_to_player = point_distance(x, y, obj_player.x, obj_player.y);
-            if (_dist_to_player <= 128)
-            {
-                direction = point_direction(x, y, obj_player.x, obj_player.y);
-                speed += 0.1 * game_speed_delta();
+	if (instance_exists(obj_coin))
+	{
+	    with (obj_coin)
+	    {
+	        if (settled)
+	        {
+	            var _dist_to_player = point_distance(x, y, obj_player.x, obj_player.y);
+	            if (_dist_to_player <= 128)
+	            {
+	                direction = point_direction(x, y, obj_player.x, obj_player.y);
+	                speed += 0.1 * game_speed_delta();
                 
-                if (_dist_to_player <= 4)
-                {
-                    instance_destroy();
-					obj_player.gold += 1;
-                }
-            }
-            else
-            {
-                speed = 0;
-            }
-        }
-    }
-}
+	                if (place_meeting(x, y, obj_player)) {
+					    GiveGold(obj_player, 1);  // gold_value = coin amount
+					    instance_destroy();
+					}
+	            }
+	            else
+	            {
+	                speed = 0;
+	            }
+	        }
+	    }
+	}
 }
 
 // Update weapon swap prompt

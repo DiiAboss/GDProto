@@ -136,35 +136,35 @@ function SynergyTags() constructor {
 // CHARACTER CLASS TAG INITIALIZATION
 
 /// @function InitializeCharacterTags(_class_type)
-/// @description Returns innate tags for a character class
-function InitializeCharacterTags(_class_type) {
-    var tags = new SynergyTags();
+///// @description Returns innate tags for a character class
+//function InitializeCharacterTags(_class_type) {
+//    var tags = new SynergyTags();
     
-    switch (_class_type) {
-        case CharacterClass.WARRIOR:
-            tags.AddTag(SYNERGY_TAG.BRUTAL, "class_innate");
-            tags.AddTag(SYNERGY_TAG.MELEE, "class_innate");
-            break;
+//    switch (_class_type) {
+//        case CharacterClass.WARRIOR:
+//            tags.AddTag(SYNERGY_TAG.BRUTAL, "class_innate");
+//            tags.AddTag(SYNERGY_TAG.MELEE, "class_innate");
+//            break;
             
-        case CharacterClass.HOLY_MAGE:
-            tags.AddTag(SYNERGY_TAG.HOLY, "class_innate");
-            tags.AddTag(SYNERGY_TAG.RANGED, "class_innate");
-            tags.AddTag(SYNERGY_TAG.MAGE, "class_innate");  // NEW
-            break;
+//        case CharacterClass.HOLY_MAGE:
+//            tags.AddTag(SYNERGY_TAG.HOLY, "class_innate");
+//            tags.AddTag(SYNERGY_TAG.RANGED, "class_innate");
+//            tags.AddTag(SYNERGY_TAG.MAGE, "class_innate");  // NEW
+//            break;
             
-        case CharacterClass.VAMPIRE:
-            tags.AddTag(SYNERGY_TAG.VAMPIRE, "class_innate");
-            tags.AddTag(SYNERGY_TAG.LIFESTEAL, "class_innate");
-            break;
+//        case CharacterClass.VAMPIRE:
+//            tags.AddTag(SYNERGY_TAG.VAMPIRE, "class_innate");
+//            tags.AddTag(SYNERGY_TAG.LIFESTEAL, "class_innate");
+//            break;
             
-        case CharacterClass.BASEBALL_PLAYER:  // NEW (for future)
-            tags.AddTag(SYNERGY_TAG.ATHLETIC, "class_innate");
-            tags.AddTag(SYNERGY_TAG.MELEE, "class_innate");
-            break;
-    }
+//        case CharacterClass.BASEBALL_PLAYER:  // NEW (for future)
+//            tags.AddTag(SYNERGY_TAG.ATHLETIC, "class_innate");
+//            tags.AddTag(SYNERGY_TAG.MELEE, "class_innate");
+//            break;
+//    }
     
-    return tags;
-}
+//    return tags;
+//}
 
 
 // WEAPON TAG INITIALIZATION
@@ -216,6 +216,10 @@ function InitializeWeaponTags(_weapon_id) {
             tags.AddTag(SYNERGY_TAG.BOUNCING, "weapon_innate");
             break;
 		case Weapon.ThrowableItem:
+		    tags.AddTag(SYNERGY_TAG.THROWABLE, "weapon_innate");
+		    break;
+		
+		case Weapon.PotionBomb:
 		    tags.AddTag(SYNERGY_TAG.THROWABLE, "weapon_innate");
 		    break;
 		default:
