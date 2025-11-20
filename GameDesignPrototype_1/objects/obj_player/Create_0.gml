@@ -2,7 +2,7 @@
 
 crosshair = instance_create_depth(x, y, depth, obj_crosshair);
 
-
+can_interact = 0;
 
 // CHARACTER CLASS SETUP
 

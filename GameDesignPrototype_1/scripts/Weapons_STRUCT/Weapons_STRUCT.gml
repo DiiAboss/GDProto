@@ -8,7 +8,7 @@ global.WeaponStruct =
         projectile_struct: global.Projectile_.Arrow,
         default_element: ELEMENT.PHYSICAL,
 		synergy_tags: InitializeWeaponTags(Weapon.Bow),
-
+		sprite: spr_crossbow,
         primary_attack: function(_self, _direction, _range, _projectile_struct) {
             var _attack = Shoot_Projectile(_self, _direction, _self, _range, _projectile_struct, obj_arrow);
             _attack.speed = 6;
@@ -86,7 +86,7 @@ global.WeaponStruct =
     melee_object_type: obj_chain_whip,
     default_element: ELEMENT.PHYSICAL,
 	synergy_tags: InitializeWeaponTags(Weapon.ChainWhip),
-
+	sprite: spr_knife,
     // Attack queue system
     attack_queue: 0,
     max_queue: 3,
@@ -204,7 +204,7 @@ global.WeaponStruct =
         melee_object_type: obj_sword,
         default_element: ELEMENT.PHYSICAL,
 		synergy_tags: InitializeWeaponTags(Weapon.Sword),
-
+		sprite: spr_sword,
         combo_count: 0,
         max_combo: 3,
         combo_timer: 0,
@@ -261,7 +261,7 @@ global.WeaponStruct =
         melee_object_type: obj_dagger,
         default_element: ELEMENT.PHYSICAL,
 		synergy_tags: InitializeWeaponTags(Weapon.Dagger),
-
+		sprite: spr_dagger,
         combo_count: 0,
         max_combo: 3,
         combo_timer: 0,
@@ -343,7 +343,7 @@ global.WeaponStruct =
         projectile_struct: global.Projectile_.Holy_Water,
         default_element: ELEMENT.PHYSICAL,
 		synergy_tags: InitializeWeaponTags(Weapon.Holy_Water),
-
+		sprite: spr_holy_water,
        primary_attack: function(_self, _direction, _range, _projectile_struct) {
 		    var proj = Lob_Projectile(_self, _direction, _range, projectile_struct.object);
 		    
@@ -384,7 +384,7 @@ global.WeaponStruct =
         projectile_struct: global.Projectile_.Potion_Bomb,
         default_element: ELEMENT.PHYSICAL,
 		synergy_tags: InitializeWeaponTags(Weapon.PotionBomb),
-
+		sprite: spr_potions,
        primary_attack: function(_self, _direction, _range, _projectile_struct) {
 		    var proj = Lob_Projectile(_self, _direction, _range, projectile_struct.object);
 		    
@@ -426,7 +426,7 @@ global.WeaponStruct =
     projectile_struct: noone,
     melee_object_type: obj_baseball_bat,
 	synergy_tags: InitializeWeaponTags(Weapon.BaseballBat),    
-
+	sprite: spr_way_better_bat,
     combo_count: 0,
     max_combo: 3,
     combo_timer: 0,
@@ -486,7 +486,7 @@ global.WeaponStruct =
         cooldown_max: 60,
         default_element: ELEMENT.PHYSICAL,
 		synergy_tags: InitializeWeaponTags(Weapon.Boomerang),
-
+		sprite: spr_boomerang,
         primary_attack: function(_self, _direction, _range, _projectile_struct) {
             if (cooldown > 0) return noone;
             
@@ -520,7 +520,7 @@ global.WeaponStruct =
         projectile_struct: global.Projectile_.Cannonball,
         default_element: ELEMENT.PHYSICAL,
 		synergy_tags: InitializeWeaponTags(Weapon.ChargeCannon),
-
+		sprite: spr_air_cannon,
         // Charge properties
         min_charge: 0.2,
         charge_rate: 0.015,
@@ -611,7 +611,7 @@ global.WeaponStruct =
     min_charge_damage_mult: 0.5, // 0.5x damage at no charge
     default_element: ELEMENT.PHYSICAL,
 	synergy_tags: InitializeWeaponTags(Weapon.ThrowableItem),
-
+	sprite: spr_rock_proj,
     primary_attack: function(_self, _direction, _range, _projectile_struct) {
         // Only attack if carrying something
         if (!_self.is_carrying || !instance_exists(_self.carried_object)) {

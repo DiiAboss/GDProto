@@ -39,7 +39,6 @@ switch(room) {
         break;
         
     case rm_demo_room:
-        
         var game_manager = instance_create_layer(x, y, "Instances", obj_game_manager);
         alarm[0] = 1;
     

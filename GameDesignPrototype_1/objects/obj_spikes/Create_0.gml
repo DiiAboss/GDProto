@@ -5,7 +5,7 @@ velocityDamageMultiplier = 0.5; // Extra damage based on impact speed
 maxDamage = 30; // Cap maximum damage
 
 // Visual properties
-originalSprite = sprite_index;
+originalSprite = spr_spikes;
 bloodTimer = 0; // Shows blood effect after hit
 shake = 0; // Shake on impact
 

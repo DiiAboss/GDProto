@@ -46,6 +46,10 @@ global.chest_popup = noone;
 global.weapon_swap_prompt = noone;
 global.SaveData.career.currency.souls = 5000;
 
+
+textbox_system = new TextboxSystem();
+
+
 /// @function ReturnToOverworld()
 function ReturnToOverworld() {
     if (sub_room_return_data == noone) {

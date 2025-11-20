@@ -6,7 +6,7 @@
   "name":"scr_lobShot",
   "parent":{
     "name":"WEAPONS_SCRIPTS",
-    "path":"folders/Scripts/WEAPONS_SCRIPTS.yy",
+    "path":"folders/Weapons Folder/WEAPONS_SCRIPTS.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

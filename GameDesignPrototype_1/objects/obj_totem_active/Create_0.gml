@@ -1,4 +1,6 @@
 /// @description Totem in world - now handles purchase interaction
+
+event_inherited();
 totem_type = TotemType.CHAOS; // Set by spawner
 totem_data = noone; // Will be set
 

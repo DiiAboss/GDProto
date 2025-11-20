@@ -15,7 +15,127 @@ enum MENU_STATE {
 
 function MenuSystem() constructor {
     
-	
+	// Animated background
+bg_shift_timer = 0;
+
+// Particle system for pixelated fire
+part_sys_menu_fire = part_system_create();
+part_system_depth(part_sys_menu_fire, -100);
+
+// Pixelated fire particle type
+part_fire_base = part_type_create();
+part_type_sprite(part_fire_base, spr_pixel, false, false, false); // Use a 1x1 or 2x2 pixel sprite
+part_type_size(part_fire_base, 3, 6, 0, 0); // Pixelated size
+part_type_scale(part_fire_base, 1, 1);
+part_type_color3(part_fire_base, 
+    make_color_rgb(255, 50, 0),    // Red-orange base
+    make_color_rgb(255, 165, 0),   // Orange
+    make_color_rgb(255, 200, 0)    // Yellow at top
+);
+part_type_alpha3(part_fire_base, 0.8, 0.6, 0);
+part_type_speed(part_fire_base, 0.5, 2.5, 0, 0.1);
+part_type_direction(part_fire_base, 80, 100, 0, 5); // Upward with variation
+part_type_gravity(part_fire_base, 0.01, 270); // Slight upward pull
+part_type_life(part_fire_base, 30, 80);
+part_type_blend(part_fire_base, true); // Additive blending
+
+// Hot embers
+part_fire_ember = part_type_create();
+part_type_sprite(part_fire_ember, spr_pixel, false, false, false);
+part_type_size(part_fire_ember, 2, 3, 0, 0);
+part_type_color2(part_fire_ember, 
+    make_color_rgb(255, 200, 0),   // Bright yellow
+    make_color_rgb(255, 100, 0)    // Orange
+);
+part_type_alpha3(part_fire_ember, 1, 0.8, 0);
+part_type_speed(part_fire_ember, 0.3, 1.0, -0.01, 0);
+part_type_direction(part_fire_ember, 70, 110, 0, 10);
+part_type_gravity(part_fire_ember, 0.01, 270);
+part_type_life(part_fire_ember, 60, 120);
+part_type_blend(part_fire_ember, true);
+
+// Smoke particles (optional, for depth)
+part_fire_smoke = part_type_create();
+part_type_sprite(part_fire_smoke, spr_pixel, false, false, false);
+part_type_size(part_fire_smoke, 3, 6, 0.05, 0);
+part_type_color1(part_fire_smoke, make_color_rgb(40, 40, 40));
+part_type_alpha3(part_fire_smoke, 0, 0.3, 0);
+part_type_speed(part_fire_smoke, 0.2, 0.5, 0, 0);
+part_type_direction(part_fire_smoke, 85, 95, 0, 3);
+part_type_life(part_fire_smoke, 80, 120);
+part_type_blend(part_fire_smoke, false);
+
+// Emitters along the bottom
+fire_emitters = [];
+var screen_width = display_get_gui_width();
+var screen_height = display_get_gui_height();
+var num_emitters = 25; // Spread across bottom
+
+for (var i = 0; i < num_emitters; i++) {
+    var emit_x = (i / num_emitters) * screen_width + random_range(-10, 10);
+    var emit_y = screen_height - 5;
+    
+    var emitter = part_emitter_create(part_sys_menu_fire);
+    part_emitter_region(part_sys_menu_fire, emitter, 
+        emit_x - 20, emit_x + 20,  // x range
+        emit_y - 5, emit_y + 5,     // y range
+        ps_shape_rectangle, ps_distr_linear);
+    
+    array_push(fire_emitters, {
+        emitter_id: emitter,
+        x: emit_x,
+        intensity: 0.8 + random(0.4) // Vary intensity
+    });
+}
+// Ember particles
+embers = [];
+for (var i = 0; i < 30; i++) {
+    array_push(embers, {
+        x: random(display_get_gui_width()),
+        y: display_get_gui_height(),
+        rise_speed: 1 + random(2),
+        drift: random_range(-1, 1),
+        alpha: 0,
+        lifetime: random(480) // 8 seconds at 60fps
+    });
+}
+
+// Glowing eyes - BETTER PLACEMENT (avoiding center and bottom)
+eyes = [];
+var safe_zones = [
+    // Format: [x_min, x_max, y_min, y_max] as percentages
+    [0.05, 0.25, 0.15, 0.35],   // Top left
+    [0.75, 0.95, 0.15, 0.35],   // Top right
+    [0.05, 0.20, 0.45, 0.65],   // Mid left
+    [0.80, 0.95, 0.45, 0.65],   // Mid right
+];
+
+for (var i = 0; i < array_length(safe_zones); i++) {
+    var zone = safe_zones[i];
+    var eye_x = (zone[0] + random(zone[1] - zone[0])) * display_get_gui_width();
+    var eye_y = (zone[2] + random(zone[3] - zone[2])) * display_get_gui_height();
+    
+    array_push(eyes, {
+        x: eye_x,
+        y: eye_y,
+        glow_offset: random(360),
+        glow_speed: 0.5 + random(0.3),
+        blink_timer: random(360),
+        alpha: 0.6
+    });
+}
+
+// Floating particles
+particles = [];
+for (var i = 0; i < 20; i++) {
+    array_push(particles, {
+        x: random(display_get_gui_width()),
+        y: random(display_get_gui_height()),
+        size: 2 + random(3),
+        float_offset: random(360),
+        alpha: 0
+    });
+}
 	show_pause_settings = false; // NEW
 show_missions = false;        // NEW
 	loadout_weapon_slot = 0; // Which weapon slot is selected (0 or 1)
@@ -31,6 +151,14 @@ active_loadout_weapons = [noone, noone]; // Current weapon selection
 	loadout_hovered_mod = noone;
 	show_mod_tooltip = false;
 	
+	
+	hover_tooltip_visible = false;
+	hover_tooltip_text = "";
+	hover_tooltip_title = "";
+	hover_tooltip_x = 0;
+	hover_tooltip_y = 0;
+	weapon_hover_regions = [];
+	mod_hover_regions = [];
     // ==========================================
     // STATE
     // ==========================================
@@ -122,6 +250,17 @@ active_loadout_weapons = [noone, noone]; // Current weapon selection
 	    SaveGame();
 	}
 	
+	
+	static Cleanup = function() {
+    if (part_system_exists(part_sys_menu_fire)) {
+        part_system_destroy(part_sys_menu_fire);
+    }
+    
+    part_type_destroy(part_fire_base);
+    part_type_destroy(part_fire_ember);
+    part_type_destroy(part_fire_smoke);
+}
+	
     // ==========================================
     // UPDATE
     // ==========================================
@@ -136,6 +275,63 @@ active_loadout_weapons = [noone, noone]; // Current weapon selection
         switch(state) {
             case MENU_STATE.MAIN:
                 HandleMainMenu(_input, _audio, _mx, _my);
+				
+				//Update background shift
+				bg_shift_timer += 0.005;
+
+
+				// Update eyes
+				for (var i = 0; i < array_length(eyes); i++) {
+				    var eye = eyes[i];
+				    eye.glow_offset += eye.glow_speed;
+				    eye.blink_timer += 1;
+    
+				    // Blink every 6 seconds (360 frames)
+				    if (eye.blink_timer >= 350 && eye.blink_timer <= 360) {
+				        eye.alpha = 0.1;
+				    } else {
+				        eye.alpha = 0.6 + sin(eye.glow_offset * pi / 180) * 0.3;
+				    }
+    
+				    if (eye.blink_timer >= 360) eye.blink_timer = 0;
+				}
+
+				// Update particles
+				for (var i = 0; i < array_length(particles); i++) {
+				    var particle = particles[i];
+				    particle.float_offset += 0.5;
+    
+				    var float_progress = (particle.float_offset mod 1200) / 1200;
+				    particle.y = lerp(display_get_gui_height(), -50, float_progress);
+				    particle.alpha = sin(float_progress * pi) * 0.3;
+				}
+				for (var i = 0; i < array_length(fire_emitters); i++) {
+        var fire = fire_emitters[i];
+        
+        // Vary emission rate for flickering effect
+        var flicker = sin(current_time * 0.01 + i) * 0.5 + 0.5;
+        var emission_rate = fire.intensity * flicker;
+        
+        // Emit flame particles
+        if (random(1) < emission_rate * 0.6) {
+            part_particles_create(part_sys_menu_fire, fire.x + random_range(-15, 15), 
+                display_get_gui_height() - random(10), part_fire_base, 1);
+        }
+        
+        // Emit embers occasionally
+        if (random(1) < emission_rate * 0.2) {
+            part_particles_create(part_sys_menu_fire, fire.x + random_range(-20, 20), 
+                display_get_gui_height() - random(5), part_fire_ember, 1);
+        }
+        
+        // Emit smoke occasionally
+        if (random(1) < emission_rate * 0.15) {
+            part_particles_create(part_sys_menu_fire, fire.x + random_range(-25, 25), 
+                display_get_gui_height() - random(15), part_fire_smoke, 1);
+        }
+    }
+				
+				
                 break;
             case MENU_STATE.CHARACTER_SELECT:
                 HandleCharacterSelect(_input, _audio, _mx, _my);
@@ -249,56 +445,276 @@ active_loadout_weapons = [noone, noone]; // Current weapon selection
     // MAIN MENU
     // ==========================================
     
-    /// @function DrawMainMenu(_w, _h, _cx, _cy)
-    static DrawMainMenu = function(_w, _h, _cx, _cy) {
-        // Background
-        draw_set_color(c_black);
-        draw_set_alpha(0.8);
-        draw_rectangle(0, 0, _w, _h, false);
-        draw_set_alpha(1);
+    ///// @function DrawMainMenu(_w, _h, _cx, _cy)
+    //static DrawMainMenu = function(_w, _h, _cx, _cy) {
+    //    // Background
+    //    draw_set_color(c_black);
+    //    draw_set_alpha(0.8);
+    //    draw_rectangle(0, 0, _w, _h, false);
+    //    draw_set_alpha(1);
         
-        // Logo
-        draw_set_halign(fa_center);
-        draw_set_valign(fa_middle);
-        draw_set_font(fnt_large);
+    //    // Logo
+    //    draw_set_halign(fa_center);
+    //    draw_set_valign(fa_middle);
+    //    draw_set_font(fnt_large);
         
-        var logo_y = _cy - 200 + logo_bounce;
-        draw_text_transformed_color(_cx, logo_y, "TARLHS GAME", 
-            logo_scale * 2, logo_scale * 2, 0,
-            c_red, c_orange, c_yellow, c_red, menu_alpha);
+    //    var logo_y = _cy - 200 + logo_bounce;
+    //    draw_text_transformed_color(_cx, logo_y, "TARLHS GAME", 
+    //        logo_scale * 2, logo_scale * 2, 0,
+    //        c_red, c_orange, c_yellow, c_red, menu_alpha);
         
-        draw_set_font(fnt_default);
-        draw_text_color(_cx, logo_y + 50, "DEMO v0.1", 
-            c_gray, c_gray, c_white, c_white, menu_alpha * 0.7);
+    //    draw_set_font(fnt_default);
+    //    draw_text_color(_cx, logo_y + 50, "DEMO v0.1", 
+    //        c_gray, c_gray, c_white, c_white, menu_alpha * 0.7);
         
-        draw_set_alpha(menu_alpha);
+    //    draw_set_alpha(menu_alpha);
         
-        // Menu options
-        for (var i = 0; i < array_length(main_menu_options); i++) {
-            var yy = _cy + (i * 60) - 30;
-            var is_selected = (i == selected_option);
+    //    // Menu options
+    //    for (var i = 0; i < array_length(main_menu_options); i++) {
+    //        var yy = _cy + (i * 60) - 30;
+    //        var is_selected = (i == selected_option);
             
-            if (is_selected) {
-                draw_set_alpha(menu_alpha * 0.3);
-                draw_rectangle_color(_cx - 120, yy - 25, _cx + 120, yy + 25,
-                    c_yellow, c_orange, c_orange, c_yellow, false);
-                draw_set_alpha(menu_alpha);
-            }
+    //        if (is_selected) {
+    //            draw_set_alpha(menu_alpha * 0.3);
+    //            draw_rectangle_color(_cx - 120, yy - 25, _cx + 120, yy + 25,
+    //                c_yellow, c_orange, c_orange, c_yellow, false);
+    //            draw_set_alpha(menu_alpha);
+    //        }
             
-            draw_set_font(is_selected ? fnt_large : fnt_default);
-            var col = is_selected ? c_yellow : c_white;
-            draw_text_color(_cx, yy, main_menu_options[i], col, col, col, col, menu_alpha);
+    //        draw_set_font(is_selected ? fnt_large : fnt_default);
+    //        var col = is_selected ? c_yellow : c_white;
+    //        draw_text_color(_cx, yy, main_menu_options[i], col, col, col, col, menu_alpha);
+    //    }
+        
+    //    // Input prompt
+    //    draw_set_font(fnt_default);
+    //    draw_set_halign(fa_center);
+    //    draw_set_color(c_gray);
+    //    draw_text(_cx, _h - 40, "[WASD/ARROWS] Navigate  [ENTER] Select");
+        
+    //    draw_set_alpha(1);
+    //}
+    
+	
+/// @function DrawMainMenu(_w, _h, _cx, _cy)
+static DrawMainMenu = function(_w, _h, _cx, _cy) {
+    
+    // === BACKGROUND ===
+    draw_set_color(c_black);
+    draw_rectangle(0, 0, _w, _h, false);
+    
+    // Subtle animated gradient overlay
+    var grad_alpha = 0.02 + sin(bg_shift_timer * pi) * 0.01;
+    draw_set_alpha(grad_alpha);
+    draw_set_color(make_color_rgb(255, 107, 53));
+    draw_circle(_cx, _cy + 200, 600, false);
+    draw_set_alpha(1);
+    
+    // === GLOWING EYES (Draw BEFORE particles for proper layering) ===
+    for (var i = 0; i < array_length(eyes); i++) {
+        var eye = eyes[i];
+        
+        // Only draw eyes in the darker areas (not near flames or center)
+        if (eye.y > _h - 300) continue; // Skip bottom area with flames
+        if (point_distance(eye.x, eye.y, _cx, _cy - 150) < 250) continue; // Skip title area
+        
+        draw_set_alpha(eye.alpha * 0.7); // Slightly more visible
+        
+        // Left eye
+        draw_set_color(make_color_rgb(220, 0, 0)); // Brighter red
+        draw_circle(eye.x - 8, eye.y, 5, false);
+        
+        // Stronger glow
+        gpu_set_blendmode(bm_add);
+        draw_set_alpha(eye.alpha * 0.5);
+        draw_circle(eye.x - 8, eye.y, 12, false);
+        draw_set_alpha(eye.alpha * 0.3);
+        draw_circle(eye.x - 8, eye.y, 18, false);
+        gpu_set_blendmode(bm_normal);
+        
+        // Right eye
+        draw_set_alpha(eye.alpha * 0.7);
+        draw_set_color(make_color_rgb(220, 0, 0));
+        draw_circle(eye.x + 8, eye.y, 5, false);
+        
+        gpu_set_blendmode(bm_add);
+        draw_set_alpha(eye.alpha * 0.5);
+        draw_circle(eye.x + 8, eye.y, 12, false);
+        draw_set_alpha(eye.alpha * 0.3);
+        draw_circle(eye.x + 8, eye.y, 18, false);
+        gpu_set_blendmode(bm_normal);
+    }
+    draw_set_alpha(1);
+    
+    // === FLOATING PARTICLES ===
+    draw_set_color(make_color_rgb(255, 107, 53));
+    for (var i = 0; i < array_length(particles); i++) {
+        var p = particles[i];
+        if (p.alpha > 0.05) {
+            draw_set_alpha(p.alpha);
+            draw_circle(p.x, p.y, p.size, false);
+        }
+    }
+    draw_set_alpha(1);
+    
+    // === DECORATIVE CORNERS ===
+    draw_set_color(make_color_rgb(255, 107, 53));
+    draw_set_alpha(0.3);
+    
+    // Top left
+    draw_line_width(20, 20, 120, 20, 2);
+    draw_line_width(20, 20, 20, 120, 2);
+    
+    // Top right
+    draw_line_width(_w - 120, 20, _w - 20, 20, 2);
+    draw_line_width(_w - 20, 20, _w - 20, 120, 2);
+    
+    // Bottom left
+    draw_line_width(20, _h - 120, 20, _h - 70, 2);
+    draw_line_width(20, _h - 70, 120, _h - 70, 2);
+    
+    // Bottom right
+    draw_line_width(_w - 20, _h - 120, _w - 20, _h - 70, 2);
+    draw_line_width(_w - 120, _h - 70, _w - 20, _h - 70, 2);
+    
+    draw_set_alpha(1);
+    
+    // === SOULS COUNTER (top right) ===
+    draw_set_halign(fa_right);
+    draw_set_valign(fa_top);
+    draw_set_font(fnt_default);
+    draw_set_color(make_color_rgb(0, 255, 255));
+    draw_text(_w - 30, 20, "SOULS: " + string(GetSouls()));
+    
+    // === TITLE: TARLHS GAME ===
+    draw_set_halign(fa_center);
+    draw_set_valign(fa_middle);
+    draw_set_font(fnt_large);
+    
+    var logo_y = _cy - 200 + logo_bounce;
+    var title_col_orange = make_color_rgb(255, 107, 53);
+    var title_col_yellow = make_color_rgb(255, 165, 0);
+    
+    // Title glow effect
+    gpu_set_blendmode(bm_add);
+    draw_set_alpha(0.3 + sin(current_time * 0.003) * 0.2);
+    draw_set_color(title_col_orange);
+    //draw_text(_cx, logo_y - 22, "TARLHS");
+    //draw_text(_cx, logo_y + 18, "GAME");
+    gpu_set_blendmode(bm_normal);
+    draw_set_alpha(menu_alpha);
+    
+    // Main title - TARLHS
+    draw_text_transformed_colour(
+        _cx, logo_y - 20, 
+        "TARLHS", 
+        logo_scale * 2, logo_scale * 2, -5,
+        title_col_orange, title_col_orange, title_col_orange, title_col_orange,
+        menu_alpha
+    );
+    
+    // Main title - GAME
+    draw_text_transformed_colour(
+        _cx, logo_y + 20, 
+        "GAME", 
+        logo_scale * 2, logo_scale * 2, 5,
+        title_col_yellow, title_col_yellow, title_col_yellow, title_col_yellow,
+        menu_alpha
+    );
+    
+    // Subtitle
+    draw_set_font(fnt_default);
+    draw_set_alpha(menu_alpha * 0.7);
+    draw_set_color(c_gray);
+    draw_text(_cx, logo_y + 60, "Top-Down Action Roguelight Horde Survival");
+    
+    draw_set_alpha(menu_alpha);
+    
+    // === MENU OPTIONS ===
+    for (var i = 0; i < array_length(main_menu_options); i++) {
+        var yy = _cy + (i * 60) - 30;
+        var is_selected = (i == selected_option);
+        
+        // Glowing background for selected
+        if (is_selected) {
+            gpu_set_blendmode(bm_add);
+            draw_set_alpha(menu_alpha * 0.2);
+            draw_set_color(title_col_yellow);
+            draw_rectangle(_cx - 200, yy - 18, _cx + 200, yy + 18, false);
+            gpu_set_blendmode(bm_normal);
+            draw_set_alpha(menu_alpha);
         }
         
-        // Input prompt
-        draw_set_font(fnt_default);
-        draw_set_halign(fa_center);
-        draw_set_color(c_gray);
-        draw_text(_cx, _h - 40, "[WASD/ARROWS] Navigate  [ENTER] Select");
+        // Menu item border
+        draw_set_color(is_selected ? title_col_yellow : title_col_orange);
+        draw_set_alpha(is_selected ? menu_alpha : menu_alpha * 0.3);
+        draw_rectangle(_cx - 200, yy - 18, _cx + 200, yy + 18, true);
         
-        draw_set_alpha(1);
+        // Left accent
+        draw_set_alpha(menu_alpha);
+        var accent_width = is_selected ? 8 : 4;
+        draw_rectangle(_cx - 200, yy - 18, _cx - 200 + accent_width, yy + 18, false);
+        
+        // Sweep animation
+        if (is_selected) {
+            var sweep_x = _cx - 200 + (sin(current_time * 0.005) * 0.5 + 0.5) * 400;
+            gpu_set_blendmode(bm_add);
+            draw_set_alpha(menu_alpha * 0.3);
+            draw_set_color(make_color_rgb(255, 200, 0));
+            draw_rectangle(sweep_x - 30, yy - 18, sweep_x + 30, yy + 18, false);
+            gpu_set_blendmode(bm_normal);
+        }
+        
+        // Text
+        draw_set_alpha(menu_alpha);
+        draw_set_font(is_selected ? fnt_large : fnt_default);
+        draw_set_color(is_selected ? title_col_yellow : c_white);
+        draw_text(_cx, yy, main_menu_options[i]);
     }
+	
+	    // === FIRE PARTICLES (Draw LAST so they're on top) ===
+    part_system_drawit(part_sys_menu_fire);
     
+    // === BOTTOM BAR (retro style) ===
+    draw_set_alpha(0.8);
+    draw_set_color(c_black);
+    draw_rectangle(0, _h - 70, _w, _h, false);
+    draw_set_alpha(1);
+    
+    // Border
+    draw_set_color(title_col_orange);
+    draw_set_alpha(0.3);
+    draw_line_width(0, _h - 70, _w, _h - 70, 2);
+    draw_set_alpha(1);
+    
+    // Version
+    draw_set_halign(fa_left);
+    draw_set_font(fnt_default);
+    draw_set_color(make_color_rgb(102, 102, 102));
+    draw_text(30, _h - 45, "VERISON 1.0");
+    
+    // Controls
+    draw_set_halign(fa_right);
+    draw_set_color(make_color_rgb(136, 136, 136));
+    
+    var control_x = _w - 30;
+    var control_y = _h - 32;
+    
+    draw_text(control_x, control_y, "[Enter] Select");
+    draw_text(control_x, control_y - 20, "[WASD] / [Arrows] Navigate");
+    
+
+    
+    // Reset draw settings
+    draw_set_alpha(1);
+    draw_set_halign(fa_left);
+    draw_set_valign(fa_top);
+    draw_set_color(c_white);
+}
+
+
+
+	
     /// @function HandleMainMenu(_input, _audio, _mx, _my)
     static HandleMainMenu = function(_input, _audio, _mx, _my) {
         var cy = display_get_gui_height() / 2;
@@ -1354,7 +1770,7 @@ static CalculateStatModsFromLoadout = function(_loadout) {
 	    var unlocked = IsCharacterUnlocked(char_data.type);
     
 	    if (unlocked) {
-	        DrawCharacterActionButtons(_cx, _cy + 200, char_data.type);
+	        DrawCharacterActionButtons(_cx, _cy + 250, char_data.type);
 	    }
     
 	    // Instructions
@@ -1368,103 +1784,418 @@ static CalculateStatModsFromLoadout = function(_loadout) {
 	    } else {
 	        draw_text(_cx, _h - 40, "[ESC] Back");
 	    }
+		
+    
+	    // Draw tooltip LAST (on top)
+	    DrawLoadoutTooltip(_w, _h);
+
 	}
 
-	/// @function DrawCharacterCard(_index, _x, _y, _scale, _alpha, _is_selected)
-	static DrawCharacterCard = function(_index, _x, _y, _scale, _alpha, _is_selected) {
-	    var char_data = class_options[_index];
-	    var unlocked = IsCharacterUnlocked(char_data.type);
-	    var char_stats = GetCharacterStats(char_data.type);
+	///// @function DrawCharacterCard(_index, _x, _y, _scale, _alpha, _is_selected)
+	//static DrawCharacterCard = function(_index, _x, _y, _scale, _alpha, _is_selected) {
+	//    var char_data = class_options[_index];
+	//    var unlocked = IsCharacterUnlocked(char_data.type);
+	//    var char_stats = GetCharacterStats(char_data.type);
     
-	    var alpha = menu_alpha * _alpha;
+	//    var alpha = menu_alpha * _alpha;
     
-	    // Card dimensions
-	    var card_width = 200 * _scale;
-	    var card_height = 280 * _scale;
+	//    // Card dimensions
+	//    var card_width = 200 * _scale;
+	//    var card_height = 280 * _scale;
     
-	    // Card background
-	    var card_alpha = unlocked ? 0.7 : 0.3;
-	    draw_set_alpha(alpha * card_alpha);
+	//    // Card background
+	//    var card_alpha = unlocked ? 0.7 : 0.3;
+	//    draw_set_alpha(alpha * card_alpha);
     
-	    var card_color = unlocked ? char_data.color : c_dkgray;
-	    draw_rectangle_color(
-	        _x - card_width/2, _y - card_height/2,
-	        _x + card_width/2, _y + card_height/2,
-	        card_color, card_color, c_black, c_black, false
-	    );
+	//    var card_color = unlocked ? char_data.color : c_dkgray;
+	//    draw_rectangle_color(
+	//        _x - card_width/2, _y - card_height/2,
+	//        _x + card_width/2, _y + card_height/2,
+	//        card_color, card_color, c_black, c_black, false
+	//    );
     
-	    // Border
-	    draw_set_alpha(alpha);
-	    if (_is_selected) {
-	        // Selected: bright yellow glow
-	        for (var t = 0; t < 4; t++) {
-	            draw_set_color(c_yellow);
-	            draw_rectangle(
-	                _x - card_width/2 - t, _y - card_height/2 - t,
-	                _x + card_width/2 + t, _y + card_height/2 + t,
-	                true
-	            );
-	        }
-	    } else {
-	        // Not selected: single border
-	        draw_set_color(char_data.color);
-	        draw_rectangle(
-	            _x - card_width/2, _y - card_height/2,
-	            _x + card_width/2, _y + card_height/2,
-	            true
-	        );
-	    }
+	//    // Border
+	//    draw_set_alpha(alpha);
+	//    if (_is_selected) {
+	//        // Selected: bright yellow glow
+	//        for (var t = 0; t < 4; t++) {
+	//            draw_set_color(c_yellow);
+	//            draw_rectangle(
+	//                _x - card_width/2 - t, _y - card_height/2 - t,
+	//                _x + card_width/2 + t, _y + card_height/2 + t,
+	//                true
+	//            );
+	//        }
+	//    } else {
+	//        // Not selected: single border
+	//        draw_set_color(char_data.color);
+	//        draw_rectangle(
+	//            _x - card_width/2, _y - card_height/2,
+	//            _x + card_width/2, _y + card_height/2,
+	//            true
+	//        );
+	//    }
     
-	    // Character sprite
-	    if (unlocked) {
-	        draw_set_alpha(alpha * 0.7);
-	        draw_set_color(char_data.color);
-	        draw_circle(_x, _y - 40 * _scale, 40 * _scale, false);
-	        draw_set_alpha(alpha);
-	        draw_sprite_ext(char_data.sprite, 0, _x, _y - 40 * _scale, 
-	                       _scale, _scale, 0, c_white, alpha);
-	    } else {
-	        draw_set_alpha(alpha * 0.3);
-	        draw_set_color(char_data.color);
-	        draw_circle(_x, _y - 40 * _scale, 30 * _scale, false);
-	        draw_set_alpha(alpha);
-	        draw_sprite_ext(char_data.sprite, 0, _x, _y - 40 * _scale, 
-	                       _scale, _scale, 0, c_black, alpha);
-	    }
+	//    // Character sprite
+	//    if (unlocked) {
+	//        draw_set_alpha(alpha * 0.7);
+	//        draw_set_color(char_data.color);
+	//        draw_circle(_x, _y - 40 * _scale, 40 * _scale, false);
+	//        draw_set_alpha(alpha);
+	//        draw_sprite_ext(char_data.sprite, 0, _x, _y - 40 * _scale, 
+	//                       _scale, _scale, 0, c_white, alpha);
+	//    } else {
+	//        draw_set_alpha(alpha * 0.3);
+	//        draw_set_color(char_data.color);
+	//        draw_circle(_x, _y - 40 * _scale, 30 * _scale, false);
+	//        draw_set_alpha(alpha);
+	//        draw_sprite_ext(char_data.sprite, 0, _x, _y - 40 * _scale, 
+	//                       _scale, _scale, 0, c_black, alpha);
+	//    }
     
-	    draw_set_alpha(alpha);
+	//    draw_set_alpha(alpha);
     
-	    // Text - only on selected
-	    if (_is_selected) {
-	        draw_set_font(fnt_default);
-	        draw_set_color(unlocked ? c_white : c_gray);
-	        draw_text(_x, _y + 50 * _scale, char_data.name);
+	//    // Text - only on selected
+	//    if (_is_selected) {
+	//        draw_set_font(fnt_default);
+	//        draw_set_color(unlocked ? c_white : c_gray);
+	//        draw_text(_x, _y + 50 * _scale, char_data.name);
         
-	        draw_set_color(c_ltgray);
-	        draw_text_ext(_x, _y + 70 * _scale, char_data.desc, 14, 150);
+	//        draw_set_color(c_ltgray);
+	//        draw_text_ext(_x, _y + 70 * _scale, char_data.desc, 14, 150);
         
-	        // Stats
-	        if (unlocked) {
-	            draw_set_halign(fa_left);
-	            draw_set_color(c_white);
-	            var stats_x = _x - 80 * _scale;
-	            var stats_y = _y + 95 * _scale;
+	//        // Stats
+	//        if (unlocked) {
+	//            draw_set_halign(fa_left);
+	//            draw_set_color(c_white);
+	//            var stats_x = _x - 80 * _scale;
+	//            var stats_y = _y + 95 * _scale;
             
-	            draw_text(stats_x, stats_y, "HP: " + string(char_stats.hp_max));
-	            draw_text(stats_x, stats_y + 18 * _scale, "ATK: " + string(char_stats.attack_base));
-	            draw_text(stats_x, stats_y + 36 * _scale, "SPD: " + string(char_stats.move_speed));
+	//            draw_text(stats_x, stats_y, "HP: " + string(char_stats.hp_max));
+	//            draw_text(stats_x, stats_y + 18 * _scale, "ATK: " + string(char_stats.attack_base));
+	//            draw_text(stats_x, stats_y + 36 * _scale, "SPD: " + string(char_stats.move_speed));
             
-	            draw_set_halign(fa_center);
-	        } else {
-	            draw_set_color(c_red);
-	            draw_text(_x, _y + 100 * _scale, "LOCKED");
-	        }
-	    }
-	}
+	//            draw_set_halign(fa_center);
+	//        } else {
+	//            draw_set_color(c_red);
+	//            draw_text(_x, _y + 100 * _scale, "LOCKED");
+	//        }
+	//    }
+	//}
+
+/// @function DrawCharacterCard(_index, _x, _y, _scale, _alpha, _is_selected)
+static DrawCharacterCard = function(_index, _x, _y, _scale, _alpha, _is_selected) {
+    var char_data = class_options[_index];
+    var unlocked = IsCharacterUnlocked(char_data.type);
+    var char_stats = GetCharacterStats(char_data.type);
+    
+    var alpha = menu_alpha * _alpha;
+    
+    // Card dimensions
+    var card_width = 200 * _scale;
+    var card_height = 340 * _scale;
+    
+    // Card background - COLOR CODED (dkgray = unlocked, black = locked)
+    var card_alpha = unlocked ? 0.7 : 0.3;
+    draw_set_alpha(alpha * card_alpha);
+    
+    var card_color = unlocked ? c_dkgray : c_black;
+    draw_rectangle_color(
+        _x - card_width/2, _y - card_height/2,
+        _x + card_width/2, _y + card_height/2,
+        card_color, card_color, c_black, c_black, false
+    );
+    
+    // Border
+    draw_set_alpha(alpha);
+    var border_color = _is_selected ? c_yellow : (unlocked ? c_white : c_red);
+    draw_set_color(border_color);
+    draw_rectangle(_x - card_width/2, _y - card_height/2,
+                   _x + card_width/2, _y + card_height/2, true);
+    
+    // Portrait
+    var portrait_size = 70 * _scale;
+    var portrait_y = _y - card_height/2 + portrait_size/2 + 15 * _scale;
+    
+    if (sprite_exists(char_data.portrait)) {
+        draw_sprite_ext(char_data.portrait, 0, _x, portrait_y, 
+                       _scale * 0.7, _scale * 0.7, 0, c_white, alpha);
+    } else {
+        draw_set_alpha(alpha * 0.5);
+        draw_circle_color(_x, portrait_y, portrait_size/2, c_dkgray, c_black, false);
+        draw_set_alpha(alpha);
+        draw_set_color(c_white);
+        draw_circle(_x, portrait_y, portrait_size/2, true);
+    }
+    
+    if (!unlocked && sprite_exists(spr_lock_icon)) {
+        draw_sprite_ext(spr_lock_icon, 0, _x, portrait_y, _scale, _scale, 0, c_white, alpha);
+    }
+    
+    // Name
+    draw_set_font(fnt_default);
+    draw_set_halign(fa_center);
+    draw_set_valign(fa_middle);
+    draw_set_color(unlocked ? c_white : c_gray);
+    var name_y = portrait_y + portrait_size/2 + 15 * _scale;
+    draw_text(_x, name_y, char_data.name);
+    
+    // Description
+    draw_set_color(c_ltgray);
+    var desc_y = name_y + 20 * _scale;
+    draw_text_ext(_x, desc_y, char_data.desc, 10, 150 * _scale);
+    
+    if (unlocked) {
+        // Stats
+        draw_set_halign(fa_left);
+        draw_set_color(c_white);
+        var stats_x = _x - 80 * _scale;
+        var stats_y = desc_y + 30 * _scale;
+        
+        draw_text(stats_x, stats_y, "HP: " + string(char_stats.hp_max));
+        draw_text(stats_x, stats_y + 12 * _scale, "ATK: " + string(char_stats.attack_base));
+        draw_text(stats_x, stats_y + 24 * _scale, "SPD: " + string(char_stats.move_speed));
+        
+        // Loadout preview
+        var loadout = GetCharacterLoadoutPreview(char_data.type);
+        var loadout_y = stats_y + 45 * _scale;
+        
+        // WEAPONS
+        draw_set_halign(fa_center);
+        draw_set_color(c_ltgray);
+        draw_text(_x, loadout_y, "WEAPONS");
+        
+        var weapon_icon_size = 24 * _scale;
+        var weapon_spacing = 30 * _scale;
+        var weapon_start_x = _x - weapon_spacing/2;
+        var weapon_y = loadout_y + 16 * _scale;
+        
+        for (var i = 0; i < 2; i++) {
+            var wx = weapon_start_x + (i * weapon_spacing);
+            
+            draw_set_alpha(alpha * 0.3);
+            draw_set_color(c_black);
+            draw_rectangle(wx - weapon_icon_size/2, weapon_y - weapon_icon_size/2,
+                         wx + weapon_icon_size/2, weapon_y + weapon_icon_size/2, false);
+            
+            draw_set_alpha(alpha);
+            var slot_color = _is_selected ? c_yellow : c_gray;
+            draw_set_color(slot_color);
+            draw_rectangle(wx - weapon_icon_size/2, weapon_y - weapon_icon_size/2,
+                         wx + weapon_icon_size/2, weapon_y + weapon_icon_size/2, true);
+            
+            if (i < array_length(loadout.weapons)) {
+                var weapon = loadout.weapons[i];
+                if (sprite_exists(weapon.sprite)) {
+                    draw_sprite_ext(weapon.sprite, 0, wx, weapon_y,
+                                  _scale * 0.5, _scale * 0.5, 0, c_white, alpha);
+                }
+                
+                // Store hover region
+                array_push(weapon_hover_regions, {
+                    x1: wx - weapon_icon_size/2,
+                    y1: weapon_y - weapon_icon_size/2,
+                    x2: wx + weapon_icon_size/2,
+                    y2: weapon_y + weapon_icon_size/2,
+                    weapon: weapon,
+                    char_index: _index
+                });
+            }
+        }
+        
+        // MODS
+        var mod_y = weapon_y + 32 * _scale;
+        draw_set_color(c_ltgray);
+        draw_text(_x, mod_y, "MODS");
+        
+        var mod_icon_size = 18 * _scale;
+        var mod_spacing = 22 * _scale;
+        var mod_start_x = _x - (5 * mod_spacing) / 2 + mod_spacing/2;
+        var mod_row_y = mod_y + 14 * _scale;
+        
+        for (var i = 0; i < 5; i++) {
+            var mx = mod_start_x + (i * mod_spacing);
+            
+            draw_set_alpha(alpha * 0.3);
+            draw_set_color(c_black);
+            draw_rectangle(mx - mod_icon_size/2, mod_row_y - mod_icon_size/2,
+                         mx + mod_icon_size/2, mod_row_y + mod_icon_size/2, false);
+            
+            draw_set_alpha(alpha);
+            var is_equipped = (i < array_length(loadout.mods));
+            var mod_color = is_equipped ? (_is_selected ? c_lime : c_green) : c_gray;
+            draw_set_color(mod_color);
+            draw_rectangle(mx - mod_icon_size/2, mod_row_y - mod_icon_size/2,
+                         mx + mod_icon_size/2, mod_row_y + mod_icon_size/2, true);
+            
+            if (is_equipped) {
+                var _mod = loadout.mods[i];
+                if (sprite_exists(_mod.sprite)) {
+                    draw_sprite_ext(_mod.sprite, 0, mx, mod_row_y,
+                                  _scale * 0.3, _scale * 0.3, 0, _mod.color, alpha);
+                }
+                
+                // Store hover region
+                array_push(mod_hover_regions, {
+                    x1: mx - mod_icon_size/2,
+                    y1: mod_row_y - mod_icon_size/2,
+                    x2: mx + mod_icon_size/2,
+                    y2: mod_row_y + mod_icon_size/2,
+                    __mod: _mod,
+                    char_index: _index
+                });
+            }
+        }
+        
+    } else {
+        // LOCKED
+        draw_set_halign(fa_center);
+        draw_set_color(c_red);
+        var locked_y = _y + 80 * _scale;
+        draw_text(_x, locked_y, "UNLOCK IN");
+        draw_text(_x, locked_y + 16 * _scale, "SKILL TREE");
+    }
+    
+    draw_set_alpha(1);
+}
+
+/// @function CheckLoadoutHovers(_mx, _my)
+static CheckLoadoutHovers = function(_mx, _my) {
+    hover_tooltip_visible = false;
+    
+    var char_data = class_options[selected_class];
+    var unlocked = IsCharacterUnlocked(char_data.type);
+    if (!unlocked) return;
+    
+    // Check weapons
+    for (var i = 0; i < array_length(weapon_hover_regions); i++) {
+        var region = weapon_hover_regions[i];
+        if (region.char_index != selected_class) continue;
+        
+        if (point_in_rectangle(_mx, _my, region.x1, region.y1, region.x2, region.y2)) {
+            hover_tooltip_visible = true;
+            hover_tooltip_title = region.weapon.name;
+            hover_tooltip_text = GetWeaponDescription(region.weapon.name);
+            hover_tooltip_x = _mx + 15;
+            hover_tooltip_y = _my + 15;
+            return;
+        }
+    }
+    
+    // Check mods
+    for (var i = 0; i < array_length(mod_hover_regions); i++) {
+        var region = mod_hover_regions[i];
+        if (region.char_index != selected_class) continue;
+        
+        if (point_in_rectangle(_mx, _my, region.x1, region.y1, region.x2, region.y2)) {
+            hover_tooltip_visible = true;
+            hover_tooltip_title = region.mod.name;
+            hover_tooltip_text = GetModDescription(region.mod.name);
+            hover_tooltip_x = _mx + 15;
+            hover_tooltip_y = _my + 15;
+            return;
+        }
+    }
+}
+
+/// @function GetWeaponDescription(_weapon_name)
+static GetWeaponDescription = function(_weapon_name) {
+    // Customize these for your actual weapons
+    switch(_weapon_name) {
+        case "Sword":
+        case "Iron Sword":
+            return "Basic melee weapon. Reliable damage with good knockback.";
+        case "Bow":
+            return "Ranged weapon. Fires arrows in a straight line.";
+        case "Fireball":
+            return "Launches explosive fireballs that damage multiple enemies.";
+        case "Lightning":
+            return "Calls down lightning strikes on enemies.";
+        case "Holy Water":
+            return "Creates damaging pools on the ground.";
+        case "Knife":
+        case "Dagger":
+            return "Fast throwing weapon with low cooldown.";
+        case "Grenade":
+            return "Explosive projectile with area damage.";
+        default:
+            return "A mysterious weapon...";
+    }
+}
+
+/// @function GetModDescription(_mod_name)  
+static GetModDescription = function(_mod_name) {
+    // Check skill tree nodes for actual description
+    var node_keys = variable_struct_get_names(global.SkillTree);
+    for (var i = 0; i < array_length(node_keys); i++) {
+        var key = node_keys[i];
+        var node = global.SkillTree[$ key];
+        if (node.name == _mod_name) {
+            return node.description;
+        }
+    }
+    return "Enhances your combat abilities.";
+}
+
+/// @function DrawLoadoutTooltip(_w, _h)
+static DrawLoadoutTooltip = function(_w, _h) {
+    if (!hover_tooltip_visible) return;
+    
+    var tooltip_padding = 12;
+    var tooltip_max_width = 250;
+    
+    draw_set_font(fnt_default);
+    draw_set_halign(fa_left);
+    draw_set_valign(fa_top);
+    
+    var title_width = string_width(hover_tooltip_title);
+    var tooltip_width = min(title_width + tooltip_padding * 2 + 50, tooltip_max_width);
+    var tooltip_height = tooltip_padding * 2 + 60;
+    
+    var tooltip_x = hover_tooltip_x;
+    var tooltip_y = hover_tooltip_y;
+    
+    // Keep on screen
+    if (tooltip_x + tooltip_width > _w) tooltip_x = _w - tooltip_width - 10;
+    if (tooltip_y + tooltip_height > _h) tooltip_y = _h - tooltip_height - 10;
+    
+    // Background
+    draw_set_alpha(0.95);
+    draw_set_color(c_black);
+    draw_rectangle(tooltip_x, tooltip_y, 
+                  tooltip_x + tooltip_width, tooltip_y + tooltip_height, false);
+    
+    // Border
+    draw_set_alpha(1);
+    draw_set_color(c_yellow);
+    draw_rectangle(tooltip_x, tooltip_y, 
+                  tooltip_x + tooltip_width, tooltip_y + tooltip_height, true);
+    
+    // Title
+    draw_set_color(c_yellow);
+    draw_text(tooltip_x + tooltip_padding, tooltip_y + tooltip_padding, hover_tooltip_title);
+    
+    // Description
+    draw_set_color(c_white);
+    draw_text_ext(tooltip_x + tooltip_padding, tooltip_y + tooltip_padding + 20, 
+                 hover_tooltip_text, 16, tooltip_width - tooltip_padding * 2);
+    
+    draw_set_alpha(1);
+}
+
+
 
 	/// @function HandleCharacterSelect(_input, _audio, _mx, _my)
 	static HandleCharacterSelect = function(_input, _audio, _mx, _my) {
-	    var num_chars = array_length(class_options);
+	     // Clear hover regions
+    weapon_hover_regions = [];
+    mod_hover_regions = [];
+    
+    // Check tooltips
+    CheckLoadoutHovers(_mx, _my);
+    
+    var num_chars = array_length(class_options);
+
     
 	    // Keyboard navigation
 	    if (_input.LeftPress) {
@@ -1510,7 +2241,7 @@ static CalculateStatModsFromLoadout = function(_loadout) {
 	        if (unlocked) {
 	            var cx = display_get_gui_width() / 2;
 	            var cy = display_get_gui_height() / 2;
-	            var button_y = cy + 200;
+	            var button_y = cy + 250;
 	            var button_width = 180;
 	            var button_height = 40;
 	            var button_spacing = 200;
@@ -1558,6 +2289,50 @@ static CalculateStatModsFromLoadout = function(_loadout) {
 	        selected_option = 0;
 	    }
 	}
+	
+	
+/// @function GetCharacterLoadoutPreview(_character_class)
+static GetCharacterLoadoutPreview = function(_character_class) {
+    // Get weapons
+    var weapon_loadout = GetCharacterWeaponLoadout(_character_class);
+    var weapons = [];
+    
+    for (var i = 0; i < array_length(weapon_loadout); i++) {
+        var weapon_enum = weapon_loadout[i];
+        if (weapon_enum != noone) {
+            var weapon_struct = GetWeaponStructById(weapon_enum);
+            if (weapon_struct != noone) {
+                array_push(weapons, {
+                    name: weapon_struct.name,
+                    sprite: weapon_struct.sprite,
+                    color: c_white
+                });
+            }
+        }
+    }
+    
+    // Get mods  
+    var mod_loadout = GetCharacterLoadout(_character_class);
+    var mods = [];
+    
+    for (var i = 0; i < array_length(mod_loadout); i++) {
+        var mod_id = mod_loadout[i];
+        if (mod_id != noone && variable_struct_exists(global.SkillTree, mod_id)) {
+            var node = global.SkillTree[$ mod_id];
+            array_push(mods, {
+                name: node.name,
+                sprite: node.sprite,
+                color: c_white
+            });
+        }
+    }
+    
+    return {
+        weapons: weapons,
+        mods: mods
+    };
+}
+
 	
 	/// @function TryConfirmCharacter(_audio)
 	static TryConfirmCharacter = function(_audio) {

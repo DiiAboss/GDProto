@@ -228,7 +228,7 @@ function HandleGameplayStart() {
     chests_opened = 0;
     playerModsArray = [];
     game_speed = 1.0;
-    global.gameSpeed = 1;
+    //global.gameSpeed = 1;
     
     CreateEnemyController();
     CreateUIManager();

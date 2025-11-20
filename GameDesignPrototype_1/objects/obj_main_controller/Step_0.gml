@@ -46,6 +46,12 @@ else
 	        menu_system.PauseGame(_audio_system, obj_game_manager.pause_manager);
 	    }
 	}
+	// Handle textbox (check AFTER pause menu, but allow during dialogue pause)
+	if (textbox_system.active) {
+	    textbox_system.Update(player_input);
+	    exit; // Don't process other game logic while textbox is active
+	}
+	
 }
 
 

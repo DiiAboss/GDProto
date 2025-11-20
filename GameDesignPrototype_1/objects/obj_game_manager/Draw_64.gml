@@ -40,9 +40,13 @@ if (keyboard_check(vk_f1)) {
     draw_text(20, debug_y, "Chain Kills: " + string(stats.chain_kills));
 }
 
-/// @description
-ui.draw();
-score_display.Draw();
+
+if !(obj_main_controller.textbox_system.active)
+{
+	ui.draw();
+	score_display.Draw();
+
+}
 
 // DEBUG: Check pause state
 if (keyboard_check(vk_f10)) {

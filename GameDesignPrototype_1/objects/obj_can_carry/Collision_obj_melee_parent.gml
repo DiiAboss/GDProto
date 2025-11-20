@@ -27,6 +27,9 @@ var kb_force = other.knockbackForce / hit_resistance;
 knockback.Apply(kb_dir, kb_force);
 isProjectile = true;
 
+obj_main_controller._audio_system.PlaySFXAt(sfx_damage_hit3, x, y);
+
+
 // Visual effects
 hitFlashTimer = 5;
 shake = 3;
@@ -46,3 +49,4 @@ if (variable_instance_exists(self, "OnMeleeHit")) {
 }
 
 show_debug_message("Carriable object hit by " + object_get_name(other.object_index));
+

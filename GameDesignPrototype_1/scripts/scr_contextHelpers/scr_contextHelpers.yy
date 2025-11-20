@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_contextHelpers",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_contextHelpers",
+  "parent":{
+    "name":"Controllers",
+    "path":"folders/Objects/In-Game/Controllers.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

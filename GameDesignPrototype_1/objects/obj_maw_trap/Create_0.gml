@@ -5,6 +5,15 @@
 mySprite  = spr_enemy_1;
 size	  = sprite_get_height(mySprite);
 img_index = 0;
+// Create context prompt
+context_sens = CreateContextPrompt(
+    self,
+    CreateDialogueAction("The MAW", "HUNGY!"),
+    "Press ACTION to... Talk?",
+    64
+);
+
+context_sens.offset_y = 0;
 
 // Visual effects
 hitFlashTimer	 = 0;

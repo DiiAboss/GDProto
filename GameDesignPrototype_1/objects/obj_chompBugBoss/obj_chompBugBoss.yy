@@ -28,8 +28,8 @@
   "resourceVersion":"2.0",
   "solid":false,
   "spriteId":{
-    "name":"spr_chompBugBoss",
-    "path":"sprites/spr_chompBugBoss/spr_chompBugBoss.yy",
+    "name":"spr_chompBugBoss_atk",
+    "path":"sprites/spr_chompBugBoss_atk/spr_chompBugBoss_atk.yy",
   },
   "spriteMaskId":null,
   "visible":true,

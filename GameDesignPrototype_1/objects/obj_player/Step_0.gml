@@ -20,6 +20,11 @@ stats.ResetTemporaryMods();
 TriggerModifiers(self, MOD_TRIGGER.PASSIVE, EventData());
 
 
+if (can_interact > 0)
+{
+ can_interact--;
+}
+
 img_xscale = (mouseDirection > 90 && mouseDirection < 270) ? -1 : 1; // For weapon directions
 
 // Sync legacy variables

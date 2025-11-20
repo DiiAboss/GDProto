@@ -1,4 +1,10 @@
-/// @desc scr_MapGenerator (NEW SECTION)
+/// @desc scr_MapGenerator
+
+
+
+
+
+
 
 /// @function PlaceSubRoomDoors(_zone)
 function PlaceSubRoomDoors(_zone) {

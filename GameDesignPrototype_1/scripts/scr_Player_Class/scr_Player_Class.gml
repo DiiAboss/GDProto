@@ -7,6 +7,7 @@ global.Player_Class =
         desc: "High damage\nRage builds",
         color: c_red,
 		sprite: spr_vh_walk_south,
+		portrait: spr_Baseball_Bg,
 	},
 	Holy_Mage:
 	{
@@ -15,6 +16,7 @@ global.Player_Class =
         desc: "Projectiles\nArea control",
         color: c_aqua,
 		sprite: spr_vh_walk_south,
+		portrait: spr_Baseball_Bg,
 	},
 	Vampire:
 	{
@@ -23,6 +25,7 @@ global.Player_Class =
         desc: "Lifesteal\nHigh mobility",
         color: c_purple,
 		sprite: spr_vh_walk_south,
+		portrait: spr_Baseball_Bg,
 	}
 }
 

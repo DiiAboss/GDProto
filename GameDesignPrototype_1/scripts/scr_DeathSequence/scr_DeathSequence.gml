@@ -94,7 +94,7 @@ function DeathSequence(_self) constructor {
                     // Use input system instead of keyboard checks
                     if (_input.Action || _input.FirePress) {
                         active = false;
-                        global.gameSpeed = 1;
+                        //global.gameSpeed = 1;
                         room_goto(rm_main_menu);
                     }
                 }

@@ -201,6 +201,14 @@ function AudioSystem() constructor {
             audio_resume_sound(current_music);
         }
     };
+	
+	/// @function SetListenerPosition(_x, _y)
+	/// @description Update the audio listener position (call this each step with camera/player position)
+	static SetListenerPosition = function(_x, _y) {
+	    audio_listener_position(_x, _y, 0);
+	    // Optional: Set listener orientation (forward direction)
+	    audio_listener_orientation(0, 1, 0, 0, 0, 1);
+	};
     
     
     // SOUND EFFECT FUNCTIONS
@@ -244,32 +252,55 @@ function AudioSystem() constructor {
         return sound_id;
     };
     
-    /// @function PlaySFXAt(_sound, _x, _y, _falloff_ref, _falloff_max, _falloff_factor)
-    static PlaySFXAt = function(_sound, _x, _y, _falloff_ref = 100, _falloff_max = 500, _falloff_factor = 1) {
-        if (!settings.sfx_enabled) return noone;
-        
-        var sound_id = audio_play_sound_at(
-            _sound, _x, _y, 0,
-            _falloff_ref, _falloff_max, _falloff_factor,
-            false, 5
-        );
-        
-        audio_sound_gain(sound_id, GetSFXVolume(), 0);
-        array_push(active_sounds, sound_id);
-        
-        return sound_id;
-    };
+/// @function PlaySFXAt(_sound, _x, _y, _max_distance, _min_distance)
+/// @param {Asset.GMSound} _sound Sound to play
+/// @param {Real} _x X position of sound
+/// @param {Real} _y Y position of sound
+/// @param {Real} _max_distance Distance where sound is silent (default 500)
+/// @param {Real} _min_distance Distance where sound is full volume (default 100)
+static PlaySFXAt = function(_sound, _x, _y, _max_distance = 640, _min_distance = 64) {
+    if (!settings.sfx_enabled) return noone;
     
-    /// @function PlayUISound(_sound)
-    static PlayUISound = function(_sound) {
-        if (!settings.sfx_enabled) return noone;
-        
-        var sound_id = audio_play_sound(_sound, 8, false);
-        audio_sound_gain(sound_id, GetUIVolume(), 0);
-        
-        return sound_id;
-    };
+    // Find player
+    var player = instance_exists(obj_player) ? obj_player : noone;
+    if (player == noone) {
+        // No player found, play at full volume
+        return PlaySFX(_sound, 0, 1.0);
+    }
     
+    // Calculate distance to player
+    var dist = point_distance(player.x, player.y, _x, _y);
+    
+    // Calculate volume based on distance
+    var volume_scale = 1.0;
+    if (dist > _min_distance) {
+        if (dist >= _max_distance) {
+            // Too far, don't play
+            return noone;
+        }
+        // Linear falloff between min and max distance
+        volume_scale = 1.0 - ((dist - _min_distance) / (_max_distance - _min_distance));
+    }
+    
+    // Play sound with calculated volume
+    var sound_id = audio_play_sound(_sound, 5, false, volume_scale, 0, random_range(0.95, 1.05));
+
+    
+    // Track active sound
+    array_push(active_sounds, sound_id);
+    
+    return sound_id;
+};
+
+  /// @function PlayUISound(_sound)
+static PlayUISound = function(_sound) {
+    if (!settings.sfx_enabled) return noone;
+    
+    var sound_id = audio_play_sound(_sound, 8, false);
+    audio_sound_gain(sound_id, GetUIVolume(), 0);
+    
+    return sound_id;
+};  
     
     // VOICE/DIALOGUE FUNCTIONS
     

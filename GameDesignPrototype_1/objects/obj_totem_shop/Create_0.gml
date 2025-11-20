@@ -1,5 +1,6 @@
 /// @description
 /// @desc Totem shop - purchase interface
+event_inherited();
 
 interact_range = 80;
 interactable = true;

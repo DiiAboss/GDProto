@@ -4,3 +4,5 @@ if (_audio_system != noone) {
     delete _audio_system;
     _audio_system = noone;
 }
+
+menu_system.Cleanup();

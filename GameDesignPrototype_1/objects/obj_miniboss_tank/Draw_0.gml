@@ -21,6 +21,20 @@ if (isCharging && chargeProgress > 0) {
     var glowScale = chargeScale * 1.2;
     
     gpu_set_blendmode(bm_add);
+	
+	 draw_sprite_ext(
+        spr_mini_boss_1,
+        image_index,
+        x,
+        y,
+        glowScale * breathScale,
+        glowScale * breathScale,
+        image_angle + wobbleAngle,
+        c_red,
+        glowAlpha * chargeProgress
+    );
+	
+	
     draw_sprite_ext(
         currentSprite,
         image_index,
