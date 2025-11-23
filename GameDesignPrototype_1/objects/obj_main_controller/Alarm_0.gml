@@ -11,8 +11,3 @@ if (instance_exists(obj_player_spawn))
     input_caller = _player;
 }
 
-
- obj_main_controller.textbox_system.Show(
-    "Mysterious Stranger",
-    "Welcome to the arena, warrior!"
-);

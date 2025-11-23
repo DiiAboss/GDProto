@@ -4,6 +4,15 @@
 
 timer++;
 
+if (speed > 1)
+{
+	speed = speed * 0.9;
+}
+else
+{
+	speed = 0;
+}
+
 // Float physics
 if (!being_collected) {
     z += z_velocity;

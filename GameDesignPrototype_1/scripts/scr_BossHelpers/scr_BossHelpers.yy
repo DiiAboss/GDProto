@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_BossHelpers",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_BossHelpers",
+  "parent":{
+    "name":"BOSS",
+    "path":"folders/ENEMIES/Enemies_Objects/BOSS.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

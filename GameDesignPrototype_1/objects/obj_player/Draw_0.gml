@@ -37,7 +37,9 @@ if (hp < maxHp || timers.IsActive("hp_bar")) {
     draw_player_hp_bar(x, y, hp, maxHp);
 }
 
-if (variable_struct_exists(weaponCurrent, "sprite"))
+if (variable_struct_exists(weaponCurrent, "sprite") && weaponCurrent.type = WeaponType.Range)
 {
-	draw_sprite_ext(weaponCurrent.sprite, 0, x, y, 1, img_xscale, mouseDirection, c_white, 1);
+	var len_x = x + lengthdir_x(8,mouseDirection);
+	var len_y = y + lengthdir_y(8,mouseDirection);
+	draw_sprite_ext(weaponCurrent.sprite, 0, len_x, len_y, 1, img_xscale, mouseDirection, c_white, 1);
 }

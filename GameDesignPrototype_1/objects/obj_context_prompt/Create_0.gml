@@ -160,6 +160,14 @@ ExecutePickup = function() {
     }
 }
 
+/// @function CreateCustomAction(_callback_function)
+function CreateCustomAction(_callback_function) {
+    return {
+        type: "custom",
+        callback: _callback_function
+    };
+}
+
 /// @function ExecuteChest()
 ExecuteChest = function() {
     // Check if already opened

@@ -123,7 +123,7 @@ function TextboxSystem() constructor {
                               keyboard_check_pressed(vk_enter);
         
         if (continue_pressed) {
-            if (!finished_typing) {
+            if (typewriter_active && !finished_typing) {
                 // Skip typewriter
                 visible_text = full_text;
                 finished_typing = true;

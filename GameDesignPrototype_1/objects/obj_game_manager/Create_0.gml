@@ -22,22 +22,6 @@ time_manager.SetupDefaultMilestones();
 time_manager.OnMilestoneReached = function(_milestone) {
     show_debug_message("MILESTONE: " + _milestone.name);
     
-    if (instance_exists(obj_tarlhs_narrator)) {
-        var dialogue = "";
-        
-        switch (_milestone.time_seconds) {
-            case 30: dialogue = "30 seconds... you're still alive. Barely."; break;
-            case 60: dialogue = "One minute down. How long can you last?"; break;
-            case 120: dialogue = "Two minutes... you're starting to bore me."; break;
-            case 180: dialogue = "Three minutes. Perhaps you're not completely helpless."; break;
-            case 300: dialogue = "Five minutes! Now THIS is entertaining!"; break;
-            case 600: dialogue = "TEN MINUTES?! CARHL, increase the difficulty!"; break;
-        }
-        
-        if (dialogue != "") {
-            obj_tarlhs_narrator.QueueDialogue(dialogue, "TARLHS", c_red, 150);
-        }
-    }
     
     if (_milestone.time_seconds % 120 == 0 && _milestone.time_seconds > 0) {
         SpawnMiniBossWave();

@@ -12,7 +12,7 @@ z_velocity = -2; // Float upward
 gravity_z = 0.1;
 
 // Lifespan
-lifetime = 180; // 3 seconds
+lifetime = 1200; // 3 seconds
 timer = 0;
 
 // Collection

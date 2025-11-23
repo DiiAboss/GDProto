@@ -1,16 +1,13 @@
 {
   "$GMObject":"",
-  "%Name":"obj_coin",
-  "eventList":[
-    {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":0,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
-    {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":3,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
-  ],
+  "%Name":"Object117",
+  "eventList":[],
   "managed":true,
-  "name":"obj_coin",
+  "name":"Object117",
   "overriddenProperties":[],
   "parent":{
-    "name":"PICKUP_OBJECTS",
-    "path":"folders/Objects/In-Game/PICKUP_OBJECTS.yy",
+    "name":"Main Controller",
+    "path":"folders/Main Controller.yy",
   },
   "parentObjectId":null,
   "persistent":false,
@@ -30,10 +27,7 @@
   "resourceType":"GMObject",
   "resourceVersion":"2.0",
   "solid":false,
-  "spriteId":{
-    "name":"spr_coin",
-    "path":"sprites/spr_coin/spr_coin.yy",
-  },
+  "spriteId":null,
   "spriteMaskId":null,
   "visible":true,
 }

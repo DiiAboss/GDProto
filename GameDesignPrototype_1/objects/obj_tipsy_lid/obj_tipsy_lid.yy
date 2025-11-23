@@ -1,24 +1,22 @@
 {
   "$GMObject":"",
-  "%Name":"obj_boss_parent",
+  "%Name":"obj_tipsy_lid",
   "eventList":[
-    {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":1,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
     {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":0,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
     {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":3,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
-    {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":64,"eventType":8,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
+    {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":8,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
     {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":2,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
-    {"$GMEvent":"v1","%Name":"","collisionObjectId":{"name":"obj_melee_parent","path":"objects/obj_melee_parent/obj_melee_parent.yy",},"eventNum":0,"eventType":4,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
   ],
   "managed":true,
-  "name":"obj_boss_parent",
+  "name":"obj_tipsy_lid",
   "overriddenProperties":[],
   "parent":{
-    "name":"BOSS",
-    "path":"folders/ENEMIES/Enemies_Objects/BOSS.yy",
+    "name":"In-Game",
+    "path":"folders/Objects/In-Game.yy",
   },
   "parentObjectId":{
-    "name":"obj_wall",
-    "path":"objects/obj_wall/obj_wall.yy",
+    "name":"obj_rolling_ball",
+    "path":"objects/obj_rolling_ball/obj_rolling_ball.yy",
   },
   "persistent":false,
   "physicsAngularDamping":0.1,
@@ -37,7 +35,10 @@
   "resourceType":"GMObject",
   "resourceVersion":"2.0",
   "solid":false,
-  "spriteId":null,
+  "spriteId":{
+    "name":"spr_tipsy_top",
+    "path":"sprites/spr_tipsy_top/spr_tipsy_top.yy",
+  },
   "spriteMaskId":null,
   "visible":true,
 }
