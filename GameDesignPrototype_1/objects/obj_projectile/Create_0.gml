@@ -76,14 +76,26 @@ freeze_chance = 0;
 shock_chance = 0;
 poison_chance = 0;
 
+
+has_fire_effect = false;
+has_ice_effect = false;
+has_poison_effect = false;
+has_lightning_effect = false;
+
+
+
 // Status effect strengths
 burn_duration = 0;
 burn_damage = 0;
 freeze_duration = 0;
 slow_multiplier = 0;
+slow_duration = 0;
+slow_amount = 0;
 shock_duration = 0;
 poison_duration = 0;
 poison_damage = 0;
+
+
 
 // === EXPLOSION PROPERTIES ===
 explode_on_death = false;

@@ -5,14 +5,14 @@
 // Draw chest with glow
 if (glow_intensity > 0) {
     draw_sprite_ext(
-        sprite_index, image_index, x, y,
+        sprite_index, img, x, y,
         current_scale * 1.2, current_scale * 1.2, 0,
         c_white, glow_intensity * 0.5
     );
 }
 
 draw_sprite_ext(
-    sprite_index, image_index, x, y,
+    sprite_index, img, x, y,
     current_scale, current_scale, 0,
     c_white, image_alpha
 );

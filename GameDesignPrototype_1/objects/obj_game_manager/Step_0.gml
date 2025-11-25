@@ -63,6 +63,11 @@ if (global.gameSpeed > 0)
 	    }
 	}
 }
+else
+{
+	with (obj_coin)speed = 0;
+	with (obj_exp)speed = 0;
+}
 
 // Update weapon swap prompt
 UpdateWeaponSwapPrompt();

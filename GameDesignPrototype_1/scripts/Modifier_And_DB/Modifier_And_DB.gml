@@ -9,6 +9,14 @@ function get_mod_by_id(_id) {
     return noone;
 }
 
+/// @function RollProc(_base_chance, _entity)
+function RollProc(_base_chance, _entity = obj_player) {
+    var final_chance = _base_chance;
+	final_chance += _entity.stats.luck;   
+    final_chance = clamp(final_chance, 0, 1); // Clamp to valid range (0-100%)
+    return random(1) < final_chance;
+}
+
 
 function mod_third_strike(player, _mod) {
     if (player.attack_counter mod 3 == 0) {
@@ -20,68 +28,87 @@ function mod_heal_on_kill(player, _mod, enemy) {
     player.hp = clamp(player.hp + 5, 0, player.maxHp);
 }
 
-/// @function CreateBonusProjectiles(_entity, _event_data)
-function CreateBonusProjectiles(_entity, _event_data) {
-    if (!instance_exists(_event_data.projectile)) return;
+/// @function CreateBonusProjectiles(_entity, _event)
+function CreateBonusProjectiles(_entity, _event) {
+    var original_proj = _event.projectile;
+    var bonus_count = _event.projectile_count_bonus;
     
-    var original_proj = _event_data.projectile;
-    var bonus_count = _event_data.projectile_count_bonus;
-    var spread_angle = 15;
+    // SAFETY: Don't create bonus projectiles for melee weapons
+    if (original_proj == noone || !instance_exists(original_proj)) return;
+    if (!variable_instance_exists(original_proj, "projectileType")) return; // Not a projectile
     
-    // FIX: Use attack_direction instead of direction
-    var base_direction = _event_data.attack_direction ?? original_proj.direction ?? 0;
+	
+    var base_dir = _event.attack_direction;
+    var spread_angle = 15; // Degrees between each bonus projectile
+    var start_offset = -(bonus_count - 1) * spread_angle / 2;
     
     for (var i = 0; i < bonus_count; i++) {
-        var angle_offset = spread_angle * (i + 1);
-        var new_dir = base_direction + choose(angle_offset, -angle_offset);
+        var angle_offset = start_offset + (i * spread_angle);
+        var proj_dir = base_dir + angle_offset;
         
         // Create bonus projectile
         var bonus_proj = instance_create_depth(
-            original_proj.x,
-            original_proj.y,
+            _entity.x,
+            _entity.y,
             original_proj.depth,
             original_proj.object_index
         );
         
-        // Copy properties from original
-        bonus_proj.direction = new_dir;
-        bonus_proj.image_angle = new_dir;
+
+        // Copy basic properties
+        bonus_proj.direction = proj_dir;
+        bonus_proj.image_angle = proj_dir;
         bonus_proj.speed = original_proj.speed;
-        bonus_proj.damage = original_proj.damage;
-        bonus_proj.owner = original_proj.owner;
+        bonus_proj.owner = _entity;
         
-        // Copy lob properties for thrown weapons
-        if (variable_instance_exists(original_proj, "xStart")) {
-            bonus_proj.xStart = original_proj.xStart;
-            bonus_proj.yStart = original_proj.yStart;
-            bonus_proj.targetDistance = original_proj.targetDistance;
-            bonus_proj.lob_direction = new_dir;
+        // Copy damage if it exists
+        if (variable_instance_exists(original_proj, "damage")) {
+            bonus_proj.damage = original_proj.damage;
         }
         
-        // Copy synergy data
-        if (variable_instance_exists(original_proj, "synergy_tags")) {
-            bonus_proj.synergy_tags = original_proj.synergy_tags;
-        }
-        if (variable_instance_exists(original_proj, "active_synergies")) {
-            bonus_proj.active_synergies = original_proj.active_synergies;
-        }
-        if (variable_instance_exists(original_proj, "synergy_owner")) {
-            bonus_proj.synergy_owner = original_proj.synergy_owner;
+        // Copy attack if it exists
+        if (variable_instance_exists(original_proj, "attack")) {
+            bonus_proj.attack = original_proj.attack;
         }
         
-        // Copy synergy-applied properties
+        // Copy element type
         if (variable_instance_exists(original_proj, "element_type")) {
             bonus_proj.element_type = original_proj.element_type;
         }
-        if (variable_instance_exists(original_proj, "has_lifesteal")) {
-            bonus_proj.has_lifesteal = original_proj.has_lifesteal;
-            bonus_proj.lifesteal_percent = original_proj.lifesteal_percent;
+        
+        // Copy elemental effect flags
+        if (variable_instance_exists(original_proj, "has_fire_effect")) {
+            bonus_proj.has_fire_effect = original_proj.has_fire_effect;
+            bonus_proj.burn_duration = original_proj.burn_duration;
+            bonus_proj.burn_damage = original_proj.burn_damage;
         }
-        if (variable_instance_exists(original_proj, "explosion_damage")) {
-            bonus_proj.explosion_damage = original_proj.explosion_damage;
+        
+        if (variable_instance_exists(original_proj, "has_ice_effect")) {
+            bonus_proj.has_ice_effect = original_proj.has_ice_effect;
+            bonus_proj.slow_duration = original_proj.slow_duration;
+            bonus_proj.slow_amount = original_proj.slow_amount;
         }
-        if (variable_instance_exists(original_proj, "explosion_radius")) {
-            bonus_proj.explosion_radius = original_proj.explosion_radius;
+        
+        if (variable_instance_exists(original_proj, "has_lightning_effect")) {
+            bonus_proj.has_lightning_effect = original_proj.has_lightning_effect;
+            bonus_proj.shock_duration = original_proj.shock_duration;
+        }
+        
+        if (variable_instance_exists(original_proj, "has_poison_effect")) {
+            bonus_proj.has_poison_effect = original_proj.has_poison_effect;
+            bonus_proj.poison_duration = original_proj.poison_duration;
+            bonus_proj.poison_damage = original_proj.poison_damage;
+        }
+        
+        // Copy piercing
+        if (variable_instance_exists(original_proj, "piercing")) {
+            bonus_proj.piercing = original_proj.piercing;
+            bonus_proj.pierce_count = original_proj.pierce_count;
+        }
+        
+        // Copy synergy tags
+        if (variable_instance_exists(original_proj, "synergy_tags")) {
+            bonus_proj.synergy_tags = original_proj.synergy_tags;
         }
         
         show_debug_message("Created bonus projectile with spread: " + string(angle_offset));

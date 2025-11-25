@@ -17,6 +17,10 @@ target_scale = base_scale;
 image_alpha = 1.0;
 glow_intensity = 0;
 
+img = 0;
+
+
+
 // Rewards
 chest_rewards = [];
 stored_cost = 0;
@@ -77,7 +81,7 @@ function BeginOpening() {
 /// @func ShowRewards()
 function ShowRewards() {
     state = ChestState.SHOWING_REWARDS;
-    
+
     // Create the popup
     function on_reward_select(index, reward) {
         ApplyReward(obj_player, reward);

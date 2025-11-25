@@ -48,10 +48,17 @@ switch (state) {
             open_timer = 0;
         }
         open_timer++;
+		
+		
         
         if (open_timer >= 30) { // 0.5 seconds
             ShowRewards();
+			img = 5;
         }
+		else
+		{
+			img += (6/30);
+		}
         break;
         
     case ChestState.SHOWING_REWARDS:

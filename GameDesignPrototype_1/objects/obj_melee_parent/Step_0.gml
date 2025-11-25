@@ -40,7 +40,7 @@ if (instance_exists(owner)) {
                 owner,
                 AttackType.MELEE,
                 owner.mouseDirection,
-                noone
+                self
             );
 			
 			
@@ -165,6 +165,39 @@ if (instance_exists(owner)) {
                     TriggerModifiers(owner, MOD_TRIGGER.ON_HIT, hit_event);
                 }
                 
+				// SPAWN ELEMENTAL EFFECTS FROM MELEE
+    if (instance_exists(owner)) {
+        // Check for fire effect
+        if (variable_instance_exists(id, "has_fire_effect") && has_fire_effect) {
+            var fire = instance_create_depth(hit.x, hit.y, depth, obj_fire_effect);
+            fire.burn_duration = burn_duration;
+            fire.burn_damage = burn_damage;
+            fire.owner = owner;
+        }
+        
+        // Check for ice effect
+        if (variable_instance_exists(id, "has_ice_effect") && has_ice_effect) {
+            var ice = instance_create_depth(hit.x, hit.y, depth, obj_ice_effect);
+            ice.slow_duration = slow_duration;
+            ice.slow_amount = slow_amount;
+            ice.owner = owner;
+        }
+        
+        // Check for lightning effect
+        if (variable_instance_exists(id, "has_lightning_effect") && has_lightning_effect) {
+            var lightning = instance_create_depth(hit.x, hit.y, depth, obj_lightning_effect);
+            lightning.shock_duration = shock_duration;
+            lightning.owner = owner;
+        }
+        
+        // Check for poison effect
+        if (variable_instance_exists(id, "has_poison_effect") && has_poison_effect) {
+            var poison = instance_create_depth(hit.x, hit.y, depth, obj_poison_effect);
+            poison.poison_duration = poison_duration;
+            poison.poison_damage = poison_damage;
+            poison.owner = owner;
+        }
+    }
                 
                 // CHECK FOR KILL (let enemy system handle it naturally)
                 
@@ -227,19 +260,12 @@ if (instance_exists(owner)) {
                 p.speed = random_range(2, 5);
             }
             
-            show_debug_message("=== HIT CARRIABLE ===");
-            show_debug_message("Base knockbackForce: " + string(knockbackForce));
-            show_debug_message("Combo count: " + string(comboCount));
-            show_debug_message("Resistance: " + string(resistance));
-            show_debug_message("Final force: " + string(kbForce));
-            show_debug_message("Object weight: " + string(hit.weight));
-            show_debug_message("Hit carriable object: " + object_get_name(hit.object_index));
 			
-			AwardStylePoints("MELEE HIT", 2, 1);
+			AwardStylePoints("MELEE HIT", 2, 1); // this is wrong, this should be on meelee hit for enemies, and the item melee should have its own medla
 			// Track streaks
 			melee_streak++;
 			if (melee_streak >= 5) {
-			    AwardStylePoints("MELEE MASTER", 10, 1);
+			    AwardStylePoints("MELEE MASTER", 10, 1); // see above comment for style points awarded
 				melee_streak = 0;
 			}
         }

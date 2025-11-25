@@ -23,25 +23,21 @@ function StatusEffectComponent(_owner) constructor {
             case ELEMENT.FIRE:
                 burn_timer = _data.duration;
                 burn_dps   = _data.damage;
-                show_debug_message("🔥 " + string(owner) + " is burning for " + string(burn_dps));
                 break;
 
             case ELEMENT.ICE:
                 freeze_timer = _data.duration;
-                freeze_slow_mult = _data.slow_mult;
-                show_debug_message("❄️ " + string(owner) + " frozen (speed x" + string(freeze_slow_mult) + ")");
+                freeze_slow_mult = _data.slow_mult;     
                 break;
 
             case ELEMENT.POISON:
                 poison_timer = _data.duration;
                 poison_dps   = _data.damage;
-                show_debug_message("☠️ " + string(owner) + " poisoned for " + string(poison_dps));
                 break;
 
             case ELEMENT.LIGHTNING:
                 shock_timer = _data.duration;
                 shock_stun = true;
-                show_debug_message("⚡ " + string(owner) + " shocked!");
                 break;
         }
     }
@@ -109,7 +105,7 @@ function StatusEffectComponent(_owner) constructor {
     static DrawDebug = function() {
         draw_set_color(c_white);
         draw_text(owner.x + 20, owner.y - 40,
-            "burn�" + string(burn_timer) +
+            "burn     " + string(burn_timer) +
             "freeze️" + string(freeze_timer) +
             "posion️" + string(poison_timer) +
             "lightning" + string(shock_timer)
@@ -119,7 +115,7 @@ function StatusEffectComponent(_owner) constructor {
 
 
 /// @function CalculateCachedStats(_entity)
-/// @description Recalculate all passive modifier bonuses and UPDATE player stats
+/// @description Recalculate all modifier bonuses and UPDATE player stats
 function CalculateCachedStats(_entity) {
     if (!instance_exists(_entity)) return;
     if (!variable_instance_exists(_entity, "mod_list")) return;
@@ -135,7 +131,6 @@ function CalculateCachedStats(_entity) {
     if (!variable_instance_exists(_entity.damage_sys, "base_max_hp")) {
         _entity.damage_sys.base_max_hp = _entity.damage_sys.max_hp;
     }
-	
     
     // Start fresh from base stats
     var damage_bonus = 0;
@@ -143,12 +138,12 @@ function CalculateCachedStats(_entity) {
     var speed_bonus = 0;
     var speed_mult = 1.0;
     var max_hp_bonus = 0;
-	var max_hp_mult = 1.0;
-	var soul_mult = 1.0;
+    var max_hp_mult = 1.0;
+    var soul_mult = 1.0;
     var gold_mult = 1.0;
     var drop_mult = 1.0;
     var exp_mult = 1.0;
-    
+        var luck = 0.0;
     // Loop through all modifiers
     for (var i = 0; i < array_length(_entity.mod_list); i++) {
         var mod_instance = _entity.mod_list[i];
@@ -159,9 +154,9 @@ function CalculateCachedStats(_entity) {
         
         var stack = mod_instance.stack_level ?? 1;
         
-        // Apply passive_stats if they exist
-        if (variable_struct_exists(mod_template, "passive_stats")) {
-            var stats = mod_template.passive_stats;
+        // CHANGED: Now checks for "stats" instead of "passive_stats"
+        if (variable_struct_exists(mod_template, "stats")) {
+            var stats = mod_template.stats;
             
             if (variable_struct_exists(stats, "damage_bonus")) {
                 damage_bonus += GetStackedValue(stats.damage_bonus, stack);
@@ -178,25 +173,24 @@ function CalculateCachedStats(_entity) {
             if (variable_struct_exists(stats, "max_hp_bonus")) {
                 max_hp_bonus += GetStackedValue(stats.max_hp_bonus, stack);
             }
-			if (variable_struct_exists(stats, "max_hp_mult")) {
+            if (variable_struct_exists(stats, "max_hp_mult")) {
                 max_hp_mult *= GetStackedValue(stats.max_hp_mult, stack);
             }
-			 // Apply stat bonuses
-	        if (variable_struct_exists(stats, "soul_mult")) {
-	            soul_mult *= GetStackedValue(stats.soul_mult, stack);
-	        }
-        
-	        if (variable_struct_exists(stats, "gold_mult")) {
-	            gold_mult *= GetStackedValue(tats.gold_mult, stack);
-	        }
-        
-	        if (variable_struct_exists(stats, "drop_rate_mult")) {
-	            drop_mult *= GetStackedValue(stats.drop_rate_mult, stack);
-	        }
-        
-	        if (variable_struct_exists(stats, "experience_mult")) {
-	            exp_mult *= GetStackedValue(stats.experience_mult, stack);
-	        }
+            if (variable_struct_exists(stats, "soul_mult")) {
+                soul_mult *= GetStackedValue(stats.soul_mult, stack);
+            }
+            if (variable_struct_exists(stats, "gold_mult")) {
+                gold_mult *= GetStackedValue(stats.gold_mult, stack);
+            }
+            if (variable_struct_exists(stats, "drop_rate_mult")) {
+                drop_mult *= GetStackedValue(stats.drop_rate_mult, stack);
+            }
+            if (variable_struct_exists(stats, "experience_mult")) {
+                exp_mult *= GetStackedValue(stats.experience_mult, stack);
+            }
+			if (variable_struct_exists(stats, "luck")) {
+                luck += GetStackedValue(stats.luck, stack);
+            }
         }
     }
     
@@ -208,8 +202,7 @@ function CalculateCachedStats(_entity) {
     _entity.stats.gold_mult = gold_mult;
     _entity.stats.drop_rate_mult = drop_mult;
     _entity.stats.experience_mult = exp_mult;
-	
-	
+    _entity.stats.luck = luck;
     // Sync legacy variables
     _entity.attack = _entity.stats.attack;
     _entity.mySpeed = _entity.stats.speed;
@@ -224,7 +217,6 @@ function CalculateCachedStats(_entity) {
                        " SPD=" + string(_entity.stats.speed) + 
                        " HP=" + string(_entity.damage_sys.max_hp));
 }
-
 
 
 

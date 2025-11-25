@@ -25,8 +25,8 @@
   "nineSlice":null,
   "origin":4,
   "parent":{
-    "name":"VH_SPRITES",
-    "path":"folders/PlayerGroup/Sprites/Player_Characters/VH_SPRITES.yy",
+    "name":"VampireHunter",
+    "path":"folders/PlayerGroup/Sprites/Player_Characters/VampireHunter.yy",
   },
   "preMultiplyAlpha":false,
   "resourceType":"GMSprite",

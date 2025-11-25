@@ -142,17 +142,11 @@ function DropSouls(_x, _y, _count = 1, _spread = 16) {
 /// @returns {bool} True if drop succeeds
 function RollDrop(_base_chance) {
     var final_chance = _base_chance;
-    
-    // Apply drop rate multiplier from Lucky modifier
-    if (instance_exists(obj_player)) {
-        if (variable_instance_exists(obj_player.stats, "drop_rate_mult")) {
-            final_chance *= obj_player.stats.drop_rate_mult;
-        }
-    }
-    
+    final_chance *= obj_player.stats.drop_rate_mult; // Apply drop multiplier
+    final_chance += obj_player.stats.luck;           // Apply luck bonus
+    final_chance = clamp(final_chance, 0, 1);        // Clamp to 0-100%
     return random(1) < final_chance;
 }
-
 // ===========================================
 // UNIFIED DROP FUNCTION FOR ENEMIES
 // ===========================================
@@ -192,3 +186,5 @@ function DropEnemyRewards(_enemy_x, _enemy_y, _enemy_type) {
     DropCoins(_enemy_x, _enemy_y, coins);
     DropSouls(_enemy_x, _enemy_y, soul_count);
 }
+
+

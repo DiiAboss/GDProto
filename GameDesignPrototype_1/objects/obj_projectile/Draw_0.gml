@@ -13,3 +13,6 @@ if (projectileType == PROJECTILE_TYPE.LOB) {
 }
 
 draw_sprite_shadow(self, sprite, img, shadowX, shadowY, direction);
+
+
+

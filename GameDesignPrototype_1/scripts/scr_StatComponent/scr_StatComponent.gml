@@ -17,14 +17,15 @@ function StatsComponent(_base_attack, _base_hp, _base_speed, _base_knockback, _s
     base_hp = _base_hp;
     base_speed = _base_speed;
     base_knockback = _base_knockback;
-    
+    compounding_bonus = 0;
     // ===========================================
     // PHYSICAL ATTRIBUTES (for weapon mechanics)
     // ===========================================
     strength = _strength;     // Affects damage & knockback dealt
     weight = _weight;         // Affects knockback received
     dexterity = _dexterity;   // Affects attack speed with light weapons
-    
+    luck = 0.0;  // Additive bonus to all proc chances (0.1 = +10%)
+	
     // ===========================================
     // CURRENT STATS (modified by items/buffs)
     // ===========================================

@@ -212,3 +212,54 @@ if (has_afterimage && afterimage_timer++ >= afterimage_interval) {
     after.image_yscale = image_yscale;
     after.image_alpha = 0.5;
 }
+
+
+if (has_fire_effect)
+{
+	scr_spawn_element_particles(
+    self,
+    spr_fire_particle,
+    [c_red, c_orange, c_yellow],
+    3,
+    [1.5, 3],
+    [0.5, 1],
+    [15, 30]
+);
+}
+if (has_ice_effect)
+{
+	scr_spawn_element_particles(
+    self,
+    spr_ice_particle,
+    [c_red, c_orange, c_yellow],
+    3,
+    [1.5, 3],
+    [0.5, 1],
+    [15, 30]
+);
+}
+if (has_poison_effect)
+{
+	scr_spawn_element_particles(
+    self,
+    spr_poison_particle,
+    [make_color_rgb(100,255,100), make_color_rgb(180,255,150)],
+    3,
+    [1, 2],
+    [0.2, 0.6],
+    [20, 40]
+);
+}
+
+if (has_lightning_effect)
+{
+	scr_spawn_element_particles(
+    self,
+    spr_lightning_particle,
+    [c_red, c_orange, c_yellow],
+    3,
+    [1.5, 3],
+    [0.5, 1],
+    [15, 30]
+);
+}

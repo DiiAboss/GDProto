@@ -68,41 +68,103 @@ global.Modifiers = {};
 
 global.Modifiers.FireEnchantment = {
     name: "Fire Enchantment",
-    description: "Projectiles burn enemies",
+    description: "10% chance to ignite (10% per stack, max 50%)",
     triggers: [MOD_TRIGGER.ON_ATTACK],
-    activation_chance: 100, // Always applies
     synergy_tags: [SYNERGY_TAG.FIRE],
-    
+    proc_chance: 0.10,
+    proc_chance_per_stack: 0.10,
+    max_base_chance: 0.50,
     burn_duration: 180,
     burn_damage_per_tick: 2,
     
     action: function(_entity, _event) {
-        if (_event.projectile != noone && instance_exists(_event.projectile)) {
-            var stack = _event.stack_level ?? 1;
-            _event.projectile.element_type = ELEMENT.FIRE;
-            _event.projectile.burn_duration = GetStackedValue(burn_duration, stack);
-            _event.projectile.burn_damage = GetStackedValue(burn_damage_per_tick, stack);
-        }
+        var target = _event.projectile;
+        if (target == noone || !instance_exists(target)) return;
+        
+        var stack = _event.stack_level ?? 1;
+        var chance = min(proc_chance + (proc_chance_per_stack * (stack - 1)), max_base_chance);
+        if (!RollProc(chance, _entity)) return;
+        
+        target.element_type = ELEMENT.FIRE;
+        target.has_fire_effect = true;
+        target.burn_duration = burn_duration;
+        target.burn_damage = burn_damage_per_tick;
     }
 };
 
 global.Modifiers.IceEnchantment = {
     name: "Ice Enchantment",
-    description: "Projectiles freeze enemies",
+    description: "10% chance to freeze (10% per stack, max 50%)",
     triggers: [MOD_TRIGGER.ON_ATTACK],
-    activation_chance: 100,
     synergy_tags: [SYNERGY_TAG.ICE],
-    
+    proc_chance: 0.10,
+    proc_chance_per_stack: 0.10,
+    max_base_chance: 0.50,
     slow_duration: 120,
     slow_amount: 0.5,
     
     action: function(_entity, _event) {
-        if (_event.projectile != noone && instance_exists(_event.projectile)) {
-            var stack = _event.stack_level ?? 1;
-            _event.projectile.element_type = ELEMENT.ICE;
-            _event.projectile.freeze_duration = GetStackedValue(slow_duration, stack);
-            _event.projectile.slow_multiplier = slow_amount;
-        }
+        var target = _event.projectile;
+        if (target == noone || !instance_exists(target)) return;
+        
+        var stack = _event.stack_level ?? 1;
+        var chance = min(proc_chance + (proc_chance_per_stack * (stack - 1)), max_base_chance);
+        if (!RollProc(chance, _entity)) return;
+        
+        target.element_type = ELEMENT.ICE;
+        target.has_ice_effect = true;
+        target.slow_duration = slow_duration;
+        target.slow_amount = slow_amount;
+    }
+};
+
+global.Modifiers.LightningEnchantment = {
+    name: "Lightning Enchantment",
+    description: "10% chance to shock (10% per stack, max 50%)",
+    triggers: [MOD_TRIGGER.ON_ATTACK],
+    synergy_tags: [SYNERGY_TAG.LIGHTNING],
+    proc_chance: 0.10,
+    proc_chance_per_stack: 0.10,
+    max_base_chance: 0.50,
+    shock_duration: 90,
+    
+    action: function(_entity, _event) {
+        var target = _event.projectile;
+        if (target == noone || !instance_exists(target)) return;
+        
+        var stack = _event.stack_level ?? 1;
+        var chance = min(proc_chance + (proc_chance_per_stack * (stack - 1)), max_base_chance);
+        if (!RollProc(chance, _entity)) return;
+        
+        target.element_type = ELEMENT.LIGHTNING;
+        target.has_lightning_effect = true;
+        target.shock_duration = shock_duration;
+    }
+};
+
+global.Modifiers.PoisonEnchantment = {
+    name: "Poison Enchantment",
+    description: "10% chance to poison (10% per stack, max 50%)",
+    triggers: [MOD_TRIGGER.ON_ATTACK],
+    synergy_tags: [SYNERGY_TAG.POISON],
+    proc_chance: 0.10,
+    proc_chance_per_stack: 0.10,
+    max_base_chance: 0.50,
+    poison_duration: 240,
+    poison_damage_per_tick: 1,
+    
+    action: function(_entity, _event) {
+        var target = _event.projectile;
+        if (target == noone || !instance_exists(target)) return;
+        
+        var stack = _event.stack_level ?? 1;
+        var chance = min(proc_chance + (proc_chance_per_stack * (stack - 1)), max_base_chance);
+        if (!RollProc(chance, _entity)) return;
+        
+        target.element_type = ELEMENT.POISON;
+        target.has_poison_effect = true;
+        target.poison_duration = poison_duration;
+        target.poison_damage = poison_damage_per_tick;
     }
 };
 
@@ -117,44 +179,6 @@ global.Modifiers.Souls2x = {
     action: function(_entity, _event) {
         // This would need to be applied where you grant souls
         // You'll need to check for this modifier when awarding souls
-    }
-};
-
-global.Modifiers.LightningEnchantment = {
-    name: "Lightning Enchantment",
-    description: "Projectiles shock enemies",
-    triggers: [MOD_TRIGGER.ON_ATTACK],
-    activation_chance: 100,
-    synergy_tags: [SYNERGY_TAG.LIGHTNING],
-    
-    shock_duration: 90,
-    
-    action: function(_entity, _event) {
-        if (_event.projectile != noone && instance_exists(_event.projectile)) {
-            var stack = _event.stack_level ?? 1;
-            _event.projectile.element_type = ELEMENT.LIGHTNING;
-            _event.projectile.shock_duration = GetStackedValue(shock_duration, stack);
-        }
-    }
-};
-
-global.Modifiers.PoisonEnchantment = {
-    name: "Poison Enchantment",
-    description: "Projectiles poison enemies",
-    triggers: [MOD_TRIGGER.ON_ATTACK],
-    activation_chance: 100,
-    synergy_tags: [SYNERGY_TAG.POISON],
-    
-    poison_duration: 240,
-    poison_damage_per_tick: 1,
-    
-    action: function(_entity, _event) {
-        if (_event.projectile != noone && instance_exists(_event.projectile)) {
-            var stack = _event.stack_level ?? 1;
-            _event.projectile.element_type = ELEMENT.POISON;
-            _event.projectile.poison_duration = GetStackedValue(poison_duration, stack);
-            _event.projectile.poison_damage = GetStackedValue(poison_damage_per_tick, stack);
-        }
     }
 };
 
@@ -178,8 +202,8 @@ global.Modifiers.ChainLightning = {
         var mod_template = global.Modifiers[$ _event.mod_instance.template_key];
         var stack = _event.stack_level ?? 1;
         
-        // Roll for proc chance
-        if (random(1) > mod_template.proc_chance) {
+        // Roll for proc chance (with luck applied)
+        if (!RollProc(mod_template.proc_chance, _entity)) {
             return; // Didn't proc
         }
         
@@ -284,9 +308,7 @@ global.Modifiers.CorpseExplosion = {
         var stack = _event.stack_level ?? 1;
         
         // Roll for proc chance
-        if (random(1) > mod_template.proc_chance) {
-            return; // Didn't proc
-        }
+        if (!RollProc(mod_template.proc_chance, _entity)) return;
         
         var death_x = _event.enemy_x;
         var death_y = _event.enemy_y;
@@ -316,7 +338,7 @@ global.Modifiers.StrengthBoost = {
     activation_chance: 100,
     synergy_tags: [SYNERGY_TAG.STRENGTH],
     
-    passive_stats: {
+    stats: {
         damage_bonus: 5,
 		damage_mult: 1.5,
     },
@@ -333,7 +355,7 @@ global.Modifiers.SpeedBoost = {
     activation_chance: 100,
     synergy_tags: [SYNERGY_TAG.SPEED],
     
-    passive_stats: {
+    stats: {
         speed_bonus: 0.5,
 		speed_mult: 1.2  // This needs to exist
     },
@@ -350,7 +372,7 @@ global.Modifiers.GlassCannon = {
     activation_chance: 100,
     synergy_tags: [SYNERGY_TAG.GLASS_CANNON, SYNERGY_TAG.STRENGTH],
     
-    passive_stats: {
+    stats: {
         damage_mult: 1.5,
         defense_mult: 0.5
     },
@@ -367,7 +389,7 @@ global.Modifiers.Tank = {
     activation_chance: 100,
     synergy_tags: [SYNERGY_TAG.TANKY, SYNERGY_TAG.WEIGHT],
     
-    passive_stats: {
+    stats: {
         max_hp_bonus: 50,
         speed_mult: 0.8
     },
@@ -391,7 +413,7 @@ global.Modifiers.CriticalStrike = {
         var stack = _event.stack_level ?? 1;
         
         // Roll for crit
-        if (random(1) > mod_template.proc_chance) return;
+        if (!RollProc(mod_template.proc_chance, _entity)) return;
         
         var crit_mult = GetStackedValue(mod_template.crit_multiplier, stack);
         
@@ -441,20 +463,22 @@ global.Modifiers.Regeneration = {
     name: "Regeneration",
     description: "Heal 1 HP every 3 seconds",
     triggers: [MOD_TRIGGER.PASSIVE],
-    activation_chance: 100,
     synergy_tags: [SYNERGY_TAG.REGENERATION],
-    
     heal_per_tick: 1,
-    tick_rate: 180, // 3 seconds at 60 FPS
-    regen_timer: 0,
-	
-    instance_data: {
-        regen_timer: 0
-    },
+    tick_rate: 180,
     
     action: function(_entity, _event) {
+        if (!variable_instance_exists(_entity.stats, "regen_timer")) _entity.stats.regen_timer = 0;
+        
+        _entity.stats.regen_timer++;
+        if (_entity.stats.regen_timer >= tick_rate) {
+            _entity.stats.regen_timer = 0;
+            _entity.damage_sys.Heal(heal_per_tick);
+            spawn_damage_number(_entity.x, _entity.y - 32, heal_per_tick, c_lime, false);
+        }
     }
-};
+};  
+
 
 global.Modifiers.warrior_rage = {
     name: "Warrior Rage",
@@ -486,18 +510,7 @@ global.Modifiers.armor_plating = {
     triggers: [MOD_TRIGGER.PASSIVE],
     is_innate: true,
     synergy_tags: [SYNERGY_TAG.TANKY],
-    
-    stats: {
-        armor: 2
-    },
-    
-    action: function(_entity, _event) {
-        // Applied via CalculateCachedStats
-        if (!variable_instance_exists(_entity.stats, "armor")) {
-            _entity.stats.armor = 0;
-        }
-        _entity.stats.armor += stats.armor;
-    }
+    stats: { armor: 2 }
 };
 
 // MAGE CLASS MODIFIERS
@@ -611,14 +624,23 @@ global.Modifiers.blood_frenzy = {
 
 global.Modifiers.Lucky = {
     name: "Lucky",
-    description: "50% increased drop rates and gold amounts",
-    triggers: [],  // ← REMOVE PASSIVE TRIGGER
+    description: "+10% to ALL proc chances, +30% drop rates, +30% gold",
+    triggers: [MOD_TRIGGER.PASSIVE],
     synergy_tags: [],
+    
     stats: {
-        drop_rate_mult: 1.5,
-        gold_mult: 1.3
+        luck: 0.10,           // +10% to ALL chance-based effects
+        drop_rate_mult: 1.3,  // +30% drop rates
+        gold_mult: 1.3        // +30% gold amounts
+    },
+    
+    action: function(_entity, _event) {
+        // Applied via CalculateCachedStats
     }
 };
+
+
+
 // ===========================================
 // EXP BOOST - Better: Every kill gives bonus XP
 // ===========================================
@@ -667,32 +689,19 @@ global.Modifiers.Investor = {
 global.Modifiers.Compounding = {
     name: "Compounding Interest",
     description: "Each kill increases soul gain by 1% (stacks infinitely)",
-    triggers: [MOD_TRIGGER.ON_KILL],
+    triggers: [MOD_TRIGGER.ON_KILL, MOD_TRIGGER.PASSIVE],
     synergy_tags: [],
-    
-    bonus_per_kill: 0.01,  // 1% per kill
+    bonus_per_kill: 0.01,
     
     action: function(_entity, _event) {
-        // Initialize compounding bonus
-        if (!variable_instance_exists(_entity.stats, "compounding_bonus")) {
-            _entity.stats.compounding_bonus = 0;
+        if (_event.trigger == MOD_TRIGGER.ON_KILL) {
+            if (!variable_instance_exists(_entity.stats, "compounding_bonus")) _entity.stats.compounding_bonus = 0;
+            _entity.stats.compounding_bonus += bonus_per_kill;
         }
         
-        // Add bonus
-        _entity.stats.compounding_bonus += bonus_per_kill;
-        
-        // Apply to soul multiplier
-        if (!variable_instance_exists(_entity.stats, "soul_mult")) {
-            _entity.stats.soul_mult = 1.0;
-        }
-        
-        // Add the compounding bonus (multiplicative with base)
-        _entity.stats.soul_mult = (1.0 + _entity.stats.compounding_bonus);
-        
-        // Visual feedback every 10 kills
-        if (_entity.stats.compounding_bonus % 0.1 < 0.011) {  // Close to 10% milestone
-            var percent = floor(_entity.stats.compounding_bonus * 100);
-            show_debug_message("Compounding: +" + string(percent) + "% soul gain!");
+        if (_event.trigger == MOD_TRIGGER.PASSIVE) {
+            var comp_mult = 1.0 + (_entity.stats.compounding_bonus ?? 0);
+            _entity.stats.soul_mult *= comp_mult; // MULTIPLY instead of SET
         }
     }
 };

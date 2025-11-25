@@ -15,61 +15,161 @@ enum MENU_STATE {
 
 function MenuSystem() constructor {
     
+	#region Constants
+		// UI Dimensions
+		UI_CARD_WIDTH = 200;
+		UI_CARD_HEIGHT = 340;
+		UI_BUTTON_WIDTH = 180;
+		UI_BUTTON_HEIGHT = 40;
+		UI_PANEL_PADDING = 20;
+		UI_OPTION_SPACING = 60;
+
+		// Loadout Screen
+		LOADOUT_SLOT_SIZE = 80;
+		LOADOUT_SLOT_SPACING = 100;
+		LOADOUT_MOD_CARD_WIDTH = 100;
+		LOADOUT_MOD_CARD_HEIGHT = 80;
+		LOADOUT_MODS_PER_ROW = 4;
+		LOADOUT_WEAPON_PANEL_WIDTH = 500;
+
+		// Animation
+		ANIM_MENU_FADE_SPEED = 0.02;
+		ANIM_SLIDE_SPEED = 0.15;
+		ANIM_HOVER_SCALE = 1.05;
+		ANIM_PARTICLE_SPEED = 0.5;
+
+		// Colors
+		COL_LOCKED = c_gray;
+		COL_HOVER = c_white;
+		COL_SELECTED = c_yellow;
+		COL_EQUIPPED = c_lime;
+		COL_BACKGROUND_OVERLAY = c_black;
+
+		// Particles
+		PARTICLE_EMITTER_COUNT = 20; // Reduced from 25
+		PARTICLE_EYE_COUNT = 6;
+		PARTICLE_FLOAT_COUNT = 15;
+	#endregion
+	
+	#region Helper Functions
+
+		/// @function DrawHoverBorder(_x1, _y1, _x2, _y2, _hover, _thickness)
+		static DrawHoverBorder = function(_x1, _y1, _x2, _y2, _hover, _thickness = 2) {
+		    if (_hover) {
+		        draw_set_color(COL_HOVER);
+		        for (var i = 0; i < _thickness; i++) {
+		            draw_rectangle(_x1 - i, _y1 - i, _x2 + i, _y2 + i, true);
+		        }
+		    }
+		}
+
+		/// @function DrawButtonWithHint(_x, _y, _text, _hover, _shortcut, _width, _height)
+		static DrawButtonWithHint = function(_x, _y, _text, _hover, _shortcut = "", _width = UI_BUTTON_WIDTH, _height = UI_BUTTON_HEIGHT) {
+		    var scale = _hover ? ANIM_HOVER_SCALE : 1.0;
+		    var actual_width = _width * scale;
+		    var actual_height = _height * scale;
+    
+		    // Background
+		    draw_set_alpha(_hover ? 0.8 : 0.6);
+		    draw_set_color(_hover ? COL_SELECTED : c_dkgray);
+		    draw_rectangle(_x - actual_width/2, _y - actual_height/2, 
+		                   _x + actual_width/2, _y + actual_height/2, false);
+		    draw_set_alpha(1);
+    
+		    // Border
+		    DrawHoverBorder(_x - actual_width/2, _y - actual_height/2,
+		                    _x + actual_width/2, _y + actual_height/2, _hover);
+    
+		    // Text
+		    draw_set_halign(fa_center);
+		    draw_set_valign(fa_middle);
+		    draw_set_color(_hover ? COL_SELECTED : COL_HOVER);
+		    draw_text(_x, _y, _text);
+    
+		    // Shortcut hint
+		    if (_shortcut != "" && _hover) {
+		        draw_set_font(fnt_default);
+		        draw_set_color(c_ltgray);
+		        draw_text(_x, _y + actual_height/2 + 12, _shortcut);
+		    }
+    
+		    return point_in_rectangle(device_mouse_x_to_gui(0), device_mouse_y_to_gui(0),
+		                             _x - actual_width/2, _y - actual_height/2,
+		                             _x + actual_width/2, _y + actual_height/2);
+		}
+
+		/// @function AnimateValue(_current, _target, _speed)
+		static AnimateValue = function(_current, _target, _speed = ANIM_SLIDE_SPEED) {
+		    return lerp(_current, _target, _speed);
+		}
+
+#endregion
+	
+	
+	weapon_panel_x = 0;
+	weapon_panel_target_x = 0;
+	weapon_select_active = false;
+	weapon_panel_selected = 0;
+	weapon_panel_closing = false;
+	weapon_popup_scroll_offset = 0;
+	weapon_popup_max_visible = 5; // Show 5 items at a time
+	
+
 	// Animated background
-bg_shift_timer = 0;
+	bg_shift_timer = 0;
 
-// Particle system for pixelated fire
-part_sys_menu_fire = part_system_create();
-part_system_depth(part_sys_menu_fire, -100);
+	// Particle system for pixelated fire
+	part_sys_menu_fire = part_system_create();
+	part_system_depth(part_sys_menu_fire, -100);
 
-// Pixelated fire particle type
-part_fire_base = part_type_create();
-part_type_sprite(part_fire_base, spr_pixel, false, false, false); // Use a 1x1 or 2x2 pixel sprite
-part_type_size(part_fire_base, 3, 6, 0, 0); // Pixelated size
-part_type_scale(part_fire_base, 1, 1);
-part_type_color3(part_fire_base, 
-    make_color_rgb(255, 50, 0),    // Red-orange base
-    make_color_rgb(255, 165, 0),   // Orange
-    make_color_rgb(255, 200, 0)    // Yellow at top
-);
-part_type_alpha3(part_fire_base, 0.8, 0.6, 0);
-part_type_speed(part_fire_base, 0.5, 2.5, 0, 0.1);
-part_type_direction(part_fire_base, 80, 100, 0, 5); // Upward with variation
-part_type_gravity(part_fire_base, 0.01, 270); // Slight upward pull
-part_type_life(part_fire_base, 30, 80);
-part_type_blend(part_fire_base, true); // Additive blending
+	// Pixelated fire particle type
+	part_fire_base = part_type_create();
+	part_type_sprite(part_fire_base, spr_pixel, false, false, false); // Use a 1x1 or 2x2 pixel sprite
+	part_type_size(part_fire_base, 3, 6, 0, 0); // Pixelated size
+	part_type_scale(part_fire_base, 1, 1);
+	part_type_color3(part_fire_base, 
+	    make_color_rgb(255, 50, 0),    // Red-orange base
+	    make_color_rgb(255, 165, 0),   // Orange
+	    make_color_rgb(255, 200, 0)    // Yellow at top
+	);
+	part_type_alpha3(part_fire_base, 0.8, 0.6, 0);
+	part_type_speed(part_fire_base, 0.5, 2.5, 0, 0.1);
+	part_type_direction(part_fire_base, 80, 100, 0, 5); // Upward with variation
+	part_type_gravity(part_fire_base, 0.01, 270); // Slight upward pull
+	part_type_life(part_fire_base, 30, 80);
+	part_type_blend(part_fire_base, true); // Additive blending
 
-// Hot embers
-part_fire_ember = part_type_create();
-part_type_sprite(part_fire_ember, spr_pixel, false, false, false);
-part_type_size(part_fire_ember, 2, 3, 0, 0);
-part_type_color2(part_fire_ember, 
-    make_color_rgb(255, 200, 0),   // Bright yellow
-    make_color_rgb(255, 100, 0)    // Orange
-);
-part_type_alpha3(part_fire_ember, 1, 0.8, 0);
-part_type_speed(part_fire_ember, 0.3, 1.0, -0.01, 0);
-part_type_direction(part_fire_ember, 70, 110, 0, 10);
-part_type_gravity(part_fire_ember, 0.01, 270);
-part_type_life(part_fire_ember, 60, 120);
-part_type_blend(part_fire_ember, true);
+	// Hot embers
+	part_fire_ember = part_type_create();
+	part_type_sprite(part_fire_ember, spr_pixel, false, false, false);
+	part_type_size(part_fire_ember, 2, 3, 0, 0);
+	part_type_color2(part_fire_ember, 
+	    make_color_rgb(255, 200, 0),   // Bright yellow
+	    make_color_rgb(255, 100, 0)    // Orange
+	);
+	part_type_alpha3(part_fire_ember, 1, 0.8, 0);
+	part_type_speed(part_fire_ember, 0.3, 1.0, -0.01, 0);
+	part_type_direction(part_fire_ember, 70, 110, 0, 10);
+	part_type_gravity(part_fire_ember, 0.01, 270);
+	part_type_life(part_fire_ember, 60, 120);
+	part_type_blend(part_fire_ember, true);
 
-// Smoke particles (optional, for depth)
-part_fire_smoke = part_type_create();
-part_type_sprite(part_fire_smoke, spr_pixel, false, false, false);
-part_type_size(part_fire_smoke, 3, 6, 0.05, 0);
-part_type_color1(part_fire_smoke, make_color_rgb(40, 40, 40));
-part_type_alpha3(part_fire_smoke, 0, 0.3, 0);
-part_type_speed(part_fire_smoke, 0.2, 0.5, 0, 0);
-part_type_direction(part_fire_smoke, 85, 95, 0, 3);
-part_type_life(part_fire_smoke, 80, 120);
-part_type_blend(part_fire_smoke, false);
+	// Smoke particles (optional, for depth)
+	part_fire_smoke = part_type_create();
+	part_type_sprite(part_fire_smoke, spr_pixel, false, false, false);
+	part_type_size(part_fire_smoke, 3, 6, 0.05, 0);
+	part_type_color1(part_fire_smoke, make_color_rgb(40, 40, 40));
+	part_type_alpha3(part_fire_smoke, 0, 0.3, 0);
+	part_type_speed(part_fire_smoke, 0.2, 0.5, 0, 0);
+	part_type_direction(part_fire_smoke, 85, 95, 0, 3);
+	part_type_life(part_fire_smoke, 80, 120);
+	part_type_blend(part_fire_smoke, false);
 
-// Emitters along the bottom
-fire_emitters = [];
-var screen_width = display_get_gui_width();
-var screen_height = display_get_gui_height();
-var num_emitters = 25; // Spread across bottom
+	// Emitters along the bottom
+	fire_emitters = [];
+	var screen_width = display_get_gui_width();
+	var screen_height = display_get_gui_height();
+	var num_emitters = 25; // Spread across bottom
 
 for (var i = 0; i < num_emitters; i++) {
     var emit_x = (i / num_emitters) * screen_width + random_range(-10, 10);
@@ -125,12 +225,15 @@ for (var i = 0; i < array_length(safe_zones); i++) {
     });
 }
 
+
 // Floating particles
 particles = [];
 for (var i = 0; i < 20; i++) {
+    var start_x = random(display_get_gui_width());
     array_push(particles, {
-        x: random(display_get_gui_width()),
+        x: start_x,
         y: random(display_get_gui_height()),
+        base_x: start_x,  // ADD THIS
         size: 2 + random(3),
         float_offset: random(360),
         alpha: 0
@@ -143,7 +246,7 @@ active_loadout_weapons = [noone, noone]; // Current weapon selection
 	
 	selected_weapon_slot = 0;
 	selected_column = 0;
-	weapon_select_open = false;
+	weapon_select_active = false;
 	selected_mod_index = 0;
 	
 	loadout_selected_slot = 0;
@@ -296,15 +399,19 @@ active_loadout_weapons = [noone, noone]; // Current weapon selection
 				    if (eye.blink_timer >= 360) eye.blink_timer = 0;
 				}
 
-				// Update particles
-				for (var i = 0; i < array_length(particles); i++) {
-				    var particle = particles[i];
-				    particle.float_offset += 0.5;
+				// Update particles with more variety
+for (var i = 0; i < array_length(particles); i++) {
+    var particle = particles[i];
+    particle.float_offset += ANIM_PARTICLE_SPEED;
     
-				    var float_progress = (particle.float_offset mod 1200) / 1200;
-				    particle.y = lerp(display_get_gui_height(), -50, float_progress);
-				    particle.alpha = sin(float_progress * pi) * 0.3;
-				}
+    // Add sine wave movement for variety
+    var wave_x = sin(particle.float_offset * 0.02) * 20;
+    var float_progress = (particle.float_offset mod 1200) / 1200;
+    
+    particle.x = particle.base_x + wave_x;
+    particle.y = lerp(display_get_gui_height(), -50, float_progress);
+    particle.alpha = sin(float_progress * pi) * 0.3;
+}
 				for (var i = 0; i < array_length(fire_emitters); i++) {
         var fire = fire_emitters[i];
         
@@ -330,6 +437,19 @@ active_loadout_weapons = [noone, noone]; // Current weapon selection
                 display_get_gui_height() - random(15), part_fire_smoke, 1);
         }
     }
+	
+	// Make particles react to menu interactions
+if (_input.FirePress) {
+    // Disperse particles near click
+    for (var i = 0; i < array_length(particles); i++) {
+        var p = particles[i];
+        var dist = point_distance(_mx, _my, p.x, p.y);
+        if (dist < 100) {
+            p.x += lengthdir_x(50, point_direction(_mx, _my, p.x, p.y));
+            p.y += lengthdir_y(50, point_direction(_mx, _my, p.x, p.y));
+        }
+    }
+}
 				
 				
                 break;
@@ -444,56 +564,6 @@ active_loadout_weapons = [noone, noone]; // Current weapon selection
     // ==========================================
     // MAIN MENU
     // ==========================================
-    
-    ///// @function DrawMainMenu(_w, _h, _cx, _cy)
-    //static DrawMainMenu = function(_w, _h, _cx, _cy) {
-    //    // Background
-    //    draw_set_color(c_black);
-    //    draw_set_alpha(0.8);
-    //    draw_rectangle(0, 0, _w, _h, false);
-    //    draw_set_alpha(1);
-        
-    //    // Logo
-    //    draw_set_halign(fa_center);
-    //    draw_set_valign(fa_middle);
-    //    draw_set_font(fnt_large);
-        
-    //    var logo_y = _cy - 200 + logo_bounce;
-    //    draw_text_transformed_color(_cx, logo_y, "TARLHS GAME", 
-    //        logo_scale * 2, logo_scale * 2, 0,
-    //        c_red, c_orange, c_yellow, c_red, menu_alpha);
-        
-    //    draw_set_font(fnt_default);
-    //    draw_text_color(_cx, logo_y + 50, "DEMO v0.1", 
-    //        c_gray, c_gray, c_white, c_white, menu_alpha * 0.7);
-        
-    //    draw_set_alpha(menu_alpha);
-        
-    //    // Menu options
-    //    for (var i = 0; i < array_length(main_menu_options); i++) {
-    //        var yy = _cy + (i * 60) - 30;
-    //        var is_selected = (i == selected_option);
-            
-    //        if (is_selected) {
-    //            draw_set_alpha(menu_alpha * 0.3);
-    //            draw_rectangle_color(_cx - 120, yy - 25, _cx + 120, yy + 25,
-    //                c_yellow, c_orange, c_orange, c_yellow, false);
-    //            draw_set_alpha(menu_alpha);
-    //        }
-            
-    //        draw_set_font(is_selected ? fnt_large : fnt_default);
-    //        var col = is_selected ? c_yellow : c_white;
-    //        draw_text_color(_cx, yy, main_menu_options[i], col, col, col, col, menu_alpha);
-    //    }
-        
-    //    // Input prompt
-    //    draw_set_font(fnt_default);
-    //    draw_set_halign(fa_center);
-    //    draw_set_color(c_gray);
-    //    draw_text(_cx, _h - 40, "[WASD/ARROWS] Navigate  [ENTER] Select");
-        
-    //    draw_set_alpha(1);
-    //}
     
 	
 /// @function DrawMainMenu(_w, _h, _cx, _cy)
@@ -880,7 +950,7 @@ static DrawMainMenu = function(_w, _h, _cx, _cy) {
 	    DrawModsColumn(mods_x, top_y, mods_width, bottom_y - top_y, _w, _h);
     
 	    // Draw weapon popup if open
-	    if (weapon_select_open) {
+	    if (weapon_select_active) {
 	        DrawWeaponSelectPopup(_cx, _cy);
 	    }
     
@@ -899,121 +969,201 @@ static DrawMainMenu = function(_w, _h, _cx, _cy) {
 	/// @function DrawStatsColumn(_x, _y, _width, _height)
 	static DrawStatsColumn = function(_x, _y, _width, _height) {
 	    var padding = 10;
-	    var content_x = _x + padding;
-	    var current_y = _y + padding;
+    var content_x = _x + padding;
+    var current_y = _y + padding;
     
-	    // Get character stats
-	    var char_stats = GetCharacterStats(selected_character_class);
-	    var loadout = global.SaveData.career.active_loadout;
+    // Get character stats
+    var char_stats = GetCharacterStats(selected_character_class);
+    var loadout = global.SaveData.career.active_loadout;
     
-	    // === BASE STATS ===
-	    draw_set_halign(fa_left);
-	    draw_set_valign(fa_top);
-	    draw_set_font(fnt_default);
-	    draw_set_color(c_yellow);
-	    draw_text(content_x, current_y, "BASE STATS:");
-	    current_y += 25;
+    // === BASE STATS ===
+    draw_set_halign(fa_left);
+    draw_set_valign(fa_top);
+    draw_set_font(fnt_default);
+    draw_set_color(c_yellow);
+    draw_text(content_x, current_y, "BASE STATS:");
+    current_y += 25;
     
-	    draw_set_color(c_white);
-	    draw_text(content_x, current_y, "HP:  " + string(char_stats.hp_max));
-	    current_y += 20;
-	    draw_text(content_x, current_y, "ATK: " + string(char_stats.attack_base));
-	    current_y += 20;
-	    draw_text(content_x, current_y, "SPD: " + string(char_stats.move_speed));
-	    current_y += 30;
+    draw_set_color(c_white);
+    draw_text(content_x, current_y, "HP:  " + string(char_stats.hp_max));
+    current_y += 20;
+    draw_text(content_x, current_y, "ATK: " + string(char_stats.attack_base));
+    current_y += 20;
+    draw_text(content_x, current_y, "SPD: " + string(char_stats.move_speed));
+    current_y += 30;
     
-	    // === EQUIPPED MODS ===
-	    draw_set_color(c_aqua);
-	    draw_text(content_x, current_y, "EQUIPPED MODS:");
-	    current_y += 25;
+    // === EQUIPPED MODS WITH X BUTTONS ===
+    draw_set_color(c_aqua);
+    draw_text(content_x, current_y, "EQUIPPED MODS:");
+    current_y += 25;
     
-	    var equipped_count = 0;
-	    for (var i = 0; i < array_length(loadout); i++) {
-	        if (loadout[i] != noone) {
-	            var node = global.SkillTree[$ loadout[i]];
-	            if (node != noone) {
-	                draw_set_color(c_white);
-	                var mod_name = node.name;
-	                if (string_length(mod_name) > 12) {
-	                    mod_name = string_copy(mod_name, 1, 10) + "..";
-	                }
-	                draw_text(content_x, current_y, "• " + mod_name);
-	                current_y += 18;
-	                equipped_count++;
-	            }
-	        }
-	    }
+    var mx = device_mouse_x_to_gui(0);
+    var my = device_mouse_y_to_gui(0);
     
-	    // Show empty slots
-	    for (var i = equipped_count; i < 5; i++) {
-	        draw_set_color(c_dkgray);
-	        draw_text(content_x, current_y, "• -----");
-	        current_y += 18;
-	    }
+    for (var i = 0; i < 5; i++) {
+        var mod_y = current_y + (i * 18);
+        
+        if (i < array_length(loadout) && loadout[i] != noone) {
+            var node = global.SkillTree[$ loadout[i]];
+            if (node != noone) {
+                draw_set_color(c_white);
+                var mod_name = node.name;
+                if (string_length(mod_name) > 10) {
+                    mod_name = string_copy(mod_name, 1, 8) + "..";
+                }
+                draw_text(content_x, mod_y, "• " + mod_name);
+                
+                // X button to remove
+                var x_button_x = content_x + _width - 35;
+                var x_button_y = mod_y;
+                var x_size = 14;
+                
+                var is_hover_x = point_in_rectangle(mx, my, 
+                    x_button_x - x_size/2, x_button_y - x_size/2,
+                    x_button_x + x_size/2, x_button_y + x_size/2);
+                
+                // Draw X button
+                draw_set_color(is_hover_x ? c_red : c_gray);
+                draw_set_alpha(is_hover_x ? 1 : 0.6);
+                draw_rectangle(x_button_x - x_size/2, x_button_y - x_size/2,
+                              x_button_x + x_size/2, x_button_y + x_size/2, false);
+                draw_set_alpha(1);
+                
+                draw_set_color(c_white);
+                draw_set_halign(fa_center);
+                draw_set_valign(fa_middle);
+                draw_text(x_button_x, x_button_y, "X");
+                draw_set_halign(fa_left);
+                draw_set_valign(fa_top);
+                
+                // Store clickable region (we'll handle this in input)
+                if (!variable_struct_exists(self, "mod_x_buttons")) {
+                    mod_x_buttons = [];
+                }
+                mod_x_buttons[i] = {
+                    x1: x_button_x - x_size/2,
+                    y1: x_button_y - x_size/2,
+                    x2: x_button_x + x_size/2,
+                    y2: x_button_y + x_size/2,
+                    mod_id: loadout[i]
+                };
+            }
+        } else {
+            // Empty slot
+            draw_set_color(c_dkgray);
+            draw_text(content_x, mod_y, "• -----");
+        }
+    }
     
-	    current_y += 20;
+    current_y += (5 * 18) + 20;
     
-	    // === MODIFIED STATS ===
-	    draw_set_color(c_lime);
-	    draw_text(content_x, current_y, "MODIFIED STATS:");
-	    current_y += 25;
+    // === MODIFIED STATS ===
+    draw_set_color(c_lime);
+    draw_text(content_x, current_y, "MODIFIED STATS:");
+    current_y += 25;
     
-	    // Calculate stat modifiers from equipped mods
-	    var stat_mods = CalculateStatModsFromLoadout(loadout);
+    // Calculate stat modifiers from equipped mods (MATCHES IN-GAME)
+    var stat_mods = CalculateStatModsFromLoadout(loadout);
     
-	    var final_hp = char_stats.hp_max + stat_mods.hp;
-	    var final_atk = char_stats.attack_base + stat_mods.attack;
-	    var final_spd = char_stats.move_speed + stat_mods.speed;
+    // Calculate final stats (same formula as CalculateCachedStats)
+    var final_hp = floor((char_stats.hp_max + stat_mods.hp_bonus) * stat_mods.hp_mult);
+    var final_atk = floor((char_stats.attack_base + stat_mods.attack_bonus) * stat_mods.attack_mult);
+    var final_spd = (char_stats.move_speed + stat_mods.speed_bonus) * stat_mods.speed_mult;
     
-	    // HP
-	    draw_set_color(c_white);
-	    draw_text(content_x, current_y, "HP:  " + string(final_hp));
-	    if (stat_mods.hp != 0) {
-	        draw_set_color(stat_mods.hp > 0 ? c_lime : c_red);
-	        draw_text(content_x + 60, current_y, "(" + (stat_mods.hp > 0 ? "+" : "") + string(stat_mods.hp) + ")");
-	    }
-	    current_y += 20;
+    // Calculate differences for display
+    var hp_diff = final_hp - char_stats.hp_max;
+    var atk_diff = final_atk - char_stats.attack_base;
+    var spd_diff = final_spd - char_stats.move_speed;
     
-	    // ATK
-	    draw_set_color(c_white);
-	    draw_text(content_x, current_y, "ATK: " + string(final_atk));
-	    if (stat_mods.attack != 0) {
-	        draw_set_color(stat_mods.attack > 0 ? c_lime : c_red);
-	        draw_text(content_x + 60, current_y, "(" + (stat_mods.attack > 0 ? "+" : "") + string(stat_mods.attack) + ")");
-	    }
-	    current_y += 20;
+    // HP
+    draw_set_color(c_white);
+    draw_text(content_x, current_y, "HP:  " + string(final_hp));
+    if (hp_diff != 0) {
+        draw_set_color(hp_diff > 0 ? c_lime : c_red);
+        draw_text(content_x + 60, current_y, "(" + (hp_diff > 0 ? "+" : "") + string(hp_diff) + ")");
+    }
+    current_y += 20;
     
-	    // SPD
-	    draw_set_color(c_white);
-	    draw_text(content_x, current_y, "SPD: " + string_format(final_spd, 1, 1));
-	    if (stat_mods.speed != 0) {
-	        draw_set_color(stat_mods.speed > 0 ? c_lime : c_red);
-	        draw_text(content_x + 60, current_y, "(" + (stat_mods.speed > 0 ? "+" : "") + string_format(stat_mods.speed, 1, 1) + ")");
-	    }
+    // ATK
+    draw_set_color(c_white);
+    draw_text(content_x, current_y, "ATK: " + string(final_atk));
+    if (atk_diff != 0) {
+        draw_set_color(atk_diff > 0 ? c_lime : c_red);
+        draw_text(content_x + 60, current_y, "(" + (atk_diff > 0 ? "+" : "") + string(atk_diff) + ")");
+    }
+    current_y += 20;
+    
+    // SPD
+    draw_set_color(c_white);
+    draw_text(content_x, current_y, "SPD: " + string_format(final_spd, 1, 2));
+    if (abs(spd_diff) > 0.01) {
+        draw_set_color(spd_diff > 0 ? c_lime : c_red);
+        draw_text(content_x + 60, current_y, "(" + (spd_diff > 0 ? "+" : "") + string_format(spd_diff, 1, 2) + ")");
+    }
 	}
 
 /// @function CalculateStatModsFromLoadout(_loadout)
+/// @description Calculate stat changes from equipped loadout mods (matches in-game calculation)
 static CalculateStatModsFromLoadout = function(_loadout) {
-    var mods = { hp: 0, attack: 0, speed: 0 };
+    // Initialize multipliers and bonuses
+    var damage_bonus = 0;
+    var damage_mult = 1.0;
+    var speed_bonus = 0;
+    var speed_mult = 1.0;
+    var max_hp_bonus = 0;
+    var max_hp_mult = 1.0;
     
+    // Loop through loadout
     for (var i = 0; i < array_length(_loadout); i++) {
         if (_loadout[i] == "" || _loadout[i] == noone) continue;
         
         var node = global.SkillTree[$ _loadout[i]];
         if (node == noone) continue;
-        if (!variable_struct_exists(node, "mod_id")) continue;
         
-        var mod_id = node.mod_id;
+        // Get the modifier key from the node
+        var modifier_key = GetModifierKeyFromNodeId(_loadout[i]);
+        if (modifier_key == undefined) continue;
         
-        // Check against PreGameMod enum values
-        if (mod_id == PreGameMod.STAT_HP) mods.hp += 10; // +10% as per your definition
-        if (mod_id == PreGameMod.STAT_DAMAGE) mods.attack += 10; // +10%
-        if (mod_id == PreGameMod.STAT_SPEED) mods.speed += 10; // +10%
+        // Get the modifier template
+        var mod_template = global.Modifiers[$ modifier_key];
+        if (mod_template == noone) continue;
         
-        // Add other stat mods if you have them
+        // Check if modifier has stats
+        if (!variable_struct_exists(mod_template, "stats")) continue;
+        
+        var stats = mod_template.stats;
+        var stack = 1; // Loadout mods are always stack level 1
+        
+        // Apply stat bonuses (same logic as CalculateCachedStats)
+        if (variable_struct_exists(stats, "damage_bonus")) {
+            damage_bonus += GetStackedValue(stats.damage_bonus, stack);
+        }
+        if (variable_struct_exists(stats, "damage_mult")) {
+            damage_mult *= GetStackedValue(stats.damage_mult, stack);
+        }
+        if (variable_struct_exists(stats, "speed_bonus")) {
+            speed_bonus += GetStackedValue(stats.speed_bonus, stack);
+        }
+        if (variable_struct_exists(stats, "speed_mult")) {
+            speed_mult *= GetStackedValue(stats.speed_mult, stack);
+        }
+        if (variable_struct_exists(stats, "max_hp_bonus")) {
+            max_hp_bonus += GetStackedValue(stats.max_hp_bonus, stack);
+        }
+        if (variable_struct_exists(stats, "max_hp_mult")) {
+            max_hp_mult *= GetStackedValue(stats.max_hp_mult, stack);
+        }
     }
     
-    return mods;
+    // Return the calculated bonuses/multipliers
+    return {
+        hp_bonus: max_hp_bonus,
+        hp_mult: max_hp_mult,
+        attack_bonus: damage_bonus,
+        attack_mult: damage_mult,
+        speed_bonus: speed_bonus,
+        speed_mult: speed_mult
+    };
 }
 
 	/// ==========================================
@@ -1103,80 +1253,150 @@ static CalculateStatModsFromLoadout = function(_loadout) {
 	    draw_text(content_x + content_width/2, current_y, "Press ENTER to change weapon");
 	}
 
-	/// @function DrawWeaponSelectPopup(_cx, _cy)
-	static DrawWeaponSelectPopup = function(_cx, _cy) {
-	    var unlocked = GetUnlockedWeaponsForCharacter(selected_character_class);
+/// @function DrawWeaponSelectPopup(_cx, _cy)
+static DrawWeaponSelectPopup = function(_cx, _cy) {
+    var unlocked = GetUnlockedWeaponsForCharacter(selected_character_class);
+    var max_visible = weapon_popup_max_visible;
     
-	    var popup_w = 400;
-	    var popup_h = min(450, 120 + (array_length(unlocked) * 60));
-	    var popup_x = _cx - popup_w / 2;
-	    var popup_y = _cy - popup_h / 2;
+    var popup_w = 400;
+    var item_height = 50;
+    var popup_h = 120 + (min(array_length(unlocked), max_visible) * item_height) + 60;
+    var popup_x = _cx - popup_w / 2;
+    var popup_y = _cy - popup_h / 2;
     
-	    // Dark overlay
-	    draw_set_alpha(0.7);
-	    draw_set_color(c_black);
-	    draw_rectangle(0, 0, display_get_gui_width(), display_get_gui_height(), false);
-	    draw_set_alpha(1);
+    // Dark overlay
+    draw_set_alpha(0.7);
+    draw_set_color(c_black);
+    draw_rectangle(0, 0, display_get_gui_width(), display_get_gui_height(), false);
+    draw_set_alpha(1);
     
-	    // Popup background
-	    draw_set_color(c_dkgray);
-	    draw_rectangle(popup_x, popup_y, popup_x + popup_w, popup_y + popup_h, false);
-	    draw_set_color(c_white);
-	    draw_rectangle(popup_x, popup_y, popup_x + popup_w, popup_y + popup_h, true);
+    // Popup background
+    draw_set_alpha(0.95);
+    draw_set_color(c_black);
+    draw_rectangle(popup_x, popup_y, popup_x + popup_w, popup_y + popup_h, false);
+    draw_set_alpha(1);
     
-	    // Title
-	    draw_set_halign(fa_center);
-	    draw_set_valign(fa_top);
-	    draw_set_font(fnt_large);
-	    draw_set_color(c_yellow);
-	    draw_text(_cx, popup_y + 15, "SELECT WEAPON");
+    draw_set_alpha(0.9);
+    draw_set_color(c_dkgray);
+    draw_rectangle(popup_x + 5, popup_y + 5, popup_x + popup_w - 5, popup_y + popup_h - 5, false);
+    draw_set_alpha(1);
     
-	    draw_set_font(fnt_default);
-	    draw_set_color(c_ltgray);
-	    draw_text(_cx, popup_y + 45, "For Slot " + string(selected_weapon_slot + 1));
+    // Border
+    draw_set_color(c_white);
+    draw_rectangle(popup_x, popup_y, popup_x + popup_w, popup_y + popup_h, true);
+    draw_set_color(c_yellow);
+    draw_rectangle(popup_x + 1, popup_y + 1, popup_x + popup_w - 1, popup_y + popup_h - 1, true);
     
-	    // Weapon list
-	    var list_y = popup_y + 80;
-	    var item_height = 50;
+    // Title
+    draw_set_halign(fa_center);
+    draw_set_valign(fa_top);
+    draw_set_font(fnt_large);
+    draw_set_color(c_yellow);
+    draw_text(_cx, popup_y + 15, "SELECT WEAPON");
     
-	    for (var i = 0; i < array_length(unlocked); i++) {
-	        var weapon = unlocked[i];
-	        var item_y = list_y + (i * item_height);
-	        var is_selected = (weapon_popup_selected == i);
-	        var is_equipped = IsWeaponEquipped(weapon, active_loadout_weapons);
+    draw_set_font(fnt_default);
+    draw_set_color(c_ltgray);
+    draw_text(_cx, popup_y + 45, "For Slot " + string(selected_weapon_slot + 1));
+    
+    // Weapon list area
+    var list_y = popup_y + 80;
+    
+    // UP ARROW if can scroll up
+    if (weapon_popup_scroll_offset > 0) {
+        draw_set_color(c_yellow);
+        draw_set_halign(fa_center);
+        draw_set_valign(fa_middle);
+        var arrow_y = list_y - 20;
         
-	        // Highlight selected
-	        if (is_selected) {
-	            draw_set_alpha(0.3);
-	            draw_set_color(c_yellow);
-	            draw_rectangle(popup_x + 10, item_y - 5, 
-	                          popup_x + popup_w - 10, item_y + item_height - 10, false);
-	            draw_set_alpha(1);
-	        }
+        // Arrow background
+        draw_set_alpha(0.3);
+        draw_rectangle(popup_x + popup_w/2 - 30, arrow_y - 10, 
+                      popup_x + popup_w/2 + 30, arrow_y + 10, false);
+        draw_set_alpha(1);
         
-	        // Weapon sprite
-	        var weapon_sprite = GetWeaponSprite(weapon);
-	        if (sprite_exists(weapon_sprite)) {
-	            draw_sprite_ext(weapon_sprite, 0, popup_x + 40, item_y + 15,
-	                           0.8, 0.8, 0, c_white, 1);
-	        }
+        // Draw triangle pointing up
+        draw_triangle(popup_x + popup_w/2 - 15, arrow_y + 5,
+                     popup_x + popup_w/2 + 15, arrow_y + 5,
+                     popup_x + popup_w/2, arrow_y - 10, false);
         
-	        // Weapon name
-	        draw_set_halign(fa_left);
-	        draw_set_color(is_equipped ? c_lime : c_white);
-	        draw_text(popup_x + 80, item_y + 8, GetWeaponName(weapon));
-        
-	        if (is_equipped) {
-	            draw_set_halign(fa_right);
-	            draw_text(popup_x + popup_w - 20, item_y + 8, "[EQUIPPED]");
-	        }
-	    }
+        draw_text(popup_x + popup_w/2, arrow_y + 20, "MORE (" + string(weapon_popup_scroll_offset) + ")");
+    }
     
-	    // Instructions
-	    draw_set_halign(fa_center);
-	    draw_set_color(c_ltgray);
-	    draw_text(_cx, popup_y + popup_h - 25, "[W/S] Navigate  [ENTER] Select  [ESC] Cancel");
-	}
+    // Draw visible weapons
+    for (var i = 0; i < min(max_visible, array_length(unlocked) - weapon_popup_scroll_offset); i++) {
+        var weapon_index = i + weapon_popup_scroll_offset;
+        var weapon = unlocked[weapon_index];
+        var item_y = list_y + (i * item_height);
+        var is_selected = (weapon_popup_selected == weapon_index);
+        var is_equipped = IsWeaponEquipped(weapon, active_loadout_weapons);
+        
+        // Highlight selected
+        if (is_selected) {
+            draw_set_alpha(0.4);
+            draw_set_color(c_yellow);
+            draw_rectangle(popup_x + 10, item_y - 5, 
+                          popup_x + popup_w - 10, item_y + item_height - 10, false);
+            draw_set_alpha(1);
+            
+            draw_set_color(c_white);
+            draw_rectangle(popup_x + 10, item_y - 5, 
+                          popup_x + popup_w - 10, item_y + item_height - 10, true);
+        }
+        
+        // Weapon sprite
+        var weapon_sprite = GetWeaponSprite(weapon);
+        if (sprite_exists(weapon_sprite)) {
+            draw_sprite_ext(weapon_sprite, 0, popup_x + 40, item_y + 15,
+                           0.8, 0.8, 0, c_white, 1);
+        }
+        
+        // Weapon name
+        draw_set_halign(fa_left);
+        draw_set_color(is_equipped ? c_lime : c_white);
+        draw_text(popup_x + 80, item_y + 8, GetWeaponName(weapon));
+        
+        if (is_equipped) {
+            draw_set_halign(fa_right);
+            draw_set_color(c_lime);
+            draw_text(popup_x + popup_w - 20, item_y + 8, "[EQUIPPED]");
+        }
+        
+        draw_set_halign(fa_left);
+        draw_set_color(c_gray);
+        draw_text(popup_x + 80, item_y + 25, "DMG: 10  SPD: 1.0");
+    }
+    
+    // DOWN ARROW if more items below
+    var remaining = array_length(unlocked) - (weapon_popup_scroll_offset + max_visible);
+    if (remaining > 0) {
+        draw_set_color(c_yellow);
+        draw_set_halign(fa_center);
+        draw_set_valign(fa_middle);
+        var arrow_y = list_y + (max_visible * item_height) + 20;
+        
+        // Arrow background
+        draw_set_alpha(0.3);
+        draw_rectangle(popup_x + popup_w/2 - 30, arrow_y - 10, 
+                      popup_x + popup_w/2 + 30, arrow_y + 10, false);
+        draw_set_alpha(1);
+        
+        // Draw triangle pointing down
+        draw_triangle(popup_x + popup_w/2 - 15, arrow_y - 5,
+                     popup_x + popup_w/2 + 15, arrow_y - 5,
+                     popup_x + popup_w/2, arrow_y + 10, false);
+        
+        draw_text(popup_x + popup_w/2, arrow_y - 20, "MORE (" + string(remaining) + ")");
+    }
+    
+    // Instructions
+    draw_set_halign(fa_center);
+    draw_set_color(c_white);
+    draw_text(_cx, popup_y + popup_h - 25, "[W/S] Navigate  [SCROLL] Browse  [ENTER] Select  [ESC] Cancel");
+    
+    draw_set_halign(fa_left);
+    draw_set_valign(fa_top);
+}
+
 
 /// ==========================================
 /// RIGHT COLUMN: MODS
@@ -1218,17 +1438,22 @@ static CalculateStatModsFromLoadout = function(_loadout) {
 	    var max_visible = cols * 3; // 3 rows visible
     
 	    for (var i = 0; i < min(max_visible, array_length(available_mods)); i++) {
-	        var mod_id = available_mods[i + loadout_scroll_offset];
-	        if (mod_id == undefined) break;
-        
-	        var node = global.SkillTree[$ mod_id];
-	        if (node == noone) continue;
-        
-	        var col = i mod cols;
-	        var row = floor(i / cols);
-        
-	        var card_x = grid_start_x + spacing_x + (col * (card_width + spacing_x));
-	        var card_y = current_y + (row * (card_height + spacing_y));
+	    var mod_idx = i + loadout_scroll_offset;
+    
+	    // IMPORTANT: Add this bounds check
+	    if (mod_idx >= array_length(available_mods)) break;
+    
+	    var mod_id = available_mods[mod_idx];
+	    if (mod_id == undefined) break;
+    
+	    var node = global.SkillTree[$ mod_id];
+	    if (node == noone) continue;
+    
+	    var col = i mod cols;
+	    var row = floor(i / cols);
+    
+	    var card_x = grid_start_x + spacing_x + (col * (card_width + spacing_x));
+    var card_y = current_y + (row * (card_height + spacing_y));
         
 	        var is_equipped = IsModEquipped(mod_id, global.SaveData.career.active_loadout);
 	        var is_selected = (selected_mod_index == i && selected_column == 2);
@@ -1281,23 +1506,64 @@ static CalculateStatModsFromLoadout = function(_loadout) {
 	/// INPUT HANDLING - FIXED WITH PROPER INPUT SYSTEM
 	/// ==========================================
 
-	/// @function HandleLoadoutSelect(_input, _audio, _mx, _my)
-	static HandleLoadoutSelect = function(_input, _audio, _mx, _my) {
+/// @function HandleLoadoutSelect(_input, _audio, _mx, _my)
+static HandleLoadoutSelect = function(_input, _audio, _mx, _my) {
     
-	    // Handle weapon popup separately
-	    if (weapon_select_open) {
-	        HandleWeaponPopupInput(_input, _audio, _mx, _my);
-	        return;
-	    }
+    // Handle weapon panel if it's active
+    if (weapon_select_active) {
+        HandleWeaponPopupInput(_input, _audio, _mx, _my);
+        return;
+    }
     
-	    // MOUSE INPUT - Check all clickable areas first
-	    if (_input.FirePress) {
-	        // Check weapon slots
-	        if (HandleWeaponSlotClicks(_mx, _my, _audio)) return;
+    // MOUSE WHEEL SCROLLING FOR MODS
+var available_mods = GetAvailableModsForCharacter(selected_character_class);
+if (array_length(available_mods) > 0) {
+    var wheel = mouse_wheel_up() - mouse_wheel_down();
+    if (wheel != 0) {
+        var cols = LOADOUT_MODS_PER_ROW;
+        var max_visible = cols * 3;
         
-	        // Check mod cards
-	        if (HandleModCardClicks(_mx, _my, _audio)) return;
-	    }
+        // Calculate the maximum valid scroll offset
+        var max_scroll_offset = max(0, array_length(available_mods) - max_visible);
+        
+        loadout_scroll_offset -= wheel * cols;
+        loadout_scroll_offset = clamp(loadout_scroll_offset, 0, max_scroll_offset);
+        _audio.PlayUISound(snd_menu_hover);
+    }
+}
+    
+    // Handle X button clicks on equipped mods
+    if (_input.FirePress && variable_struct_exists(self, "mod_x_buttons")) {
+        for (var i = 0; i < array_length(mod_x_buttons); i++) {
+            if (mod_x_buttons[i] != undefined) {
+                var btn = mod_x_buttons[i];
+                if (point_in_rectangle(_mx, _my, btn.x1, btn.y1, btn.x2, btn.y2)) {
+                    // Remove mod from loadout
+                    global.SaveData.career.active_loadout[i] = noone;
+                    _audio.PlayUISound(snd_menu_select);
+                    return;
+                }
+            }
+        }
+    }
+    
+    // Open weapon panel when clicking weapon slots
+    if (_input.FirePress) {
+    if (HandleWeaponSlotClicks(_mx, _my, _audio)) {
+        weapon_select_active = true;
+        // Position panel to the right of the mod area
+        weapon_panel_target_x = display_get_gui_width() * 0.5; // Middle-right of screen
+        weapon_panel_selected = 0;
+        return;
+    }
+        // Check mod cards with right-click to remove
+        if (HandleModCardClicks(_mx, _my, _audio)) return;
+    }
+    
+    // RIGHT CLICK to remove mods from grid
+    if (mouse_check_button_pressed(mb_right)) {
+        HandleModRightClick(_mx, _my, _audio);
+    }
     
 	    // KEYBOARD/GAMEPAD NAVIGATION
 	    // Use TAB to switch between weapons and mods sections
@@ -1340,6 +1606,178 @@ static CalculateStatModsFromLoadout = function(_loadout) {
 	    }
 	}
 
+
+/// @function HandleWeaponPopupInput(_input, _audio, _mx, _my)
+static HandleWeaponPopupInput = function(_input, _audio, _mx, _my) {
+    var unlocked = GetUnlockedWeaponsForCharacter(selected_character_class);
+    var cx = display_get_gui_width() / 2;
+    var cy = display_get_gui_height() / 2;
+    
+    var popup_w = 400;
+    var max_visible = weapon_popup_max_visible;
+    var item_height = 50;
+    var popup_h = 120 + (min(array_length(unlocked), max_visible) * item_height) + 60; // Extra space for arrows
+    var popup_x = cx - popup_w / 2;
+    var popup_y = cy - popup_h / 2;
+    
+    // KEYBOARD/GAMEPAD - Navigate popup list
+    if (_input.UpPress) {
+        if (weapon_popup_selected > 0) {
+            weapon_popup_selected--;
+            // Scroll up if needed
+            if (weapon_popup_selected < weapon_popup_scroll_offset) {
+                weapon_popup_scroll_offset = weapon_popup_selected;
+            }
+            _audio.PlayUISound(snd_menu_hover);
+        }
+    }
+    
+    if (_input.DownPress) {
+        if (weapon_popup_selected < array_length(unlocked) - 1) {
+            weapon_popup_selected++;
+            // Scroll down if needed
+            if (weapon_popup_selected >= weapon_popup_scroll_offset + max_visible) {
+                weapon_popup_scroll_offset = weapon_popup_selected - max_visible + 1;
+            }
+            _audio.PlayUISound(snd_menu_hover);
+        }
+    }
+    
+    // Mouse wheel scrolling
+    var wheel = mouse_wheel_up() - mouse_wheel_down();
+    if (wheel != 0) {
+        weapon_popup_scroll_offset -= wheel;
+        weapon_popup_scroll_offset = clamp(weapon_popup_scroll_offset, 0, max(0, array_length(unlocked) - max_visible));
+        _audio.PlayUISound(snd_menu_hover);
+    }
+    
+    // Select weapon with Action button (Enter)
+    if (_input.Action) {
+        var selected_weapon = unlocked[weapon_popup_selected];
+        active_loadout_weapons[selected_weapon_slot] = selected_weapon;
+        weapon_select_active = false;
+        weapon_popup_scroll_offset = 0; // Reset scroll
+        _audio.PlayUISound(snd_menu_select);
+        return;
+    }
+    
+    // Cancel with Back/Escape
+    if (_input.Back || _input.Escape) {
+        weapon_select_active = false;
+        weapon_popup_scroll_offset = 0; // Reset scroll
+        _audio.PlayUISound(snd_menu_select);
+        return;
+    }
+    
+    // MOUSE INPUT - Check clicks on visible weapon list
+    var list_y = popup_y + 80;
+    
+    for (var i = 0; i < min(max_visible, array_length(unlocked) - weapon_popup_scroll_offset); i++) {
+        var weapon_index = i + weapon_popup_scroll_offset;
+        var item_y = list_y + (i * item_height);
+        
+        if (point_in_rectangle(_mx, _my,
+            popup_x + 10, item_y - 5,
+            popup_x + popup_w - 10, item_y + item_height - 10)) {
+            
+            // Hover
+            if (weapon_popup_selected != weapon_index) {
+                weapon_popup_selected = weapon_index;
+                _audio.PlayUISound(snd_menu_hover);
+            }
+            
+            // Click to select
+            if (_input.FirePress) {
+                var selected_weapon = unlocked[weapon_index];
+                active_loadout_weapons[selected_weapon_slot] = selected_weapon;
+                weapon_select_active = false;
+                weapon_popup_scroll_offset = 0;
+                _audio.PlayUISound(snd_menu_select);
+                return;
+            }
+        }
+    }
+    
+    // Click on scroll arrows
+    var arrow_up_y = list_y - 30;
+    var arrow_down_y = list_y + (max_visible * item_height) + 10;
+    
+    // Up arrow
+    if (weapon_popup_scroll_offset > 0) {
+        if (point_in_rectangle(_mx, _my, popup_x + popup_w/2 - 30, arrow_up_y, 
+                              popup_x + popup_w/2 + 30, arrow_up_y + 25)) {
+            if (_input.FirePress) {
+                weapon_popup_scroll_offset = max(0, weapon_popup_scroll_offset - 1);
+                _audio.PlayUISound(snd_menu_hover);
+            }
+        }
+    }
+    
+    // Down arrow
+    if (weapon_popup_scroll_offset < array_length(unlocked) - max_visible) {
+        if (point_in_rectangle(_mx, _my, popup_x + popup_w/2 - 30, arrow_down_y, 
+                              popup_x + popup_w/2 + 30, arrow_down_y + 25)) {
+            if (_input.FirePress) {
+                weapon_popup_scroll_offset = min(array_length(unlocked) - max_visible, 
+                                                weapon_popup_scroll_offset + 1);
+                _audio.PlayUISound(snd_menu_hover);
+            }
+        }
+    }
+    
+    // Click outside popup to close
+    if (_input.FirePress) {
+        if (!point_in_rectangle(_mx, _my, popup_x, popup_y, popup_x + popup_w, popup_y + popup_h)) {
+            weapon_select_active = false;
+            weapon_popup_scroll_offset = 0;
+            _audio.PlayUISound(snd_menu_select);
+            return;
+        }
+    }
+}
+
+
+/// @function HandleModRightClick(_mx, _my, _audio)
+static HandleModRightClick = function(_mx, _my, _audio) {
+    var available_mods = GetAvailableModsForCharacter(selected_character_class);
+    var gui_w = display_get_gui_width();
+    var mods_x = 60 + (gui_w * 0.15) + (gui_w * 0.35);
+    var content_x = mods_x + 20;
+    var current_y = 110;
+    
+    var cols = LOADOUT_MODS_PER_ROW;
+    var max_visible = cols * 3;
+    
+    // Check each visible mod card
+    for (var i = 0; i < min(max_visible, array_length(available_mods) - loadout_scroll_offset); i++) {
+        var mod_idx = i + loadout_scroll_offset;
+        var mod_id = available_mods[mod_idx];
+        if (mod_id == undefined) break;
+        
+        var col = i mod cols;
+        var row = floor(i / cols);
+        
+        var card_x = content_x + (col * (LOADOUT_MOD_CARD_WIDTH + 10));
+        var card_y = current_y + (row * (LOADOUT_MOD_CARD_HEIGHT + 10));
+        
+        if (point_in_rectangle(_mx, _my, card_x, card_y, 
+            card_x + LOADOUT_MOD_CARD_WIDTH, card_y + LOADOUT_MOD_CARD_HEIGHT)) {
+            
+            // If mod is equipped, remove it
+            var loadout = global.SaveData.career.active_loadout;
+            for (var j = 0; j < array_length(loadout); j++) {
+                if (loadout[j] == mod_id) {
+                    loadout[j] = noone;
+                    _audio.PlayUISound(snd_menu_select);
+                    return;
+                }
+            }
+        }
+    }
+}
+
+
+
 	/// ==========================================
 	/// MOUSE CLICK HANDLERS
 	/// ==========================================
@@ -1370,7 +1808,7 @@ static CalculateStatModsFromLoadout = function(_loadout) {
             
 	            selected_column = 1;
 	            selected_weapon_slot = i;
-	            weapon_select_open = true;
+	            weapon_select_active = true;
 	            weapon_popup_selected = 0;
 	            _audio.PlayUISound(snd_menu_select);
 	            return true;
@@ -1451,7 +1889,7 @@ static CalculateStatModsFromLoadout = function(_loadout) {
     
 	    // Open weapon select popup with Action button
 	    if (_input.Action) {
-	        weapon_select_open = true;
+	        weapon_select_active = true;
 	        weapon_popup_selected = 0;
 	        _audio.PlayUISound(snd_menu_select);
 	    }
@@ -1462,63 +1900,6 @@ static CalculateStatModsFromLoadout = function(_loadout) {
 	            active_loadout_weapons[selected_weapon_slot] = noone;
 	            _audio.PlayUISound(snd_menu_select);
 	        }
-	    }
-	}
-
-	/// @function HandleWeaponPopupInput(_input, _audio, _mx, _my)
-	static HandleWeaponPopupInput = function(_input, _audio, _mx, _my) {
-	    var unlocked = GetUnlockedWeaponsForCharacter(selected_character_class);
-	    var cx = display_get_gui_width() / 2;
-	    var cy = display_get_gui_height() / 2;
-    
-	    var popup_w = 400;
-	    var popup_h = min(450, 120 + (array_length(unlocked) * 60));
-	    var popup_x = cx - popup_w / 2;
-	    var popup_y = cy - popup_h / 2;
-    
-	    // MOUSE INPUT - Check clicks on weapon list
-	    if (_input.FirePress) {
-	        var list_y = popup_y + 80;
-	        var item_height = 50;
-        
-	        for (var i = 0; i < array_length(unlocked); i++) {
-	            var item_y = list_y + (i * item_height);
-            
-	            if (point_in_rectangle(_mx, _my,
-	                popup_x + 10, item_y - 5,
-	                popup_x + popup_w - 10, item_y + item_height - 10)) {
-                
-	                var selected_weapon = unlocked[i];
-	                active_loadout_weapons[selected_weapon_slot] = selected_weapon;
-	                weapon_select_open = false;
-	                _audio.PlayUISound(snd_menu_select);
-	                return;
-	            }
-	        }
-	    }
-    
-	    // KEYBOARD/GAMEPAD - Navigate popup list
-	    if (_input.UpPress && weapon_popup_selected > 0) {
-	        weapon_popup_selected--;
-	        _audio.PlayUISound(snd_menu_hover);
-	    }
-	    if (_input.DownPress && weapon_popup_selected < array_length(unlocked) - 1) {
-	        weapon_popup_selected++;
-	        _audio.PlayUISound(snd_menu_hover);
-	    }
-    
-	    // Select weapon with Action button
-	    if (_input.Action) {
-	        var selected_weapon = unlocked[weapon_popup_selected];
-	        active_loadout_weapons[selected_weapon_slot] = selected_weapon;
-	        weapon_select_open = false;
-	        _audio.PlayUISound(snd_menu_select);
-	    }
-    
-	    // Cancel with Back/Escape
-	    if (_input.Back || _input.Escape) {
-	        weapon_select_open = false;
-	        _audio.PlayUISound(snd_menu_select);
 	    }
 	}
 
@@ -1791,98 +2172,7 @@ static CalculateStatModsFromLoadout = function(_loadout) {
 
 	}
 
-	///// @function DrawCharacterCard(_index, _x, _y, _scale, _alpha, _is_selected)
-	//static DrawCharacterCard = function(_index, _x, _y, _scale, _alpha, _is_selected) {
-	//    var char_data = class_options[_index];
-	//    var unlocked = IsCharacterUnlocked(char_data.type);
-	//    var char_stats = GetCharacterStats(char_data.type);
-    
-	//    var alpha = menu_alpha * _alpha;
-    
-	//    // Card dimensions
-	//    var card_width = 200 * _scale;
-	//    var card_height = 280 * _scale;
-    
-	//    // Card background
-	//    var card_alpha = unlocked ? 0.7 : 0.3;
-	//    draw_set_alpha(alpha * card_alpha);
-    
-	//    var card_color = unlocked ? char_data.color : c_dkgray;
-	//    draw_rectangle_color(
-	//        _x - card_width/2, _y - card_height/2,
-	//        _x + card_width/2, _y + card_height/2,
-	//        card_color, card_color, c_black, c_black, false
-	//    );
-    
-	//    // Border
-	//    draw_set_alpha(alpha);
-	//    if (_is_selected) {
-	//        // Selected: bright yellow glow
-	//        for (var t = 0; t < 4; t++) {
-	//            draw_set_color(c_yellow);
-	//            draw_rectangle(
-	//                _x - card_width/2 - t, _y - card_height/2 - t,
-	//                _x + card_width/2 + t, _y + card_height/2 + t,
-	//                true
-	//            );
-	//        }
-	//    } else {
-	//        // Not selected: single border
-	//        draw_set_color(char_data.color);
-	//        draw_rectangle(
-	//            _x - card_width/2, _y - card_height/2,
-	//            _x + card_width/2, _y + card_height/2,
-	//            true
-	//        );
-	//    }
-    
-	//    // Character sprite
-	//    if (unlocked) {
-	//        draw_set_alpha(alpha * 0.7);
-	//        draw_set_color(char_data.color);
-	//        draw_circle(_x, _y - 40 * _scale, 40 * _scale, false);
-	//        draw_set_alpha(alpha);
-	//        draw_sprite_ext(char_data.sprite, 0, _x, _y - 40 * _scale, 
-	//                       _scale, _scale, 0, c_white, alpha);
-	//    } else {
-	//        draw_set_alpha(alpha * 0.3);
-	//        draw_set_color(char_data.color);
-	//        draw_circle(_x, _y - 40 * _scale, 30 * _scale, false);
-	//        draw_set_alpha(alpha);
-	//        draw_sprite_ext(char_data.sprite, 0, _x, _y - 40 * _scale, 
-	//                       _scale, _scale, 0, c_black, alpha);
-	//    }
-    
-	//    draw_set_alpha(alpha);
-    
-	//    // Text - only on selected
-	//    if (_is_selected) {
-	//        draw_set_font(fnt_default);
-	//        draw_set_color(unlocked ? c_white : c_gray);
-	//        draw_text(_x, _y + 50 * _scale, char_data.name);
-        
-	//        draw_set_color(c_ltgray);
-	//        draw_text_ext(_x, _y + 70 * _scale, char_data.desc, 14, 150);
-        
-	//        // Stats
-	//        if (unlocked) {
-	//            draw_set_halign(fa_left);
-	//            draw_set_color(c_white);
-	//            var stats_x = _x - 80 * _scale;
-	//            var stats_y = _y + 95 * _scale;
-            
-	//            draw_text(stats_x, stats_y, "HP: " + string(char_stats.hp_max));
-	//            draw_text(stats_x, stats_y + 18 * _scale, "ATK: " + string(char_stats.attack_base));
-	//            draw_text(stats_x, stats_y + 36 * _scale, "SPD: " + string(char_stats.move_speed));
-            
-	//            draw_set_halign(fa_center);
-	//        } else {
-	//            draw_set_color(c_red);
-	//            draw_text(_x, _y + 100 * _scale, "LOCKED");
-	//        }
-	//    }
-	//}
-
+	
 /// @function DrawCharacterCard(_index, _x, _y, _scale, _alpha, _is_selected)
 static DrawCharacterCard = function(_index, _x, _y, _scale, _alpha, _is_selected) {
     var char_data = class_options[_index];
@@ -1895,7 +2185,7 @@ static DrawCharacterCard = function(_index, _x, _y, _scale, _alpha, _is_selected
     var card_width = 200 * _scale;
     var card_height = 340 * _scale;
     
-    // Card background - COLOR CODED (dkgray = unlocked, black = locked)
+    // Card background
     var card_alpha = unlocked ? 0.7 : 0.3;
     draw_set_alpha(alpha * card_alpha);
     
@@ -1908,7 +2198,7 @@ static DrawCharacterCard = function(_index, _x, _y, _scale, _alpha, _is_selected
     
     // Border
     draw_set_alpha(alpha);
-    var border_color = _is_selected ? c_yellow : (unlocked ? c_white : c_red);
+    var border_color = _is_selected ? c_yellow : (unlocked ? c_white : c_gray);
     draw_set_color(border_color);
     draw_rectangle(_x - card_width/2, _y - card_height/2,
                    _x + card_width/2, _y + card_height/2, true);
@@ -1932,7 +2222,7 @@ static DrawCharacterCard = function(_index, _x, _y, _scale, _alpha, _is_selected
         draw_sprite_ext(spr_lock_icon, 0, _x, portrait_y, _scale, _scale, 0, c_white, alpha);
     }
     
-    // Name
+    // Name (always show)
     draw_set_font(fnt_default);
     draw_set_halign(fa_center);
     draw_set_valign(fa_middle);
@@ -1940,123 +2230,166 @@ static DrawCharacterCard = function(_index, _x, _y, _scale, _alpha, _is_selected
     var name_y = portrait_y + portrait_size/2 + 15 * _scale;
     draw_text(_x, name_y, char_data.name);
     
-    // Description
-    draw_set_color(c_ltgray);
-    var desc_y = name_y + 20 * _scale;
-    draw_text_ext(_x, desc_y, char_data.desc, 10, 150 * _scale);
-    
-    if (unlocked) {
-        // Stats
-        draw_set_halign(fa_left);
-        draw_set_color(c_white);
-        var stats_x = _x - 80 * _scale;
-        var stats_y = desc_y + 30 * _scale;
-        
-        draw_text(stats_x, stats_y, "HP: " + string(char_stats.hp_max));
-        draw_text(stats_x, stats_y + 12 * _scale, "ATK: " + string(char_stats.attack_base));
-        draw_text(stats_x, stats_y + 24 * _scale, "SPD: " + string(char_stats.move_speed));
-        
-        // Loadout preview
-        var loadout = GetCharacterLoadoutPreview(char_data.type);
-        var loadout_y = stats_y + 45 * _scale;
-        
-        // WEAPONS
-        draw_set_halign(fa_center);
+    // ONLY show details for SELECTED card
+    if (_is_selected) {
+        // Description
         draw_set_color(c_ltgray);
-        draw_text(_x, loadout_y, "WEAPONS");
+        var desc_y = name_y + 20 * _scale;
+        draw_text_ext(_x, desc_y, char_data.desc, 10, 150 * _scale);
         
-        var weapon_icon_size = 24 * _scale;
-        var weapon_spacing = 30 * _scale;
-        var weapon_start_x = _x - weapon_spacing/2;
-        var weapon_y = loadout_y + 16 * _scale;
-        
-        for (var i = 0; i < 2; i++) {
-            var wx = weapon_start_x + (i * weapon_spacing);
+       if (unlocked) {
+            // Calculate stat modifiers from loadout (using proper function)
+            var char_loadout = GetCharacterLoadout(char_data.type);
+            var stat_mods = CalculateStatModsFromLoadout(char_loadout);
             
-            draw_set_alpha(alpha * 0.3);
-            draw_set_color(c_black);
-            draw_rectangle(wx - weapon_icon_size/2, weapon_y - weapon_icon_size/2,
-                         wx + weapon_icon_size/2, weapon_y + weapon_icon_size/2, false);
+            // Calculate final stats (same formula as in-game)
+            var final_hp = floor((char_stats.hp_max + stat_mods.hp_bonus) * stat_mods.hp_mult);
+            var final_atk = floor((char_stats.attack_base + stat_mods.attack_bonus) * stat_mods.attack_mult);
+            var final_spd = (char_stats.move_speed + stat_mods.speed_bonus) * stat_mods.speed_mult;
             
-            draw_set_alpha(alpha);
-            var slot_color = _is_selected ? c_yellow : c_gray;
-            draw_set_color(slot_color);
-            draw_rectangle(wx - weapon_icon_size/2, weapon_y - weapon_icon_size/2,
-                         wx + weapon_icon_size/2, weapon_y + weapon_icon_size/2, true);
+            // Calculate differences to check if modified
+            var hp_diff = final_hp - char_stats.hp_max;
+            var atk_diff = final_atk - char_stats.attack_base;
+            var spd_diff = final_spd - char_stats.move_speed;
             
-            if (i < array_length(loadout.weapons)) {
-                var weapon = loadout.weapons[i];
-                if (sprite_exists(weapon.sprite)) {
-                    draw_sprite_ext(weapon.sprite, 0, wx, weapon_y,
-                                  _scale * 0.5, _scale * 0.5, 0, c_white, alpha);
-                }
+            // Stats with color coding
+            draw_set_halign(fa_left);
+            var stats_x = _x - 80 * _scale;
+            var stats_y = desc_y + 30 * _scale;
+            
+            // HP (changes color if modified by mods)
+            draw_set_color(hp_diff != 0 ? c_lime : c_white);
+            draw_text(stats_x, stats_y, "HP: " + string(final_hp));
+            
+            // ATK (changes color if modified by mods)
+            draw_set_color(atk_diff != 0 ? c_lime : c_white);
+            draw_text(stats_x, stats_y + 12 * _scale, "ATK: " + string(final_atk));
+            
+            // SPD (changes color if modified by mods)
+            draw_set_color(abs(spd_diff) > 0.01 ? c_lime : c_white);
+            draw_text(stats_x, stats_y + 24 * _scale, "SPD: " + string_format(final_spd, 1, 1));
+            
+            // Loadout preview
+            var loadout_preview = GetCharacterLoadoutPreview(char_data.type);
+            var loadout_y = stats_y + 45 * _scale;
+            
+            // WEAPONS
+            draw_set_halign(fa_center);
+            draw_set_color(c_ltgray);
+            draw_text(_x, loadout_y, "WEAPONS");
+            
+            var weapon_icon_size = 24 * _scale;
+            var weapon_spacing = 30 * _scale;
+            var weapon_start_x = _x - weapon_spacing/2;
+            var weapon_y = loadout_y + 16 * _scale;
+            
+            for (var i = 0; i < 2; i++) {
+                var wx = weapon_start_x + (i * weapon_spacing);
                 
-                // Store hover region
-                array_push(weapon_hover_regions, {
-                    x1: wx - weapon_icon_size/2,
-                    y1: weapon_y - weapon_icon_size/2,
-                    x2: wx + weapon_icon_size/2,
-                    y2: weapon_y + weapon_icon_size/2,
-                    weapon: weapon,
-                    char_index: _index
-                });
-            }
-        }
-        
-        // MODS
-        var mod_y = weapon_y + 32 * _scale;
-        draw_set_color(c_ltgray);
-        draw_text(_x, mod_y, "MODS");
-        
-        var mod_icon_size = 18 * _scale;
-        var mod_spacing = 22 * _scale;
-        var mod_start_x = _x - (5 * mod_spacing) / 2 + mod_spacing/2;
-        var mod_row_y = mod_y + 14 * _scale;
-        
-        for (var i = 0; i < 5; i++) {
-            var mx = mod_start_x + (i * mod_spacing);
-            
-            draw_set_alpha(alpha * 0.3);
-            draw_set_color(c_black);
-            draw_rectangle(mx - mod_icon_size/2, mod_row_y - mod_icon_size/2,
-                         mx + mod_icon_size/2, mod_row_y + mod_icon_size/2, false);
-            
-            draw_set_alpha(alpha);
-            var is_equipped = (i < array_length(loadout.mods));
-            var mod_color = is_equipped ? (_is_selected ? c_lime : c_green) : c_gray;
-            draw_set_color(mod_color);
-            draw_rectangle(mx - mod_icon_size/2, mod_row_y - mod_icon_size/2,
-                         mx + mod_icon_size/2, mod_row_y + mod_icon_size/2, true);
-            
-            if (is_equipped) {
-                var _mod = loadout.mods[i];
-                if (sprite_exists(_mod.sprite)) {
-                    draw_sprite_ext(_mod.sprite, 0, mx, mod_row_y,
-                                  _scale * 0.3, _scale * 0.3, 0, _mod.color, alpha);
-                }
+                draw_set_alpha(alpha * 0.3);
+                draw_set_color(c_black);
+                draw_rectangle(wx - weapon_icon_size/2, weapon_y - weapon_icon_size/2,
+                             wx + weapon_icon_size/2, weapon_y + weapon_icon_size/2, false);
                 
-                // Store hover region
-                array_push(mod_hover_regions, {
-                    x1: mx - mod_icon_size/2,
-                    y1: mod_row_y - mod_icon_size/2,
-                    x2: mx + mod_icon_size/2,
-                    y2: mod_row_y + mod_icon_size/2,
-                    __mod: _mod,
-                    char_index: _index
-                });
+                draw_set_alpha(alpha);
+                var slot_color = _is_selected ? c_yellow : c_gray;
+                draw_set_color(slot_color);
+                draw_rectangle(wx - weapon_icon_size/2, weapon_y - weapon_icon_size/2,
+                             wx + weapon_icon_size/2, weapon_y + weapon_icon_size/2, true);
+                
+                if (i < array_length(loadout_preview.weapons)) {
+                    var weapon = loadout_preview.weapons[i];
+                    if (sprite_exists(weapon.sprite)) {
+                        draw_sprite_ext(weapon.sprite, 0, wx, weapon_y,
+                                      _scale * 0.5, _scale * 0.5, 0, c_white, alpha);
+                    }
+                    
+                    // Store hover region
+                    array_push(weapon_hover_regions, {
+                        x1: wx - weapon_icon_size/2,
+                        y1: weapon_y - weapon_icon_size/2,
+                        x2: wx + weapon_icon_size/2,
+                        y2: weapon_y + weapon_icon_size/2,
+                        weapon: weapon,
+                        char_index: _index
+                    });
+                }
             }
+            
+            // MODS
+            var mod_y = weapon_y + 32 * _scale;
+            draw_set_color(c_ltgray);
+            draw_text(_x, mod_y, "MODS");
+            
+            var mod_icon_size = 18 * _scale;
+            var mod_spacing = 22 * _scale;
+            var mod_start_x = _x - (5 * mod_spacing) / 2 + mod_spacing/2;
+            var mod_row_y = mod_y + 14 * _scale;
+            
+            for (var i = 0; i < 5; i++) {
+                var mx = mod_start_x + (i * mod_spacing);
+                
+                draw_set_alpha(alpha * 0.3);
+                draw_set_color(c_black);
+                draw_rectangle(mx - mod_icon_size/2, mod_row_y - mod_icon_size/2,
+                             mx + mod_icon_size/2, mod_row_y + mod_icon_size/2, false);
+                
+                draw_set_alpha(alpha);
+                var is_equipped = (i < array_length(loadout_preview.mods));
+                var mod_color = is_equipped ? (_is_selected ? c_lime : c_green) : c_gray;
+                draw_set_color(mod_color);
+                draw_rectangle(mx - mod_icon_size/2, mod_row_y - mod_icon_size/2,
+                             mx + mod_icon_size/2, mod_row_y + mod_icon_size/2, true);
+                
+                if (is_equipped) {
+                    var _mod = loadout_preview.mods[i];
+                    if (sprite_exists(_mod.sprite)) {
+                        draw_sprite_ext(_mod.sprite, 0, mx, mod_row_y,
+                                      _scale * 0.3, _scale * 0.3, 0, _mod.color, alpha);
+                    }
+                    
+                    // Store hover region  
+                    array_push(mod_hover_regions, {
+                        x1: mx - mod_icon_size/2,
+                        y1: mod_row_y - mod_icon_size/2,
+                        x2: mx + mod_icon_size/2,
+                        y2: mod_row_y + mod_icon_size/2,
+                        __mod: _mod,
+                        char_index: _index
+                    });
+                }
+            }
+        } else {
+            // LOCKED text for non-selected locked cards
+            draw_set_halign(fa_center);
+            draw_set_color(c_red);
+            var locked_y = _y + 80 * _scale;
+            draw_text(_x, locked_y, "UNLOCK IN");
+            draw_text(_x, locked_y + 16 * _scale, "SKILL TREE");
         }
-        
-    } else {
-        // LOCKED
+    } else if (!unlocked) {
+        // Simple LOCKED text for non-selected locked cards
         draw_set_halign(fa_center);
-        draw_set_color(c_red);
-        var locked_y = _y + 80 * _scale;
-        draw_text(_x, locked_y, "UNLOCK IN");
-        draw_text(_x, locked_y + 16 * _scale, "SKILL TREE");
+        draw_set_color(c_gray);
+        draw_text(_x, _y + 80 * _scale, "LOCKED");
     }
     
     draw_set_alpha(1);
+}
+
+/// @function CleanupParticles()
+static CleanupParticles = function() {
+    // Only cleanup if we're leaving the main menu
+    if (state != MENU_STATE.MAIN) {
+        if (part_system_exists(part_sys_menu_fire)) {
+            part_system_clear(part_sys_menu_fire);
+            
+            // Destroy emitters
+            for (var i = 0; i < array_length(fire_emitters); i++) {
+                part_emitter_destroy(part_sys_menu_fire, fire_emitters[i].emitter_id);
+            }
+        }
+    }
 }
 
 /// @function CheckLoadoutHovers(_mx, _my)

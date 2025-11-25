@@ -346,7 +346,7 @@ global.PreGameModifiers = {
         id: PreGameMod.STAT_DAMAGE,
         name: "Power Boost",
         description: "+10% Damage",
-        sprite: spr_mod_default,
+        sprite: spr_mod_attackup,
         damage_mult: 1.1
     },
     
@@ -354,7 +354,7 @@ global.PreGameModifiers = {
         id: PreGameMod.STAT_SPEED,
         name: "Agility Boost",
         description: "+10% Move Speed",
-        sprite: spr_mod_default,
+        sprite: spr_mod_speedboost,
         move_speed_mult: 1.1
     },
     
@@ -362,7 +362,7 @@ global.PreGameModifiers = {
         id: PreGameMod.INVESTOR,
         name: "Investor",
         description: "Gold generates 1% interest/sec (max 2x)",
-        sprite: spr_mod_default,
+        sprite: spr_mod_Investor,
         interest_rate: 0.01,
         interest_cap_mult: 2.0
     },
@@ -398,7 +398,7 @@ global.Modifiers.StatHP = {
     triggers: [MOD_TRIGGER.PASSIVE],
     synergy_tags: [SYNERGY_TAG.TANKY],
     
-    passive_stats: {
+    stats: {
         max_hp_mult: 1.10
     },
     
@@ -413,7 +413,7 @@ global.Modifiers.StatDamage = {
     triggers: [MOD_TRIGGER.PASSIVE],
     synergy_tags: [SYNERGY_TAG.STRENGTH],
     
-    passive_stats: {
+    stats: {
         damage_mult: 1.10
     },
     
@@ -428,7 +428,7 @@ global.Modifiers.StatSpeed = {
     triggers: [MOD_TRIGGER.PASSIVE],
     synergy_tags: [SYNERGY_TAG.SPEED],
     
-    passive_stats: {
+    stats: {
         speed_mult: 1.10
     },
     
@@ -464,7 +464,7 @@ global.Modifiers.MeteorStrike = {
     action: function(_entity, _event) {
         var mod_template = global.Modifiers[$ _event.mod_instance.template_key];
         
-        if (random(1) > mod_template.proc_chance) return;
+        if (!RollProc(mod_template.proc_chance, _entity)) return;
         
         // Spawn meteor at hit location
         if (variable_struct_exists(_event, "target") && instance_exists(_event.target)) {
