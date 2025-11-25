@@ -234,32 +234,30 @@ function DealExplosiveDamage(_x, _y, _radius, _damage, _source) {
     return hits;
 }
 
-
-// DEATH HANDLING
 /// @function HandleEnemyDeath(_enemy)
+/// @param {Id.Instance} _enemy The enemy that just died
 function HandleEnemyDeath(_enemy) {
     if (!instance_exists(obj_game_manager)) return;
-    if (!instance_exists(obj_player)) return;
+    if (!obj_enemy_controller.cached_player_exists) return;  // FIX
     
-    var damage_dealt = variable_instance_exists(_enemy, "total_damage_taken") ? _enemy.total_damage_taken : _enemy.maxHp;
+    // Get damage info
+    var damage_dealt = _enemy.maxHp;
     
-    // Score system
-    var score_earned = obj_game_manager.score_manager.RegisterKill(_enemy, damage_dealt, obj_player);
-    CreateScorePopup(_enemy.x, _enemy.y - 40, score_earned);
-    CreateStylePopups(_enemy, damage_dealt);
-    
-    // Drop rewards (with luck applied via RollDrop)
-    if (RollDrop(0.3)) instance_create_depth(_enemy.x, _enemy.y, 0, obj_exp);  // 30% + luck
-    if (RollDrop(0.1)) instance_create_depth(_enemy.x, _enemy.y, 0, obj_coin); // 10% + luck
-    if (RollDrop(0.05)) DropSouls(_enemy.x, _enemy.y, 1);                      // 5% + luck
-    
-    // Death particles
-    repeat(10) {
-        var p = instance_create_depth(_enemy.x, _enemy.y, -100, obj_particle);
-        p.direction = random(360);
-        p.speed = random_range(2, 5);
-        p.image_blend = c_red;
+    // Check if we tracked actual damage
+    if (variable_instance_exists(_enemy, "total_damage_taken")) {
+        damage_dealt = _enemy.total_damage_taken;
     }
     
-    // ON_KILL modifiers already triggered in enemy death detection
+    // Register kill with score manager
+    var score_earned = obj_game_manager.score_manager.RegisterKill(
+        _enemy,
+        damage_dealt,
+        obj_enemy_controller.cached_player_instance  // FIX
+    );
+    
+    // Create score popup
+    CreateScorePopup(_enemy.x, _enemy.y - 40, score_earned);
+    
+    // Create style popups
+    CreateStylePopups(_enemy, damage_dealt);
 }

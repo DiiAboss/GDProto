@@ -55,9 +55,9 @@ function CreateStylePopups(_enemy, _damage_dealt) {
     var y_offset = -60;
     
     // Perfect timing
-    if (cached_player_exists && 
-        variable_instance_exists(cached_player_instance, "last_timing_quality") &&
-        cached_player_instance.last_timing_quality == "perfect") {
+   if (obj_enemy_controller.cached_player_exists &&
+        variable_instance_exists(obj_enemy_controller.cached_player_instance, "last_timing_quality") &&
+        obj_enemy_controller.cached_player_instance.last_timing_quality == "perfect") {
         
         var popup = instance_create_depth(_enemy.x, _enemy.y + y_offset, -9999, obj_floating_text);
         popup.text = "PERFECT!";

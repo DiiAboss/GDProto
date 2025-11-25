@@ -343,12 +343,12 @@ function SelectionPopup(_x, _y, _options, _onSelect) constructor {
             draw_set_color(c_lime);
             draw_roundrect(badge_x - 20*sc, badge_y - 8*sc, badge_x + 20*sc, badge_y + 8*sc, false);
             draw_set_color(c_black);
-            draw_text_transformed(badge_x, badge_y, "UP", sc * 0.6, sc * 0.6, 0);
+            draw_text_transformed(badge_x, badge_y, "+", sc * 0.6, sc * 0.6, 0);
         } else {
             draw_set_color(c_yellow);
             draw_roundrect(badge_x - 22*sc, badge_y - 8*sc, badge_x + 22*sc, badge_y + 8*sc, false);
             draw_set_color(c_black);
-            draw_text_transformed(badge_x, badge_y, "NEW", sc * 0.55, sc * 0.55, 0);
+            draw_text_transformed(badge_x, badge_y, "!", sc * 0.55, sc * 0.55, 0);
         }
         
         // Description (selected only)

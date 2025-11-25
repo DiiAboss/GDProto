@@ -9,22 +9,34 @@
 
 global.SkillTree = {
     
-    // ==========================================
-    // ROOT - CENTER (400, 300)
-    // ==========================================
-    root: {
-        id: "root",
-        type: "character_unlock",
-        name: "Warrior",
-        description: "The first barbarian. Fury incarnate.",
-        character: CharacterClass.WARRIOR,
-        cost: 0,
-        unlocked: true,
-        position: {x: 400, y: 300},
-        connections: ["arsenal_path", "pregame_path", "character_path", "level_path", "prestige_path"],
-        sprite: spr_vh_walk_south
-    },
-    
+   // ==========================================
+// ROOT - THE DEAL
+// ==========================================
+root: {
+    id: "root",
+    type: "soul_contract",  // NEW TYPE
+    name: "SIGN THE CONTRACT",
+    description: "TARLHS demands a soul.\nYours will do nicely.\n\n[Unlocks: Baseball Player, Menu Access]",
+    cost: 0,
+    unlocked: false,  // STARTS LOCKED
+    position: {x: 400, y: 300},
+    connections: ["arsenal_path", "pregame_path", "character_path", "level_path", "back_button_unlock"],
+    sprite: spr_mod_default,
+    grants_character: CharacterClass.BASEBALL_PLAYER
+},
+
+back_button_unlock: {
+    id: "back_button_unlock",
+    type: "utility_unlock",
+    name: "ESCAPE CLAUSE",
+    description: "The ability to leave.\nTARLHS is generous.\n\n...for a price.",
+    cost: 1,
+    unlocked: false,
+    position: {x: 500, y: 380},
+    connections: ["root", "prestige_path"],
+    sprite: spr_mod_default,
+    grants_back_button: true
+},  
     // ==========================================
     // NORTH: ARSENAL BRANCH - Weapon Categories
     // Position: Far North with sub-branches
@@ -287,46 +299,58 @@ global.SkillTree = {
     // inhaler, charge cannon, black hole gun, bags of items, etc.
     
     // ==========================================
-    // EAST: CHARACTER UNLOCKS
-    // ==========================================
-    
-    character_path: {
-        id: "character_path",
-        type: "branch",
-        name: "Champions",
-        description: "Unlock new playable characters",
-        cost: 0,
-        unlocked: false,
-        position: {x: 850, y: 300},
-        connections: ["root", "holy_mage_unlock", "vampire_unlock", "baseball_player_unlock", "alchemist_unlock"],
-        sprite: spr_mod_default
-    },
-    
-    holy_mage_unlock: {
-        id: "holy_mage_unlock",
-        type: "character_unlock",
-        name: "Unlock: Holy Mage",
-        description: "Master of projectiles and area control",
-        character: CharacterClass.HOLY_MAGE,
-        cost: 800,
-        unlocked: false,
-        position: {x: 1000, y: 200},
-        connections: ["character_path"],
-        sprite: spr_vh_walk_south
-    },
-    
-    vampire_unlock: {
-        id: "vampire_unlock",
-        type: "character_unlock",
-        name: "Unlock: Vampire",
-        description: "High mobility with lifesteal mechanics",
-        character: CharacterClass.VAMPIRE,
-        cost: 1000,
-        unlocked: false,
-        position: {x: 1000, y: 300},
-        connections: ["character_path"],
-        sprite: spr_vh_walk_south
-    },
+// CHARACTER PATH - Baseball Player is now from root
+// ==========================================
+character_path: {
+    id: "character_path",
+    type: "branch",
+    name: "Champions",
+    description: "Unlock new playable characters",
+    cost: 0,
+    unlocked: false,
+    position: {x: 850, y: 300},
+    connections: ["root", "priest_unlock", "alchemist_unlock", "assassin_unlock"],  // No baseball - it's from root
+    sprite: spr_mod_default
+},
+
+priest_unlock: {
+    id: "priest_unlock",
+    type: "character_unlock",
+    name: "Unlock: Priest",
+    description: "Master of holy magic and area control",
+    character: CharacterClass.PRIEST,
+    cost: 800,
+    unlocked: false,
+    position: {x: 1000, y: 200},
+    connections: ["character_path"],
+    sprite: spr_vh_walk_south
+},
+
+alchemist_unlock: {
+    id: "alchemist_unlock",
+    type: "character_unlock",
+    name: "Unlock: Alchemist",
+    description: "Potion master and explosive expert",
+    character: CharacterClass.ALCHEMIST,
+    cost: 1000,
+    unlocked: false,
+    position: {x: 1000, y: 300},
+    connections: ["character_path"],
+    sprite: spr_Alchemist_South
+},
+
+assassin_unlock: {
+    id: "assassin_unlock",
+    type: "character_unlock",
+    name: "Unlock: Assassin",
+    description: "Critical strikes and high mobility",
+    character: CharacterClass.ASSASSIN,
+    cost: 1400,
+    unlocked: false,
+    position: {x: 1000, y: 400},
+    connections: ["character_path"],
+    sprite: spr_Assassin_South
+},
     
     baseball_player_unlock: {
         id: "baseball_player_unlock",
@@ -932,70 +956,17 @@ global.SkillTree = {
     },
     
     // ==========================================
-    // FAR EAST: PRESTIGE PATH (Locked - In Development)
-    // ==========================================
-    
-    prestige_path: {
-        id: "prestige_path",
-        type: "branch",
-        name: "PRESTIGE [LOCKED]",
-        description: "Advanced meta progression (Coming Soon)",
-        cost: 0,
-        unlocked: false,
-        position: {x: 1200, y: 300},
-        connections: ["root"],
-        sprite: spr_mod_default
-    },
-	
-	prestige_path: {
+// PRESTIGE - FAR AWAY, EXPENSIVE
+// ==========================================
+prestige_path: {
     id: "prestige_path",
     type: "branch",
-    name: "PRESTIGE",
-    description: "Advanced meta progression for experienced players",
-    cost: 5000,  // ← Costs 5000 souls to unlock!
+    name: "BUY BACK YOUR SOUL",
+    description: "Freedom has a price.\nTARLHS always collects.\n\n1,000,000 souls.",
+    cost: 1000000,
     unlocked: false,
-    position: {x: 1200, y: 300},
-    connections: ["root", "pregame_investor", "pregame_compounding"],  // ← Connect to these nodes
-    sprite: spr_mod_default
-},
-
-// Move these nodes to connect to prestige_path
-pregame_investor: {
-    id: "pregame_investor",
-    type: "pregame_mod_unlock",
-    name: "Investor",
-    description: "Gold generates 1% interest/sec (max 2x starting gold)",
-    mod_id: PreGameMod.INVESTOR,
-    cost: 700,
-    unlocked: false,
-    position: {x: 1200, y: 450},  // ← NEW POSITION (near prestige)
-    connections: ["prestige_path", "pregame_compounding"],  // ← CHANGE CONNECTION
-    sprite: spr_mod_default
-},
-
-pregame_compounding: {
-    id: "pregame_compounding",
-    type: "pregame_mod_unlock",
-    name: "Compounding Interest",
-    description: "Each kill +1% soul gain (stacks infinitely)",
-    mod_id: PreGameMod.COMPOUNDING,
-    cost: 800,
-    unlocked: false,
-    position: {x: 1200, y: 550},  // ← NEW POSITION
-    connections: ["pregame_investor"],  // Chains from Investor
-    sprite: spr_mod_default
-},
-
-// REMOVE these from pregame_economy_branch connections
-pregame_economy_branch: {
-    id: "pregame_economy_branch",
-    type: "branch",
-    name: "Economy & Progression",
-    description: "Boost rewards and growth",
-    cost: 0,
-    unlocked: false,
-    position: {x: -200, y: 700},
-    connections: ["pregame_path", "pregame_souls_2x", "pregame_lucky", "pregame_stat_hp"],  // ← REMOVED investor
+    position: {x: 700, y: 380},
+    connections: ["back_button_unlock"],
     sprite: spr_mod_default
 },
     
@@ -1038,13 +1009,6 @@ function ApplySkillTreeBonuses() {
 }
 
 
-//// Add sound effects
-//function PlayUnlockSound() {
-//    audio_play_sound(snd_skill_unlock, 1, false);
-//}
-
-/// @description Interactive web-like skill tree with pan/zoom navigation
-
 function SkillTreeSystem() constructor {
     
     // ==========================================
@@ -1061,10 +1025,10 @@ function SkillTreeSystem() constructor {
     camera_smooth_speed = 0.15;
     
     pan_min_x = -200;
-    pan_max_x = 1000;
-    pan_min_y = -200;
-    pan_max_y = 800;
-    
+    pan_max_x = 1400;
+    pan_min_y = -500;
+    pan_max_y = 1000;
+    tarlhs_dismiss_cooldown = 0;  // ADD THIS
     // ==========================================
     // SELECTION & INTERACTION
     // ==========================================
@@ -1107,6 +1071,14 @@ function SkillTreeSystem() constructor {
     info_panel_target_alpha = 1;
     
     // ==========================================
+    // TARLHS MESSAGE SYSTEM
+    // ==========================================
+    tarlhs_message_active = false;
+    tarlhs_message_timer = 0;
+    tarlhs_message_text = "";
+    tarlhs_message_subtext = "";
+    
+    // ==========================================
     // UPDATE METHOD
     // ==========================================
     
@@ -1116,6 +1088,32 @@ function SkillTreeSystem() constructor {
         node_hover_pulse += pulse_speed;
         
         UpdateUnlockAnimations();
+       // At the START of Update(), tick down cooldown
+if (tarlhs_dismiss_cooldown > 0) {
+    tarlhs_dismiss_cooldown--;
+} 
+// Update TARLHS message timer & input
+if (tarlhs_message_active) {
+    tarlhs_message_timer--;
+    
+    // Allow dismissing with Escape or Back (but only if root is unlocked)
+    if (_input.Back || _input.Escape) {
+        if (global.SkillTree.root.unlocked) {
+            // Dismiss the message
+            tarlhs_message_active = false;
+            tarlhs_message_timer = 0;
+            tarlhs_dismiss_cooldown = 10;  // Prevent re-showing for 10 frames
+            return;
+        }
+    }
+    
+    // Auto-dismiss when timer runs out
+    if (tarlhs_message_timer <= 0) {
+        tarlhs_message_active = false;
+    }
+    
+    return;
+}
         
         info_panel_alpha = lerp(info_panel_alpha, info_panel_target_alpha, 0.1);
         
@@ -1129,9 +1127,115 @@ function SkillTreeSystem() constructor {
         camera_y = lerp(camera_y, camera_target_y, camera_smooth_speed);
         camera_zoom = lerp(camera_zoom, camera_target_zoom, camera_smooth_speed * 0.5);
         
-        if (_input.Action) {
-            TryUnlockNode(selected_node_id, _player_souls);
+        // Unlock with Action (Space), Reload (E), or Enter
+if (_input.Action || _input.Reload || keyboard_check_pressed(vk_enter)) {
+    TryUnlockNode(selected_node_id, _player_souls);
+}
+    }
+    
+    // ==========================================
+    // TARLHS MESSAGES
+    // ==========================================
+    
+/// @function ShowEscapeBlockedMessage()
+static ShowEscapeBlockedMessage = function() {
+    
+// Don't show if we just dismissed
+    if (tarlhs_dismiss_cooldown > 0) return;
+    
+    tarlhs_message_active = true;
+    tarlhs_message_timer = 300;
+    
+    // Different messages based on progress
+    if (!global.SkillTree.root.unlocked) {
+        // Haven't signed contract yet
+        tarlhs_message_text = choose(
+            "You cannot leave without signing.",
+            "TARLHS demands your signature first.",
+            "The contract awaits. You cannot flee.",
+            "Sign... or remain here forever."
+        );
+        tarlhs_message_subtext = "[ Sign the contract to proceed ]";
+        
+        // Focus on root
+        selected_node_id = "root";
+        CenterCameraOnNode("root");
+    } else {
+        // Signed but no escape clause
+        tarlhs_message_text = choose(
+            "You haven't unlocked the ability to leave yet...",
+            "TARLHS does not permit escape.",
+            "The exit is... elsewhere.",
+            "Looking for a way out? How predictable.",
+            "One soul. That's all it costs to leave."
+        );
+        tarlhs_message_subtext = "[ Press ESC to dismiss | ESCAPE CLAUSE: 1 soul ]";
+        
+        // Reveal and focus the back button node
+        RevealBackButtonNode();
+        
+        // SELECT the back button node so player can just hit Enter
+        selected_node_id = "back_button_unlock";
+        CenterCameraOnNode("back_button_unlock");
+    }
+}
+    
+    /// @function RevealBackButtonNode()
+    static RevealBackButtonNode = function() {
+        // Mark it as revealed in tutorial data
+        global.SaveData.career.tutorial.back_node_revealed = true;
+        
+        // Pan camera toward it
+        if (variable_struct_exists(global.SkillTree, "back_button_unlock")) {
+            var node = global.SkillTree.back_button_unlock;
+            camera_target_x = lerp(camera_target_x, node.position.x, 0.5);
+            camera_target_y = lerp(camera_target_y, node.position.y, 0.5);
         }
+    }
+    
+    // ==========================================
+    // NODE VISIBILITY
+    // ==========================================
+    
+    /// @function IsNodeVisible(_node_id)
+    /// @desc Returns true if node should be drawn
+    static IsNodeVisible = function(_node_id) {
+        var node = global.SkillTree[$ _node_id];
+        
+        // Root is always visible
+        if (_node_id == "root") return true;
+        
+        // Already unlocked = visible
+        if (node.unlocked) return true;
+        
+        // Special case: back_button_unlock only visible after revealed
+        if (_node_id == "back_button_unlock") {
+            return global.SaveData.career.tutorial.back_node_revealed ?? false;
+        }
+        
+        // Special case: prestige_path only visible after back_button purchased
+        if (_node_id == "prestige_path") {
+            return global.SaveData.career.tutorial.back_button_unlocked ?? false;
+        }
+        
+        // Check if ANY connected node is unlocked (then we're visible)
+        if (variable_struct_exists(node, "connections")) {
+            for (var i = 0; i < array_length(node.connections); i++) {
+                var conn_id = node.connections[i];
+                if (!variable_struct_exists(global.SkillTree, conn_id)) continue;
+                
+                var conn_node = global.SkillTree[$ conn_id];
+                if (conn_node.unlocked) return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    /// @function IsConnectionVisible(_node_id_a, _node_id_b)
+    static IsConnectionVisible = function(_node_id_a, _node_id_b) {
+        // Connection visible if BOTH nodes are visible
+        return IsNodeVisible(_node_id_a) && IsNodeVisible(_node_id_b);
     }
     
     // ==========================================
@@ -1167,12 +1271,16 @@ function SkillTreeSystem() constructor {
             return;
         }
         
-        // Check node hover
+        // Check node hover - ONLY VISIBLE NODES
         hovered_node_id = noone;
         var node_keys = variable_struct_get_names(global.SkillTree);
         
         for (var i = 0; i < array_length(node_keys); i++) {
             var key = node_keys[i];
+            
+            // Skip invisible nodes
+            if (!IsNodeVisible(key)) continue;
+            
             var node = global.SkillTree[$ key];
             
             var screen_x = (node.position.x - camera_x) * camera_zoom + gui_w / 2;
@@ -1184,9 +1292,15 @@ function SkillTreeSystem() constructor {
                 hovered_node_id = key;
                 
                 if (_input.FirePress) {
-                    selected_node_id = key;
-                    CenterCameraOnNode(key);
-                }
+    if (selected_node_id == key) {
+        // Already selected - try to unlock it
+        TryUnlockNode(key, GetSouls());
+    } else {
+        // Select this node
+        selected_node_id = key;
+        CenterCameraOnNode(key);
+    }
+}
                 break;
             }
         }
@@ -1196,77 +1310,75 @@ function SkillTreeSystem() constructor {
     // KEYBOARD NAVIGATION
     // ==========================================
     
-/// @function HandleKeyboardNavigation(_input)
-static HandleKeyboardNavigation = function(_input) {
-    if (navigation_cooldown > 0) return;
-    
-    var current_node = global.SkillTree[$ selected_node_id];
-    if (!variable_struct_exists(current_node, "connections")) return;
-    
-    var moved = false;
-    var best_node = noone;
-    var best_score = -999999;
-    
-    // Find best node in direction
-    if (_input.UpPress || _input.DownPress || _input.LeftPress || _input.RightPress) {
+    /// @function HandleKeyboardNavigation(_input)
+    static HandleKeyboardNavigation = function(_input) {
+        if (navigation_cooldown > 0) return;
         
-        var target_angle = 0;
-        if (_input.UpPress) target_angle = 270;
-        else if (_input.DownPress) target_angle = 90;
-        else if (_input.LeftPress) target_angle = 180;
-        else if (_input.RightPress) target_angle = 0;
+        var current_node = global.SkillTree[$ selected_node_id];
+        if (!variable_struct_exists(current_node, "connections")) return;
         
-        for (var i = 0; i < array_length(current_node.connections); i++) {
-            var conn_id = current_node.connections[i];
+        var moved = false;
+        var best_node = noone;
+        var best_score = -999999;
+        
+        if (_input.UpPress || _input.DownPress || _input.LeftPress || _input.RightPress) {
             
-            // SAFETY CHECK: Make sure connected node exists
-            if (!variable_struct_exists(global.SkillTree, conn_id)) {
-                continue;
+            var target_angle = 0;
+            if (_input.UpPress) target_angle = 270;
+            else if (_input.DownPress) target_angle = 90;
+            else if (_input.LeftPress) target_angle = 180;
+            else if (_input.RightPress) target_angle = 0;
+            
+            for (var i = 0; i < array_length(current_node.connections); i++) {
+                var conn_id = current_node.connections[i];
+                
+                // Skip non-existent nodes
+                if (!variable_struct_exists(global.SkillTree, conn_id)) continue;
+                
+                // Skip invisible nodes
+                if (!IsNodeVisible(conn_id)) continue;
+                
+                var conn_node = global.SkillTree[$ conn_id];
+                
+                var angle = point_direction(
+                    current_node.position.x, current_node.position.y,
+                    conn_node.position.x, conn_node.position.y
+                );
+                
+                var angle_diff = abs(angle_difference(angle, target_angle));
+                var distance = point_distance(
+                    current_node.position.x, current_node.position.y,
+                    conn_node.position.x, conn_node.position.y
+                );
+                
+                var _score = -angle_diff - (distance * 0.1);
+                
+                if (_score > best_score) {
+                    best_score = _score;
+                    best_node = conn_id;
+                    moved = true;
+                }
             }
             
-            var conn_node = global.SkillTree[$ conn_id];
-            
-            var angle = point_direction(
-                current_node.position.x, current_node.position.y,
-                conn_node.position.x, conn_node.position.y
-            );
-            
-            var angle_diff = abs(angle_difference(angle, target_angle));
-            var distance = point_distance(
-                current_node.position.x, current_node.position.y,
-                conn_node.position.x, conn_node.position.y
-            );
-            
-            var _score = -angle_diff - (distance * 0.1);
-            
-            if (_score > best_score) {
-                best_score = _score;
-                best_node = conn_id;
-                moved = true;
+            if (moved && best_node != noone) {
+                selected_node_id = best_node;
+                CenterCameraOnNode(best_node);
+                navigation_cooldown = navigation_cooldown_max;
             }
-        }
-        
-        if (moved && best_node != noone) {
-            selected_node_id = best_node;
-            CenterCameraOnNode(best_node);
-            navigation_cooldown = navigation_cooldown_max;
         }
     }
-}
-
+    
     // ==========================================
     // ZOOM HANDLING
     // ==========================================
     
     /// @function HandleZoom(_input)
     static HandleZoom = function(_input) {
-        // Mouse wheel zoom
         var wheel = mouse_wheel_up() - mouse_wheel_down();
         if (wheel != 0) {
             camera_target_zoom = clamp(camera_target_zoom + wheel * 0.1, camera_min_zoom, camera_max_zoom);
         }
         
-        // Keyboard zoom (Q/E or PageUp/PageDown)
         if (keyboard_check_pressed(ord("Q")) || keyboard_check_pressed(vk_pageup)) {
             camera_target_zoom = clamp(camera_target_zoom + 0.2, camera_min_zoom, camera_max_zoom);
         }
@@ -1274,7 +1386,6 @@ static HandleKeyboardNavigation = function(_input) {
             camera_target_zoom = clamp(camera_target_zoom - 0.2, camera_min_zoom, camera_max_zoom);
         }
         
-        // Reset zoom (R key)
         if (keyboard_check_pressed(ord("R"))) {
             camera_target_zoom = 1.0;
             CenterCameraOnNode(selected_node_id);
@@ -1298,86 +1409,101 @@ static HandleKeyboardNavigation = function(_input) {
     // UNLOCK LOGIC
     // ==========================================
     
-/// @function TryUnlockNode(_node_id, _player_souls)
-static TryUnlockNode = function(_node_id, _player_souls) {
-    var node = global.SkillTree[$ _node_id];
-    if (node == noone) return false;
-    
-    if (node.unlocked) {
-        show_debug_message("Node already unlocked: " + node.name);
-        return false;
+    /// @function TryUnlockNode(_node_id, _player_souls)
+    static TryUnlockNode = function(_node_id, _player_souls) {
+        var node = global.SkillTree[$ _node_id];
+        if (node == noone) return false;
+        
+        if (node.unlocked) {
+            show_debug_message("Node already unlocked: " + node.name);
+            return false;
+        }
+        
+        if (!CanUnlockNode(_node_id)) {
+            show_debug_message("Cannot unlock - path blocked: " + node.name);
+            return false;
+        }
+        
+        if (_player_souls < node.cost) {
+            show_debug_message("Not enough souls! Need: " + string(node.cost) + ", Have: " + string(_player_souls));
+            return false;
+        }
+        
+        // Deduct cost
+        SpendSouls(node.cost);
+        
+        // Unlock node
+        node.unlocked = true;
+        
+        // Add to save data
+        if (!array_contains(global.SaveData.career.skill_tree.unlocked_nodes, _node_id)) {
+            array_push(global.SaveData.career.skill_tree.unlocked_nodes, _node_id);
+        }
+        
+        // Apply unlock effects
+        ApplyNodeEffects(_node_id, node);
+        
+        // Start unlock animation
+        array_push(active_unlock_animations, {
+            node_id: _node_id,
+            timer: 0,
+            duration: unlock_animation_duration
+        });
+        
+        SaveGame();
+        
+        show_debug_message("Unlocked: " + node.name + " for " + string(node.cost) + " souls");
+        return true;
     }
-    
-    if (!CanUnlockNode(_node_id)) {
-        show_debug_message("Cannot unlock - path blocked: " + node.name);
-        return false;
-    }
-    
-    if (_player_souls < node.cost) {
-        show_debug_message("Not enough souls! Need: " + string(node.cost) + ", Have: " + string(_player_souls));
-        return false;
-    }
-    
-    // Deduct cost
-    SpendSouls(node.cost);
-    
-    // Unlock node
-    node.unlocked = true;
-    
-    // Add to save data (using correct path)
-    if (!array_contains(global.SaveData.career.skill_tree.unlocked_nodes, _node_id)) {
-        array_push(global.SaveData.career.skill_tree.unlocked_nodes, _node_id);
-    }
-    
-    // Apply unlock effects
-    ApplyNodeEffects(_node_id, node);
-    
-    // Start unlock animation
-    array_push(active_unlock_animations, {
-        node_id: _node_id,
-        timer: 0,
-        duration: unlock_animation_duration
-    });
-    
-    SaveGame();
-    
-    show_debug_message("Unlocked: " + node.name + " for " + string(node.cost) + " souls");
-    return true;
-}
     
     /// @function CanUnlockNode(_node_id)
-static CanUnlockNode = function(_node_id) {
-    var node = global.SkillTree[$ _node_id];
-    if (node.unlocked) return false;
-    
-    // Root is always available
-    if (_node_id == "root") return true;
-    
-    // Check if any connected nodes are unlocked
-    if (!variable_struct_exists(node, "connections")) return false;
-    
-    for (var i = 0; i < array_length(node.connections); i++) {
-        var conn_id = node.connections[i];
+    static CanUnlockNode = function(_node_id) {
+        var node = global.SkillTree[$ _node_id];
+        if (node.unlocked) return false;
         
-        // SAFETY CHECK: Make sure connected node exists
-        if (!variable_struct_exists(global.SkillTree, conn_id)) {
-            show_debug_message("WARNING: Node '" + _node_id + "' references non-existent connection: '" + conn_id + "'");
-            continue;
+        // Root is always available (the initial contract)
+        if (_node_id == "root") return true;
+        
+        // Check if any connected nodes are unlocked
+        if (!variable_struct_exists(node, "connections")) return false;
+        
+        for (var i = 0; i < array_length(node.connections); i++) {
+            var conn_id = node.connections[i];
+            
+            if (!variable_struct_exists(global.SkillTree, conn_id)) continue;
+            
+            var conn_node = global.SkillTree[$ conn_id];
+            
+            if (conn_node.unlocked) {
+                return true;
+            }
         }
         
-        var conn_node = global.SkillTree[$ conn_id];
-        
-        if (conn_node.unlocked) {
-            return true;
-        }
+        return false;
     }
-    
-    return false;
-}
     
     /// @function ApplyNodeEffects(_node_id, _node)
     static ApplyNodeEffects = function(_node_id, _node) {
         switch (_node.type) {
+            case "soul_contract":
+                // The root contract - grants menu + first character
+                global.SaveData.career.tutorial.soul_sold = true;
+                global.SaveData.career.tutorial.menu_unlocked = true;
+                
+                if (variable_struct_exists(_node, "grants_character")) {
+                    UnlockCharacter(_node.grants_character);
+                }
+                show_debug_message("TARLHS: Your soul is mine. Welcome.");
+                break;
+                
+            case "utility_unlock":
+                // Back button, etc.
+                if (variable_struct_exists(_node, "grants_back_button") && _node.grants_back_button) {
+                    global.SaveData.career.tutorial.back_button_unlocked = true;
+                    show_debug_message("TARLHS: You may leave... for now.");
+                }
+                break;
+                
             case "character_unlock":
                 UnlockCharacter(_node.character);
                 break;
@@ -1399,27 +1525,24 @@ static CanUnlockNode = function(_node_id) {
                 break;
                 
             case "branch":
-                // Branch nodes are just organizational
+                // Organizational only
                 break;
         }
     }
     
     /// @function ApplyStatBoost(_node_id, _node)
-static ApplyStatBoost = function(_node_id, _node) {
-    // Track stacking (using correct path)
-    if (!variable_struct_exists(global.SaveData.career.skill_tree.node_stacks, _node_id)) {
-        global.SaveData.career.skill_tree.node_stacks[$ _node_id] = 0;
-    }
-    
-    var current_stacks = global.SaveData.career.skill_tree.node_stacks[$ _node_id];
-    
-    if (current_stacks < _node.max_stacks) {
-        global.SaveData.career.skill_tree.node_stacks[$ _node_id] = current_stacks + 1;
-        _node.current_stacks = current_stacks + 1;
+    static ApplyStatBoost = function(_node_id, _node) {
+        if (!variable_struct_exists(global.SaveData.career.skill_tree.node_stacks, _node_id)) {
+            global.SaveData.career.skill_tree.node_stacks[$ _node_id] = 0;
+        }
         
-        show_debug_message("Applied stat boost: " + _node.name + " (Stack " + string(_node.current_stacks) + "/" + string(_node.max_stacks) + ")");
+        var current_stacks = global.SaveData.career.skill_tree.node_stacks[$ _node_id];
+        
+        if (current_stacks < _node.max_stacks) {
+            global.SaveData.career.skill_tree.node_stacks[$ _node_id] = current_stacks + 1;
+            _node.current_stacks = current_stacks + 1;
+        }
     }
-}
     
     // ==========================================
     // ANIMATION UPDATES
@@ -1450,15 +1573,25 @@ static ApplyStatBoost = function(_node_id, _node) {
         draw_rectangle(0, 0, _w, _h, false);
         draw_set_alpha(1);
         
-        // Draw connections first
+        // Draw connections first (only visible ones)
         DrawConnections(_w, _h);
         
-        // Draw nodes
+        // Draw nodes (only visible ones)
         DrawNodes(_w, _h);
         
         // Draw info panel
         if (show_info_panel) {
             DrawInfoPanel(_w, _h, _player_souls);
+        }
+        
+        // Draw tutorial arrow if root not unlocked
+        if (!global.SkillTree.root.unlocked) {
+            DrawTutorialArrow(_w, _h);
+        }
+        
+        // Draw TARLHS message
+        if (tarlhs_message_active) {
+            DrawTarlhsMessage(_w, _h);
         }
         
         // Draw controls
@@ -1468,67 +1601,68 @@ static ApplyStatBoost = function(_node_id, _node) {
     }
     
     /// @function DrawConnections(_w, _h)
-static DrawConnections = function(_w, _h) {
-    var node_keys = variable_struct_get_names(global.SkillTree);
-    var drawn_connections = ds_map_create();
-    
-    for (var i = 0; i < array_length(node_keys); i++) {
-        var key = node_keys[i];
-        var node = global.SkillTree[$ key];
+    static DrawConnections = function(_w, _h) {
+        var node_keys = variable_struct_get_names(global.SkillTree);
+        var drawn_connections = ds_map_create();
         
-        if (!variable_struct_exists(node, "connections")) continue;
-        
-        var node_x = (node.position.x - camera_x) * camera_zoom + _w / 2;
-        var node_y = (node.position.y - camera_y) * camera_zoom + _h / 2;
-        
-        for (var j = 0; j < array_length(node.connections); j++) {
-            var conn_id = node.connections[j];
+        for (var i = 0; i < array_length(node_keys); i++) {
+            var key = node_keys[i];
+            var node = global.SkillTree[$ key];
             
-            // SAFETY CHECK: Make sure connected node exists
-            if (!variable_struct_exists(global.SkillTree, conn_id)) {
-                show_debug_message("WARNING: Node '" + key + "' references non-existent connection: '" + conn_id + "'");
-                continue;
+            // Skip invisible nodes
+            if (!IsNodeVisible(key)) continue;
+            
+            if (!variable_struct_exists(node, "connections")) continue;
+            
+            var node_x = (node.position.x - camera_x) * camera_zoom + _w / 2;
+            var node_y = (node.position.y - camera_y) * camera_zoom + _h / 2;
+            
+            for (var j = 0; j < array_length(node.connections); j++) {
+                var conn_id = node.connections[j];
+                
+                // Skip non-existent or invisible connections
+                if (!variable_struct_exists(global.SkillTree, conn_id)) continue;
+                if (!IsConnectionVisible(key, conn_id)) continue;
+                
+                // Avoid drawing same connection twice
+                var conn_key = key < conn_id ? (key + "_" + conn_id) : (conn_id + "_" + key);
+                if (ds_map_exists(drawn_connections, conn_key)) continue;
+                ds_map_set(drawn_connections, conn_key, true);
+                
+                var conn_node = global.SkillTree[$ conn_id];
+                
+                var conn_x = (conn_node.position.x - camera_x) * camera_zoom + _w / 2;
+                var conn_y = (conn_node.position.y - camera_y) * camera_zoom + _h / 2;
+                
+                var both_unlocked = node.unlocked && conn_node.unlocked;
+                var line_color = both_unlocked ? connection_unlocked_color : connection_locked_color;
+                var line_alpha = both_unlocked ? 0.8 : 0.3;
+                
+                draw_set_alpha(line_alpha);
+                draw_line_width_color(node_x, node_y, conn_x, conn_y, 
+                    connection_thickness * camera_zoom, line_color, line_color);
             }
-            
-            // Avoid drawing same connection twice
-            var conn_key = key < conn_id ? (key + "_" + conn_id) : (conn_id + "_" + key);
-            if (ds_map_exists(drawn_connections, conn_key)) continue;
-            ds_map_set(drawn_connections, conn_key, true);
-            
-            var conn_node = global.SkillTree[$ conn_id];
-            
-            var conn_x = (conn_node.position.x - camera_x) * camera_zoom + _w / 2;
-            var conn_y = (conn_node.position.y - camera_y) * camera_zoom + _h / 2;
-            
-            // Color based on unlock status
-            var both_unlocked = node.unlocked && conn_node.unlocked;
-            var line_color = both_unlocked ? connection_unlocked_color : connection_locked_color;
-            var line_alpha = both_unlocked ? 0.8 : 0.3;
-            
-            draw_set_alpha(line_alpha);
-            draw_line_width_color(node_x, node_y, conn_x, conn_y, 
-                connection_thickness * camera_zoom, line_color, line_color);
         }
+        
+        ds_map_destroy(drawn_connections);
+        draw_set_alpha(1);
     }
-    
-    ds_map_destroy(drawn_connections);
-    draw_set_alpha(1);
-}
     
     /// @function DrawNodes(_w, _h)
     static DrawNodes = function(_w, _h) {
         var node_keys = variable_struct_get_names(global.SkillTree);
         
-        // Draw non-selected nodes first
+        // Draw non-selected visible nodes first
         for (var i = 0; i < array_length(node_keys); i++) {
             var key = node_keys[i];
             if (key == selected_node_id) continue;
+            if (!IsNodeVisible(key)) continue;
             
             DrawNode(key, _w, _h, false);
         }
         
-        // Draw selected node last (on top)
-        if (selected_node_id != noone) {
+        // Draw selected node last (on top) if visible
+        if (selected_node_id != noone && IsNodeVisible(selected_node_id)) {
             DrawNode(selected_node_id, _w, _h, true);
         }
     }
@@ -1621,7 +1755,6 @@ static DrawConnections = function(_w, _h) {
             
             var label_y = screen_y + draw_radius + 8;
             
-            // Background
             var text_w = string_width(node.name);
             draw_set_alpha(0.7);
             draw_set_color(c_black);
@@ -1629,15 +1762,87 @@ static DrawConnections = function(_w, _h) {
                           screen_x + text_w/2 + 4, label_y + 14, false);
             draw_set_alpha(1);
             
-            // Text
             draw_set_color(c_white);
             draw_text(screen_x, label_y, node.name);
         }
     }
     
+    /// @function DrawTutorialArrow(_w, _h)
+    static DrawTutorialArrow = function(_w, _h) {
+        var root = global.SkillTree.root;
+        var screen_x = (root.position.x - camera_x) * camera_zoom + _w / 2;
+        var screen_y = (root.position.y - camera_y) * camera_zoom + _h / 2;
+        
+        var pulse = sin(current_time * 0.005) * 10;
+        var arrow_y = screen_y - 80 - pulse;
+        
+        // Arrow triangle
+        draw_set_color(c_yellow);
+        draw_triangle(
+            screen_x, arrow_y + 30,
+            screen_x - 15, arrow_y,
+            screen_x + 15, arrow_y,
+            false
+        );
+        
+        // Text
+        draw_set_font(fnt_large);
+        draw_set_halign(fa_center);
+        draw_set_valign(fa_bottom);
+        draw_set_color(c_yellow);
+        draw_text(screen_x, arrow_y - 10, "SIGN HERE");
+        
+        draw_set_font(fnt_default);
+        draw_set_color(c_ltgray);
+        draw_text(screen_x, arrow_y + 5, "(Press ENTER or Click)");
+    }
+/// @function DrawTarlhsMessage(_w, _h)
+static DrawTarlhsMessage = function(_w, _h) {
+    var msg_w = 500;
+    var msg_h = 140;
+    var msg_x = _w/2 - msg_w/2;
+    var msg_y = 30;  // TOP of screen instead of bottom
+    
+    // Darken background slightly (less opacity so node is visible)
+    draw_set_alpha(0.4);
+    draw_set_color(c_black);
+    draw_rectangle(0, 0, _w, _h, false);
+    draw_set_alpha(1);
+    
+    // Message box
+    draw_set_color(c_black);
+    draw_rectangle(msg_x, msg_y, msg_x + msg_w, msg_y + msg_h, false);
+    draw_set_color(c_red);
+    draw_rectangle(msg_x, msg_y, msg_x + msg_w, msg_y + msg_h, true);
+    draw_rectangle(msg_x + 2, msg_y + 2, msg_x + msg_w - 2, msg_y + msg_h - 2, true);
+    
+    // TARLHS name
+    draw_set_font(fnt_large);
+    draw_set_halign(fa_left);
+    draw_set_valign(fa_top);
+    draw_set_color(c_red);
+    draw_text(msg_x + 20, msg_y + 15, "TARLHS");
+    
+    // Message
+    draw_set_font(fnt_default);
+    draw_set_color(c_white);
+    draw_text_ext(msg_x + 20, msg_y + 50, tarlhs_message_text, 20, msg_w - 40);
+    
+    // Subtext - pulsing for visibility
+    var pulse = 0.7 + sin(current_time * 0.005) * 0.3;
+    draw_set_halign(fa_center);
+    draw_set_alpha(pulse);
+    draw_set_color(c_yellow);
+    draw_text(msg_x + msg_w/2, msg_y + msg_h - 25, tarlhs_message_subtext);
+    
+    draw_set_halign(fa_left);
+    draw_set_alpha(1);
+}
+    
     /// @function DrawInfoPanel(_w, _h, _player_souls)
     static DrawInfoPanel = function(_w, _h, _player_souls) {
         if (selected_node_id == noone) return;
+        if (!IsNodeVisible(selected_node_id)) return;
         
         var node = global.SkillTree[$ selected_node_id];
         var panel_w = 300;
@@ -1647,17 +1852,14 @@ static DrawConnections = function(_w, _h) {
         
         draw_set_alpha(info_panel_alpha * 0.9);
         
-        // Background
         draw_set_color(c_black);
         draw_rectangle(panel_x, panel_y, panel_x + panel_w, panel_y + panel_h, false);
         
-        // Border
         draw_set_color(c_white);
         draw_rectangle(panel_x, panel_y, panel_x + panel_w, panel_y + panel_h, true);
         
         draw_set_alpha(info_panel_alpha);
         
-        // Content
         var text_x = panel_x + 15;
         var text_y = panel_y + 15;
         
@@ -1669,7 +1871,6 @@ static DrawConnections = function(_w, _h) {
         
         text_y += 30;
         
-        // Type badge
         draw_set_font(fnt_default);
         var type_text = GetNodeTypeText(node.type);
         var type_color = GetNodeTypeColor(node.type);
@@ -1678,20 +1879,18 @@ static DrawConnections = function(_w, _h) {
         
         text_y += 25;
         
-        // Description
         draw_set_color(c_ltgray);
         draw_text_ext(text_x, text_y, node.description, 16, panel_w - 30);
         
-        text_y += 60;
+        text_y += 90;
         
-        // Cost
         if (!node.unlocked) {
-            draw_set_color(c_white);
-            draw_text(text_x, text_y, "Cost: ");
+            draw_set_color(c_teal);
+            draw_text(text_x, text_y, "COST: ");
             
             var can_afford = (_player_souls >= node.cost);
-            draw_set_color(can_afford ? c_lime : c_red);
-            draw_text(text_x + 50, text_y, string(node.cost) + " souls");
+            draw_set_color(can_afford ? c_aqua : c_red);
+            draw_text(text_x + 70, text_y, string(node.cost) + " souls");
             
             text_y += 25;
         } else {
@@ -1700,17 +1899,16 @@ static DrawConnections = function(_w, _h) {
             text_y += 25;
         }
         
-        // Requirements
         if (!node.unlocked && !CanUnlockNode(selected_node_id)) {
             draw_set_color(c_red);
             draw_text_ext(text_x, text_y, "Requires connected node", 16, panel_w - 30);
         }
         
-        // Stack info for stat boosts
         if (node.type == "stat_boost" && variable_struct_exists(node, "max_stacks")) {
             text_y += 25;
             draw_set_color(c_aqua);
-            draw_text(text_x, text_y, "Stack: " + string(node.current_stacks) + "/" + string(node.max_stacks));
+            var stacks = node.current_stacks ?? 0;
+            draw_text(text_x, text_y, "Stack: " + string(stacks) + "/" + string(node.max_stacks));
         }
         
         draw_set_alpha(1);
@@ -1726,7 +1924,6 @@ static DrawConnections = function(_w, _h) {
         draw_set_valign(fa_top);
         draw_set_alpha(0.7);
         
-        // Background
         draw_set_color(c_black);
         draw_rectangle(controls_x - 5, controls_y - 5, controls_x + 300, controls_y + 95, false);
         
@@ -1738,8 +1935,15 @@ static DrawConnections = function(_w, _h) {
         draw_text(controls_x, line_y, "Q/E - Zoom In/Out"); line_y += 18;
         draw_text(controls_x, line_y, "R - Reset View"); line_y += 18;
         draw_text(controls_x, line_y, "Right Click/Drag - Pan"); line_y += 18;
-        draw_text(controls_x, line_y, "Enter - Unlock Node"); line_y += 18;
-        draw_text(controls_x, line_y, "ESC - Back to Menu");
+        draw_text(controls_x, line_y, "Enter/Space - Unlock Node"); line_y += 18;
+        
+        // Show escape status
+        if (global.SaveData.career.tutorial.back_button_unlocked) {
+            draw_text(controls_x, line_y, "ESC - Back to Menu");
+        } else {
+            draw_set_color(c_red);
+            draw_text(controls_x, line_y, "ESC - [LOCKED]");
+        }
         
         // Souls display
         draw_set_halign(fa_right);
@@ -1755,6 +1959,8 @@ static DrawConnections = function(_w, _h) {
     /// @function GetNodeTypeText(_type)
     static GetNodeTypeText = function(_type) {
         switch (_type) {
+            case "soul_contract": return "CONTRACT";
+            case "utility_unlock": return "UTILITY";
             case "character_unlock": return "CHARACTER";
             case "weapon_unlock": return "WEAPON";
             case "stat_boost": return "STAT";
@@ -1768,6 +1974,8 @@ static DrawConnections = function(_w, _h) {
     /// @function GetNodeTypeColor(_type)
     static GetNodeTypeColor = function(_type) {
         switch (_type) {
+            case "soul_contract": return c_red;
+            case "utility_unlock": return c_fuchsia;
             case "character_unlock": return c_purple;
             case "weapon_unlock": return c_orange;
             case "stat_boost": return c_aqua;
@@ -1778,8 +1986,6 @@ static DrawConnections = function(_w, _h) {
         }
     }
 }
-
-
 
 /// @function DebugUnlockAllNodes()
 function DebugUnlockAllNodes() {

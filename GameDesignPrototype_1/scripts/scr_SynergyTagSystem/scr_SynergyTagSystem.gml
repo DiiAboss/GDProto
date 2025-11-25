@@ -20,7 +20,7 @@ enum SYNERGY_TAG {
     ATHLETIC,
     ROGUE,
     MAGE,
-    
+    ELEMENTAL,
     // Weapon Type Tags
     MELEE,
     RANGED,

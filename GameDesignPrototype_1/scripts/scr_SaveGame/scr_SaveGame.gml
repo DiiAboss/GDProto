@@ -34,15 +34,22 @@ global.SaveData = {
         total_playtime_seconds: 0,
         
 		currency: {
-		    souls: 0,        // Meta currency (persists)
+		    souls: 1,        // Meta currency (persists)
 		    lifetime_souls: 0, // Total ever earned (for achievements)
 		    lifetime_gold: 0   // Total ever earned (for stats)
 		},
+		tutorial: {
+    soul_sold: false,
+    menu_unlocked: false,
+    back_button_unlocked: false,
+    back_node_revealed: false,  // ADD THIS
+    first_run_complete: false,
+},
 		
         // Best run
         best_score: 0,
         best_time_seconds: 0,
-        best_character: CharacterClass.WARRIOR,
+        best_character: CharacterClass.BASEBALL_PLAYER,
         
         // Arcade medals (from your scoring system)
         medals: {
@@ -74,7 +81,7 @@ global.SaveData = {
 		},
 		
 		skill_tree: {
-		    unlocked_nodes: ["root"], // Array of node IDs
+		    unlocked_nodes: [], // Array of node IDs
 		    node_stacks: {} // For stackable stat boosts: {hp_boost_1: 3}
 		},
 		character_loadouts: {},
@@ -353,10 +360,9 @@ function MergeSaveData(_loaded) {
     }
     
     // === RESTORE SOULS ===
-    if (variable_struct_exists(global.SaveData.career, "currency")) {
         global.Souls = global.SaveData.career.currency.souls;
         show_debug_message("Souls loaded: " + string(global.Souls));
-    }
+    
 }
 
 
@@ -528,11 +534,17 @@ function ResetSaveData() {
             total_playtime_seconds: 0,
             
             currency: {
-                souls: 0,
+                souls: 1,
                 lifetime_souls: 0,
                 lifetime_gold: 0
             },
-            
+            tutorial: {
+    soul_sold: false,
+    menu_unlocked: false,
+    back_button_unlocked: false,
+    back_node_revealed: false,  // ADD THIS
+    first_run_complete: false,
+},
             best_score: 0,
             best_time_seconds: 0,
             best_character: CharacterClass.WARRIOR,
@@ -563,7 +575,7 @@ function ResetSaveData() {
             character_stats: {},
             
             skill_tree: {
-                unlocked_nodes: ["root"],
+                unlocked_nodes: [],
                 node_stacks: {}
             },
             
@@ -576,7 +588,7 @@ function ResetSaveData() {
     };
     
     // Reset global souls
-    global.Souls = 0;
+    global.Souls = 1;
     
     // Reset skill tree
     var node_keys = variable_struct_get_names(global.SkillTree);

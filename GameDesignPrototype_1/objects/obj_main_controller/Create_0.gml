@@ -2,7 +2,7 @@
 persistent = true;
 
 // Initialize save system first
-InitializeSaveSystem();
+
 InitializeMissions();
 // Input system
 player_input = new Input();
@@ -44,7 +44,7 @@ InitWeaponSynergySystem();
 global.selection_popup = noone;
 global.chest_popup = noone;
 global.weapon_swap_prompt = noone;
-global.SaveData.career.currency.souls = 5000;
+global.SaveData.career.currency.souls = 1;
 
 
 textbox_system = new TextboxSystem();

@@ -32,9 +32,9 @@ if (textbox_system.active) {
 var souls = GetSouls();
 draw_set_halign(fa_right);
 draw_set_valign(fa_top);
-draw_set_font(fnt_default);
+draw_set_font(fnt_small_1);
 draw_set_color(c_aqua);
-draw_text(display_get_gui_width() - 20, 20, "Souls: " + string(souls));
+draw_text(20, 20, "Souls: " + string(souls));
 draw_set_color(c_white);
 }
 

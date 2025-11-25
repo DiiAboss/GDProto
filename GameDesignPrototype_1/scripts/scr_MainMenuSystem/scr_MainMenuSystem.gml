@@ -269,7 +269,7 @@ active_loadout_weapons = [noone, noone]; // Current weapon selection
     selected_option = 0;
     selected_class = 0;
     selected_level = 0;
-    selected_character_class = CharacterClass.WARRIOR;
+    selected_character_class = CharacterClass.VAMPIRE_HUNTER;
     stats_selected_mod = 0;
 	
     // Sub-menu states
@@ -277,7 +277,7 @@ active_loadout_weapons = [noone, noone]; // Current weapon selection
     show_controls = false;
     show_stats = false;
     stats_scroll_offset = 0;
-    stats_selected_character = CharacterClass.WARRIOR;
+    stats_selected_character = CharacterClass.VAMPIRE_HUNTER;
     
     // Visual animation
     logo_scale = 0;
@@ -298,10 +298,12 @@ active_loadout_weapons = [noone, noone]; // Current weapon selection
     settings_options  = array_length(main_menu_options); // Master, Music, SFX, Voice, Back
     
     class_options = [
-        global.Player_Class.Warrior,
-        global.Player_Class.Holy_Mage,
-        global.Player_Class.Vampire
-    ];
+    global.Player_Class.Vampire_Hunter,
+    global.Player_Class.Priest,
+    global.Player_Class.Alchemist,
+    global.Player_Class.Baseball_Player,
+    global.Player_Class.Assassin
+];
     
     level_options = [
         {
@@ -569,6 +571,12 @@ if (_input.FirePress) {
 /// @function DrawMainMenu(_w, _h, _cx, _cy)
 static DrawMainMenu = function(_w, _h, _cx, _cy) {
     
+    var menu_unlocked = global.SaveData.career.tutorial.menu_unlocked;
+    if (keyboard_check(vk_f1)) {
+        ResetSaveData();
+        show_message("Save data reset!");
+		game_restart();
+    }
     // === BACKGROUND ===
     draw_set_color(c_black);
     draw_rectangle(0, 0, _w, _h, false);
@@ -580,21 +588,19 @@ static DrawMainMenu = function(_w, _h, _cx, _cy) {
     draw_circle(_cx, _cy + 200, 600, false);
     draw_set_alpha(1);
     
-    // === GLOWING EYES (Draw BEFORE particles for proper layering) ===
+    // === GLOWING EYES ===
     for (var i = 0; i < array_length(eyes); i++) {
         var eye = eyes[i];
         
-        // Only draw eyes in the darker areas (not near flames or center)
-        if (eye.y > _h - 300) continue; // Skip bottom area with flames
-        if (point_distance(eye.x, eye.y, _cx, _cy - 150) < 250) continue; // Skip title area
+        if (eye.y > _h - 300) continue;
+        if (point_distance(eye.x, eye.y, _cx, _cy - 150) < 250) continue;
         
-        draw_set_alpha(eye.alpha * 0.7); // Slightly more visible
+        draw_set_alpha(eye.alpha * 0.7);
         
         // Left eye
-        draw_set_color(make_color_rgb(220, 0, 0)); // Brighter red
+        draw_set_color(make_color_rgb(220, 0, 0));
         draw_circle(eye.x - 8, eye.y, 5, false);
         
-        // Stronger glow
         gpu_set_blendmode(bm_add);
         draw_set_alpha(eye.alpha * 0.5);
         draw_circle(eye.x - 8, eye.y, 12, false);
@@ -631,30 +637,23 @@ static DrawMainMenu = function(_w, _h, _cx, _cy) {
     draw_set_color(make_color_rgb(255, 107, 53));
     draw_set_alpha(0.3);
     
-    // Top left
     draw_line_width(20, 20, 120, 20, 2);
     draw_line_width(20, 20, 20, 120, 2);
-    
-    // Top right
     draw_line_width(_w - 120, 20, _w - 20, 20, 2);
     draw_line_width(_w - 20, 20, _w - 20, 120, 2);
-    
-    // Bottom left
     draw_line_width(20, _h - 120, 20, _h - 70, 2);
     draw_line_width(20, _h - 70, 120, _h - 70, 2);
-    
-    // Bottom right
     draw_line_width(_w - 20, _h - 120, _w - 20, _h - 70, 2);
     draw_line_width(_w - 120, _h - 70, _w - 20, _h - 70, 2);
     
     draw_set_alpha(1);
     
-    // === SOULS COUNTER (top right) ===
+    // === SOULS COUNTER ===
     draw_set_halign(fa_right);
     draw_set_valign(fa_top);
     draw_set_font(fnt_default);
     draw_set_color(make_color_rgb(0, 255, 255));
-    draw_text(_w - 30, 20, "SOULS: " + string(GetSouls()));
+    draw_text(132, 36, "SOULS: " + string(GetSouls()));
     
     // === TITLE: TARLHS GAME ===
     draw_set_halign(fa_center);
@@ -665,16 +664,12 @@ static DrawMainMenu = function(_w, _h, _cx, _cy) {
     var title_col_orange = make_color_rgb(255, 107, 53);
     var title_col_yellow = make_color_rgb(255, 165, 0);
     
-    // Title glow effect
     gpu_set_blendmode(bm_add);
     draw_set_alpha(0.3 + sin(current_time * 0.003) * 0.2);
     draw_set_color(title_col_orange);
-    //draw_text(_cx, logo_y - 22, "TARLHS");
-    //draw_text(_cx, logo_y + 18, "GAME");
     gpu_set_blendmode(bm_normal);
     draw_set_alpha(menu_alpha);
     
-    // Main title - TARLHS
     draw_text_transformed_colour(
         _cx, logo_y - 20, 
         "TARLHS", 
@@ -683,7 +678,6 @@ static DrawMainMenu = function(_w, _h, _cx, _cy) {
         menu_alpha
     );
     
-    // Main title - GAME
     draw_text_transformed_colour(
         _cx, logo_y + 20, 
         "GAME", 
@@ -692,7 +686,6 @@ static DrawMainMenu = function(_w, _h, _cx, _cy) {
         menu_alpha
     );
     
-    // Subtitle
     draw_set_font(fnt_default);
     draw_set_alpha(menu_alpha * 0.7);
     draw_set_color(c_gray);
@@ -701,32 +694,48 @@ static DrawMainMenu = function(_w, _h, _cx, _cy) {
     draw_set_alpha(menu_alpha);
     
     // === MENU OPTIONS ===
+    // main_menu_options = ["START", "UNLOCKS", "STATS", "SETTINGS", "EXIT"];
+    // Index 1 (UNLOCKS) is always available, others locked until menu_unlocked
+    
     for (var i = 0; i < array_length(main_menu_options); i++) {
         var yy = _cy + (i * 60) - 30;
         var is_selected = (i == selected_option);
         
-        // Glowing background for selected
-        if (is_selected) {
+        // Check if this option is available
+        var is_available = menu_unlocked || (i == 1);  // 1 = UNLOCKS
+        
+        // Locked options are dimmed
+        var option_alpha = is_available ? menu_alpha : menu_alpha * 0.3;
+        
+        // Glowing background for selected (only if available)
+        if (is_selected && is_available) {
             gpu_set_blendmode(bm_add);
             draw_set_alpha(menu_alpha * 0.2);
             draw_set_color(title_col_yellow);
             draw_rectangle(_cx - 200, yy - 18, _cx + 200, yy + 18, false);
             gpu_set_blendmode(bm_normal);
-            draw_set_alpha(menu_alpha);
         }
         
         // Menu item border
-        draw_set_color(is_selected ? title_col_yellow : title_col_orange);
-        draw_set_alpha(is_selected ? menu_alpha : menu_alpha * 0.3);
+        var border_color = title_col_orange;
+        if (is_selected && is_available) {
+            border_color = title_col_yellow;
+        } else if (!is_available) {
+            border_color = c_dkgray;
+        }
+        
+        draw_set_color(border_color);
+        draw_set_alpha(is_selected ? option_alpha : option_alpha * 0.5);
         draw_rectangle(_cx - 200, yy - 18, _cx + 200, yy + 18, true);
         
         // Left accent
-        draw_set_alpha(menu_alpha);
-        var accent_width = is_selected ? 8 : 4;
+        draw_set_alpha(option_alpha);
+        var accent_width = (is_selected && is_available) ? 8 : 4;
+        draw_set_color(is_available ? border_color : c_dkgray);
         draw_rectangle(_cx - 200, yy - 18, _cx - 200 + accent_width, yy + 18, false);
         
-        // Sweep animation
-        if (is_selected) {
+        // Sweep animation (only for available selected)
+        if (is_selected && is_available) {
             var sweep_x = _cx - 200 + (sin(current_time * 0.005) * 0.5 + 0.5) * 400;
             gpu_set_blendmode(bm_add);
             draw_set_alpha(menu_alpha * 0.3);
@@ -736,34 +745,47 @@ static DrawMainMenu = function(_w, _h, _cx, _cy) {
         }
         
         // Text
-        draw_set_alpha(menu_alpha);
-        draw_set_font(is_selected ? fnt_large : fnt_default);
-        draw_set_color(is_selected ? title_col_yellow : c_white);
+        draw_set_alpha(option_alpha);
+        draw_set_font((is_selected && is_available) ? fnt_large : fnt_default);
+        
+        if (is_available) {
+            draw_set_color((is_selected) ? title_col_yellow : c_white);
+        } else {
+            draw_set_color(c_dkgray);
+        }
+        
         draw_text(_cx, yy, main_menu_options[i]);
+        
+        // LOCKED indicator for unavailable options
+        if (!is_available) {
+            draw_set_font(fnt_default);
+            draw_set_color(c_red);
+            draw_set_alpha(menu_alpha * 0.6);
+            draw_text(_cx + 100, yy, "[LOCKED]");
+        }
     }
-	
-	    // === FIRE PARTICLES (Draw LAST so they're on top) ===
+    
+    draw_set_alpha(1);
+    
+    // === FIRE PARTICLES ===
     part_system_drawit(part_sys_menu_fire);
     
-    // === BOTTOM BAR (retro style) ===
+    // === BOTTOM BAR ===
     draw_set_alpha(0.8);
     draw_set_color(c_black);
     draw_rectangle(0, _h - 70, _w, _h, false);
     draw_set_alpha(1);
     
-    // Border
     draw_set_color(title_col_orange);
     draw_set_alpha(0.3);
     draw_line_width(0, _h - 70, _w, _h - 70, 2);
     draw_set_alpha(1);
     
-    // Version
     draw_set_halign(fa_left);
     draw_set_font(fnt_default);
     draw_set_color(make_color_rgb(102, 102, 102));
-    draw_text(30, _h - 45, "VERISON 1.0");
+    draw_text(30, _h - 45, "VERSION 1.0");
     
-    // Controls
     draw_set_halign(fa_right);
     draw_set_color(make_color_rgb(136, 136, 136));
     
@@ -773,61 +795,92 @@ static DrawMainMenu = function(_w, _h, _cx, _cy) {
     draw_text(control_x, control_y, "[Enter] Select");
     draw_text(control_x, control_y - 20, "[WASD] / [Arrows] Navigate");
     
+    // === TARLHS HINT (when menu locked) ===
+    if (!menu_unlocked) {
+        draw_set_halign(fa_center);
+        draw_set_valign(fa_middle);
+        draw_set_font(fnt_default);
+        
 
+        // Pulsing effect
+        var pulse = 0.6 + sin(current_time * 0.004) * 0.3;
+        draw_set_alpha(pulse);
+        draw_set_color(c_red);
+        draw_text(_cx, _cy - 75, "TARLHS awaits your signature...");
+        
+        draw_set_color(title_col_yellow);
+        draw_set_alpha(pulse * 0.8);
+        draw_text(_cx, _cy - 100, "[ Select UNLOCKS to begin ]");
+    }
     
-    // Reset draw settings
+    // Reset
     draw_set_alpha(1);
     draw_set_halign(fa_left);
     draw_set_valign(fa_top);
     draw_set_color(c_white);
 }
 
-
-
-	
-    /// @function HandleMainMenu(_input, _audio, _mx, _my)
-    static HandleMainMenu = function(_input, _audio, _mx, _my) {
-        var cy = display_get_gui_height() / 2;
-        var cx = display_get_gui_width() / 2;
-        
-        var prev_selection = selected_option;
-        
-        // Keyboard/gamepad navigation
-        if (_input.UpPress) {
-            selected_option = (selected_option - 1 + array_length(main_menu_options)) mod array_length(main_menu_options);
-        }
-        if (_input.DownPress) {
-            selected_option = (selected_option + 1) mod array_length(main_menu_options);
-        }
-        
-        // Play sound on selection change
-        if (prev_selection != selected_option) {
-            _audio.PlayUISound(snd_menu_hover);
-        }
-        
-        // Mouse hover
-        for (var i = 0; i < array_length(main_menu_options); i++) {
-            var yy = cy + (i * 60) - 30;
-            if (point_in_rectangle(_mx, _my, cx - 120, yy - 25, cx + 120, yy + 25)) {
-                if (selected_option != i) {
-                    selected_option = i;
-                    _audio.PlayUISound(snd_menu_hover);
-                }
+/// @function HandleMainMenu(_input, _audio, _mx, _my)
+static HandleMainMenu = function(_input, _audio, _mx, _my) {
+    var cy = display_get_gui_height() / 2;
+    var cx = display_get_gui_width() / 2;
+    
+    var menu_unlocked = global.SaveData.career.tutorial.menu_unlocked;
+    var prev_selection = selected_option;
+    
+    // Keyboard/gamepad navigation
+    if (_input.UpPress) {
+        selected_option = (selected_option - 1 + array_length(main_menu_options)) mod array_length(main_menu_options);
+    }
+    if (_input.DownPress) {
+        selected_option = (selected_option + 1) mod array_length(main_menu_options);
+    }
+    
+    // Play sound on selection change
+    if (prev_selection != selected_option) {
+        _audio.PlayUISound(snd_menu_hover);
+    }
+    
+    // Mouse hover
+    for (var i = 0; i < array_length(main_menu_options); i++) {
+        var yy = cy + (i * 60) - 30;
+        if (point_in_rectangle(_mx, _my, cx - 200, yy - 18, cx + 200, yy + 18)) {
+            if (selected_option != i) {
+                selected_option = i;
+                _audio.PlayUISound(snd_menu_hover);
+            }
+            
+            if (_input.FirePress) {
+                // Check if option is available
+                var is_available = menu_unlocked || (i == 1);  // 1 = UNLOCKS
                 
-                if (_input.FirePress) {
+                if (is_available) {
                     _audio.PlayUISound(snd_menu_select);
                     SelectMainMenuOption();
+                } else {
+                    // Locked - play error sound or different sound
+                    _audio.PlayUISound(snd_menu_hover);
                 }
             }
         }
-        
-        // Confirm selection
-        if (_input.Action) {
-            _audio.PlayUISound(snd_menu_select);
-            SelectMainMenuOption();
-        }
     }
     
+    // Confirm selection (keyboard/gamepad)
+    if (_input.Action) {
+        // Check if current selection is available
+        var is_available = menu_unlocked || (selected_option == 1);  // 1 = UNLOCKS
+        
+        if (is_available) {
+            _audio.PlayUISound(snd_menu_select);
+            SelectMainMenuOption();
+        } else {
+            // Locked
+            _audio.PlayUISound(snd_menu_hover);
+        }
+    }
+}
+
+	
     /// @function SelectMainMenuOption()
     static SelectMainMenuOption = function() {
         switch(selected_option) {
@@ -841,7 +894,7 @@ static DrawMainMenu = function(_w, _h, _cx, _cy) {
             case 2: // STATS
                 state = MENU_STATE.STATS;
                 stats_scroll_offset = 0;
-                stats_selected_character = CharacterClass.WARRIOR;
+                stats_selected_character = CharacterClass.VAMPIRE_HUNTER;
                 break;
             case 3: // SETTINGS
                 state = MENU_STATE.SETTINGS;
@@ -3272,11 +3325,7 @@ static GetCharacterLoadoutPreview = function(_character_class) {
 	        selected_option = 3;
 	        SaveAudioSettings(_audio);
 	    }
-	if (keyboard_check(vk_f1)) {
-        ResetSaveData();
-        show_message("Save data reset!");
-		game_restart();
-    }
+	
 	}
     
     // ==========================================
@@ -4005,27 +4054,41 @@ static GetCharacterLoadoutPreview = function(_character_class) {
 	    draw_text(_cx, panel_y + panel_h - 30, "ESC to return");
 	}
 
-	/// @function HandleUnlocks(_input, _audio)
-	static HandleUnlocks = function(_input, _audio) {
-	    // Initialize skill tree if not exists
-	    if (!variable_struct_exists(self, "skill_tree")) {
-	        skill_tree = new SkillTreeSystem();
-	    }
-    
-	    var mx = device_mouse_x_to_gui(0);
-	    var my = device_mouse_y_to_gui(0);
-    
-	    var player_souls = GetSouls();
-    
-	    // Update skill tree
-	    skill_tree.Update(_input, mx, my, player_souls);
-    
-	    // Back to menu
-	    if (_input.Back || _input.Escape) {
-	        _audio.PlayUISound(snd_menu_select);
-	        state = MENU_STATE.MAIN;
-	        selected_option = 1;
-	    }
-	}
-	
+/// @function HandleUnlocks(_input, _audio)
+static HandleUnlocks = function(_input, _audio) {
+    // Initialize skill tree if not exists
+    if (!variable_struct_exists(self, "skill_tree")) {
+        skill_tree = new SkillTreeSystem();
+    }
+
+    var mx = device_mouse_x_to_gui(0);
+    var my = device_mouse_y_to_gui(0);
+
+    var player_souls = GetSouls();
+
+    // Update skill tree
+    skill_tree.Update(_input, mx, my, player_souls);
+
+    // Back to menu - BLOCKED until back_button_unlocked
+    if (_input.Back || _input.Escape) {
+        // If TARLHS message is active, let the skill tree handle dismiss
+        if (skill_tree.tarlhs_message_active) {
+            // Do nothing here - skill tree Update() handles dismissal
+			skill_tree.tarlhs_message_active = false;
+            //return;
+        }
+        
+        if (global.SaveData.career.tutorial.back_button_unlocked) {
+            // Can leave
+            _audio.PlayUISound(snd_menu_select);
+            state = MENU_STATE.MAIN;
+            selected_option = 1;
+        } else {
+            // CAN'T LEAVE - show TARLHS message (only if not already showing)
+            _audio.PlayUISound(snd_menu_hover);
+            skill_tree.ShowEscapeBlockedMessage();
+		
+        }
+    }
+}
 }

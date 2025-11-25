@@ -92,7 +92,17 @@ movement = new PlayerMovement(self, stats.speed);
 // SPRITE SYSTEM
 
 
-spriteHandler = new SpriteHandler(spr_vh_walk_west, spr_vh_walk_east, spr_vh_walk_north, spr_vh_walk_south);
+// Get class data with sprites
+var class_data = GetPlayerClassData(character_class);
+
+// Create sprite handler from class sprites
+spriteHandler = new SpriteHandler(
+    class_data.sprites.west,
+    class_data.sprites.east,
+    class_data.sprites.north,
+    class_data.sprites.south
+);
+
 currentSprite = spr_vh_walk_west;
 image_speed = 1;
 

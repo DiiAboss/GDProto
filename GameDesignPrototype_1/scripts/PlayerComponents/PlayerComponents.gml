@@ -157,43 +157,45 @@ function PlayerMovement(_self, _playerSpeed) constructor {
         return true;
     }
     
-    static ExecuteDash = function(_self, _baseSpeed, _dashTimer) {
-        var _currentSpeed = _baseSpeed * global.gameSpeed;
-		
-        if (_dashTimer > 0) {
-            _currentSpeed *= dashSpeed;
-            _self.invincibility.active = true;
-            _self.invincibility.timer = 2;
-            createAfterImage(callingObject, _dashTimer, 2, callingObject.currentSprite, callingObject.image_index);
-			
-			// Check if we dodged near an enemy projectile
-		    var dodged_something = false;
-		    with (obj_enemy_attack_orb) { // Or whatever enemy projectiles are
-		        if (distance_to_object(other) < 32) {
-		            dodged_something = true;
-		            break;
-		        }
-		    }
-		    
-		    if (dodged_something) {
-		        _self.dodge_count++;
-		        _self.last_dodge_time = current_time;
-		        
-		        // Award dodge points
-		        if (instance_exists(obj_game_manager)) {
-		            obj_game_manager.score_manager.AddScore(10, {dodge: true});
-		            
-		            // Visual event
-		            if (variable_instance_exists(obj_game_manager, "score_display")) {
-		                obj_game_manager.score_display.AddComboEvent("DODGE", 10, 1);
-		            }
-		        }
-		    }
-			
-			
-        }
-        return _currentSpeed;
+static ExecuteDash = function(_self, _baseSpeed, _dashTimer) {
+    // Get speed with modifiers (stats.temp_speed_mult, etc.)
+    var _speedMult = 1.0;
+    if (variable_instance_exists(_self, "stats") && _self.stats != undefined) {
+        _speedMult = _self.stats.temp_speed_mult ?? 1.0;
     }
+    
+    var _currentSpeed = _baseSpeed * _speedMult * global.gameSpeed;
+    
+    if (_dashTimer > 0) {
+        _currentSpeed *= dashSpeed;
+        _self.invincibility.active = true;
+        _self.invincibility.timer = 2;
+        createAfterImage(callingObject, _dashTimer, 2, callingObject.currentSprite, callingObject.image_index);
+        
+        // Dodge detection (existing code)
+        var dodged_something = false;
+        with (obj_enemy_attack_orb) {
+            if (distance_to_object(other) < 32) {
+                dodged_something = true;
+                break;
+            }
+        }
+        
+        if (dodged_something) {
+            _self.dodge_count++;
+            _self.last_dodge_time = current_time;
+            
+            if (instance_exists(obj_game_manager)) {
+                obj_game_manager.score_manager.AddScore(10, {dodge: true});
+                if (variable_instance_exists(obj_game_manager, "score_display")) {
+                    obj_game_manager.score_display.AddComboEvent("DODGE", 10, 1);
+                }
+            }
+        }
+    }
+    
+    return _currentSpeed;
+}
 }
 
 function createAfterImage(_self, _timer, _framesPerImage, _sprite, _image_index)

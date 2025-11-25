@@ -6,7 +6,7 @@ function InitializeSkillTreeSaveData() {
     // Ensure skill_tree exists in career
     if (!variable_struct_exists(global.SaveData.career, "skill_tree")) {
         global.SaveData.career.skill_tree = {
-            unlocked_nodes: ["root"],
+            unlocked_nodes: [],
             node_stacks: {}
         };
     }

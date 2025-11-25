@@ -45,7 +45,7 @@ function Input() constructor
 	Reload	  = false;
 	
 	Direction = 0;
-	
+	Cooldown  = 0;
 	
 	for (var cont = 0; cont < 8; cont++)
 	{
@@ -83,6 +83,10 @@ function Input() constructor
 	
 	static Update = function(_self)
 	{
+		if (Cooldown > 0)
+		{
+			Cooldown--;
+		}
 		 // AUTO-DETECT DEVICE SWITCHING
 	    // Check for keyboard activity when in gamepad mode
 	    if (InputType == INPUT.GAMEPAD && keyboard_check(vk_anykey)) {
@@ -241,7 +245,7 @@ global.InputType =
 	
 		Action:		vk_space,
 		Back:		ord("F"),
-		Reload:		ord("R"),
+		Reload:		ord("E"),
 		SwapDown:	-1,
 		SwapUp:     -1,
 		
