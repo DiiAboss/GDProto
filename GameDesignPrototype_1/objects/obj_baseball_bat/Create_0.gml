@@ -4,8 +4,8 @@ event_inherited();
 // Customize bat properties
 swordSprite = spr_way_better_bat;
 sprite_index = spr_way_better_bat;
-attack = 15;
-knockbackForce = 100; // Bats hit harder!
+attack = 8;
+knockbackForce = 16; // Bats hit harder!
 swingSpeed = 10; // Slightly faster than sword
 
 // Baseball bat specific - Sweet Spot System
@@ -20,6 +20,14 @@ sweet_spot_y = y;
 hit_sweet_spot = false;
 hit_sweet_spot_timer = 0;
 
-// Home run multipliers
-homerun_damage_mult = 3.0; // 3x damage on sweet spot
-homerun_knockback_mult = 5.0; // 5x knockback on sweet spot
+
+// HOMERUN SYSTEM (Baseball Player exclusive)
+homerun_chance = 0;           // Set by weapon struct
+is_baseball_player = false;   // Set by weapon struct
+
+// Homerun multipliers (only apply if is_baseball_player)
+homerun_damage_mult = 3.0;    // 3x damage on homerun
+homerun_knockback_mult = 5.0; // 5x knockback on homerun
+
+// Visual feedback
+hit_homerun_timer = 0;

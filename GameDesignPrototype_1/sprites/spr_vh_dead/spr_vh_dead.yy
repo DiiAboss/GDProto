@@ -26,7 +26,7 @@
   "origin":4,
   "parent":{
     "name":"VampireHunter",
-    "path":"folders/PlayerGroup/Sprites/Player_Characters/VampireHunter.yy",
+    "path":"folders/_Player/Sprites/Player_Characters/VampireHunter.yy",
   },
   "preMultiplyAlpha":false,
   "resourceType":"GMSprite",

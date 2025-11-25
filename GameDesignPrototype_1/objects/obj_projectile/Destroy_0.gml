@@ -5,16 +5,16 @@
 // Fire effect
 if (has_fire_effect) {
     var fire_effect = instance_create_depth(x, y, depth, obj_fire_effect);
-    fire_effect.burn_duration = fire_burn_duration;
-    fire_effect.burn_damage = fire_burn_damage;
+    fire_effect.burn_duration = burn_duration;
+    fire_effect.burn_damage = burn_damage;
     fire_effect.owner = owner;
 }
 
 // Ice effect
 if (has_ice_effect) {
     var ice_effect = instance_create_depth(x, y, depth, obj_ice_effect);
-    ice_effect.slow_duration = ice_slow_duration;
-    ice_effect.slow_amount = ice_slow_amount;
+    ice_effect.slow_duration = slow_duration;
+    ice_effect.slow_amount = slow_amount;
     ice_effect.owner = owner;
 }
 

@@ -82,9 +82,9 @@ if (!invincibility.active) {
 
 if (place_meeting(x, y, obj_coin)) {
     with (instance_place(x, y, obj_coin)) {
-        other.gold += 1;
         instance_destroy();
     }
+	gold += 1 * (stats.gold_mult);
 }
 
 
@@ -109,14 +109,26 @@ HandleWeaponSwitching();
 var _hasMoved = movement.Update(input, scale_movement(mySpeed));
 image_speed = scale_animation(_hasMoved ? 0.4 : 0.2);
 currentSprite = SpriteHandler.UpdateSpriteByAimDirection(currentSprite, mouseDirection);
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Track timing window between attacks
 if (attack_timing_window > 0) {
     attack_timing_window-=game_speed_delta();
 }
 
 // CHARGE WEAPON
-
-if (weaponCurrent)
+if (weaponCurrent && !is_falling_in_pit)
 {
 	if (variable_struct_exists(weaponCurrent, "charge_rate")) {
 	    if (input.Fire) {
@@ -135,39 +147,74 @@ if (weaponCurrent)
 	
 	// WEAPON ATTACKS
 	
-	// When player attacks (in your FirePress section)
-	if (input.FirePress) {
-	    // Evaluate timing
-	    if (attack_timing_window > 0 && attack_timing_window <= perfect_timing_threshold) {
-	        last_timing_quality = "perfect";
-	    } else if (attack_timing_window > 0 && attack_timing_window <= perfect_timing_threshold * 2) {
-	        last_timing_quality = "good";
-	    } else {
-	        last_timing_quality = "normal";
+		// Handle melee weapon visibility based on last used weapon
+	if (variable_instance_exists(id, "last_attack_slot")) {
+	    var should_show_melee = false;
+	    var active_slot_weapon = weapons[last_attack_slot];
+    
+	    if (active_slot_weapon != noone && active_slot_weapon.type == WeaponType.Melee) {
+	        should_show_melee = true;
+        
+	        // Switch melee weapon object if needed
+	        if (instance_exists(melee_weapon)) {
+	            if (variable_struct_exists(active_slot_weapon, "melee_object_type")) {
+	                if (melee_weapon.object_index != active_slot_weapon.melee_object_type) {
+	                    instance_destroy(melee_weapon);
+	                    melee_weapon = instance_create_depth(x, y, depth - 1, active_slot_weapon.melee_object_type);
+	                    melee_weapon.owner = self;
+	                    melee_weapon.weapon_id = active_slot_weapon.id;
+	                }
+	            }
+	        } else if (variable_struct_exists(active_slot_weapon, "melee_object_type")) {
+	            melee_weapon = instance_create_depth(x, y, depth - 1, active_slot_weapon.melee_object_type);
+	            melee_weapon.owner = self;
+	            melee_weapon.weapon_id = active_slot_weapon.id;
+	        }
 	    }
-	    
-	    // Reset window for next attack
-	    attack_timing_window = 60; // 1 second window
-	 
-		
-	    // Your existing attack code...
-	    var attack_result = weaponCurrent.primary_attack(self, mouseDirection, mouseDistance, weaponCurrent.projectile_struct);
-		if (attack_result && switch_near_enemy > 0)
-		{
-			AwardStylePoints("WEAPON SWAP", 5, 1);
-		}
+    
+	    // Hide melee weapon if last used was ranged
+	    if (!should_show_melee && instance_exists(melee_weapon)) {
+	        melee_weapon.visible = false;
+	    } else if (instance_exists(melee_weapon)) {
+	        melee_weapon.visible = true;
+	    }
 	}
-	
-	if (input.AltPress) {
-	    weaponCurrent.secondary_attack(self, mouseDirection, mouseDistance, weaponCurrent.projectile_struct);
-		show_debug_message("AltrFire Pressed");
+
+	// PRIMARY ATTACK (LMB) - Slot 0
+	if (input.FirePress && weapons[0] != noone) {
+	    last_attack_slot = 0;
+	    var primary_weapon = weapons[0];
+    
+	    // Update weaponCurrent for systems that need it
+	    weaponCurrent = primary_weapon;
+	    UpdateWeaponTags(self, 0);
+    
+	    var attack_result = primary_weapon.primary_attack(self, mouseDirection, mouseDistance, primary_weapon.projectile_struct);
+    
+	    if (attack_result && switch_near_enemy > 0) {
+	        AwardStylePoints("WEAPON SWAP", 5, 1);
+	    }
 	}
-	
-	if (variable_struct_exists(weaponCurrent, "step")) {
-	    weaponCurrent.step(self);
+
+	// ALT ATTACK (RMB) - Slot 1
+	if (input.AltPress && weapons[1] != noone) {
+	    last_attack_slot = 1;
+	    var alt_weapon = weapons[1];
+    
+	    // Update weaponCurrent for systems that need it
+	    weaponCurrent = alt_weapon;
+	    UpdateWeaponTags(self, 1);
+    
+	    alt_weapon.primary_attack(self, mouseDirection, mouseDistance, alt_weapon.projectile_struct);
 	}
-	
-	UpdateTimingVisuals();
+
+	// Run step functions for BOTH weapons
+	if (weapons[0] != noone && variable_struct_exists(weapons[0], "step")) {
+	    weapons[0].step(self);
+	}
+	if (weapons[1] != noone && variable_struct_exists(weapons[1], "step")) {
+	    weapons[1].step(self);
+	}
 }
 
 
@@ -190,7 +237,7 @@ function HandleCarrying() {
     // THROW CARRIED OBJECT
     if (is_carrying && instance_exists(carried_object)) {
         if (input.FirePress) { // Left click to throw
-            ThrowCarriedObject(self, carried_object);
+            ThrowCarriedObject(self);
             return;
         }
         
@@ -226,13 +273,6 @@ function AttemptPickup() {
             weaponCurrent = global.WeaponStruct.ThrowableItem;
             charge_amount = 0;
             
-            // DEBUG: Check if weapon has synergy tags
-            show_debug_message("=== PICKUP DEBUG ===");
-            if (variable_struct_exists(weaponCurrent, "synergy_tags")) {
-                show_debug_message("ThrowableItem has synergy_tags");
-            } else {
-                show_debug_message("ThrowableItem MISSING synergy_tags!");
-            }
             
             // Update synergy tags for throwable weapon
             // NOTE: We're not switching weapon slots, just weaponCurrent reference
@@ -241,16 +281,9 @@ function AttemptPickup() {
             weapons[current_weapon_index] = weaponCurrent;
             UpdateWeaponTags(id, current_weapon_index);
             weapons[current_weapon_index] = temp_weapon; // Restore original
-            
-            show_debug_message("Combined tags: " + active_combined_tags.DebugPrint());
-            show_debug_message("Active synergies: " + string(active_synergies));
-            show_debug_message("===================");
-            
             if (variable_instance_exists(nearest, "OnPickedUp")) {
                 nearest.OnPickedUp(id);
             }
-            
-            show_debug_message("Picked up: " + object_get_name(nearest.object_index));
         }
     }
 }
@@ -287,7 +320,6 @@ function ThrowCarriedObject(_self) {
             // Apply synergy behaviors (homing, power throw, etc)
             ApplySynergyBehavior(obj, active_combined_tags, active_synergies, id);
             
-            show_debug_message("Applied synergies to thrown object. Synergies: " + string(active_synergies));
         }
         
         // Call throw event (for custom behavior)
@@ -299,7 +331,6 @@ function ThrowCarriedObject(_self) {
     carried_object = noone;
     stats.temp_speed_mult = 1.0; // Restore speed
     weaponCurrent = previous_weapon_instance;
-    show_debug_message("Threw object!");
 }
 
 /// @func DropCarriedObject()
@@ -334,23 +365,13 @@ if (is_carrying && keyboard_check_pressed(ord("Q"))) {
 }
 
 
-// DEBUG COMMANDS
+//// Camera debug
+//if (keyboard_check_pressed(vk_f1)) camera.add_shake(5);
+//if (keyboard_check_pressed(vk_f2)) camera.add_shake(15);
+//if (keyboard_check_pressed(vk_f3)) camera.set_zoom(1.5);
+//if (keyboard_check_pressed(vk_f4)) camera.set_zoom(0.8);
+//if (keyboard_check_pressed(vk_f5)) camera.set_zoom(1.0);
 
-#region Debug
-if (keyboard_check_pressed(ord("M"))) AddModifier(id, "TripleRhythmFire");
-if (keyboard_check_pressed(ord("Q"))) {
-    var _near = instance_nearest(x, y, obj_enemy);
-    if (instance_exists(_near)) scr_chain_lightning(self, _near, 10, 256, 10, 10);
-}
-if (keyboard_check_pressed(ord("0"))) AddModifier(id, "MultiShot");
-
-// Camera debug
-if (keyboard_check_pressed(vk_f1)) camera.add_shake(5);
-if (keyboard_check_pressed(vk_f2)) camera.add_shake(15);
-if (keyboard_check_pressed(vk_f3)) camera.set_zoom(1.5);
-if (keyboard_check_pressed(vk_f4)) camera.set_zoom(0.8);
-if (keyboard_check_pressed(vk_f5)) camera.set_zoom(1.0);
-#endregion
 
 
 
@@ -359,6 +380,25 @@ if (keyboard_check_pressed(vk_f5)) camera.set_zoom(1.0);
 
 
 // HELPER FUNCTIONS
+
+function OnPlayerDamaged() {
+    // Reset combo
+    if (combo_count > 0) {
+        // Optional: Show combo break effect
+        var popup = instance_create_depth(x, y - 32, -9999, obj_floating_text);
+        popup.text = "COMBO BREAK!";
+        popup.color = c_red;
+    }
+    
+    // Track max combo before reset
+    if (combo_count > max_combo_reached) {
+        max_combo_reached = combo_count;
+    }
+    
+    combo_count = 0;
+    combo_display_timer = 0;
+}
+
 
 
 /// @func CheckDamage()
@@ -370,7 +410,6 @@ function CheckDamage() {
     if (enemy != noone && !enemy.marked_for_death && !knockback.IsActive()) {
         // Apply damage and activate invincibility
         damage_sys.TakeDamage(enemy.damage, enemy);
-        invincibility.Activate();
         just_hit = max_just_hit;
 		alarm[0] = 1; // Check for death
         // Knockback from enemy
@@ -381,8 +420,6 @@ function CheckDamage() {
         enemy.hitFlashTimer = 5;
         enemy.knockback.Apply(kbDir + 180, 2);
 		
-        // Show HP bar
-        timers.Set("hp_bar", 120);
         
         // IMPORTANT: Exit to prevent multiple hits this frame
         return;
@@ -392,10 +429,8 @@ function CheckDamage() {
     var projectile = instance_place(x, y, obj_enemy_attack_orb);
     if (projectile != noone) {
         damage_sys.TakeDamage(10, projectile);
-        invincibility.Activate();
 		alarm[0] = 1;
         instance_destroy(projectile);
-        timers.Set("hp_bar", 120);
         return;
     }
     
@@ -416,7 +451,6 @@ function CheckDamage() {
             damage = clamp(damage, spike.baseDamage, spike.maxDamage);
             
             damage_sys.TakeDamage(round(damage), spike);
-            invincibility.Activate();
             alarm[0] = 1;
             knockback.x_velocity = 0;
             knockback.y_velocity = 0;
@@ -427,8 +461,6 @@ function CheckDamage() {
             ds_list_add(spike.hitList, [id, spike.hitCooldown * 2]);
             spike.bloodTimer = 20;
             spike.shake = 3;
-            
-            timers.Set("hp_bar", 120);
             return;
         }
     }
@@ -447,7 +479,6 @@ function CheckDamage() {
         if (canHit) {
 			alarm[0] = 1;
             damage_sys.TakeDamage(ball.damage, ball);
-            invincibility.Activate();
             
             var kbDir = point_direction(ball.x, ball.y, x, y);
             knockback.Apply(kbDir, ball.knockbackForce);
@@ -457,8 +488,6 @@ function CheckDamage() {
             
             ds_list_add(ball.hitList, [id, ball.hitCooldown]);
             ball.hitFlashTimer = 5;
-            
-            timers.Set("hp_bar", 120);
         }
     }
 }
@@ -511,112 +540,3 @@ function HandleWeaponSwitching() {
 }
 
 
-//// DEBUG: Give random weapon
-//if (keyboard_check_pressed(vk_f6)) {
-    //var test_weapon = choose(Weapon.Sword, Weapon.Bow, Weapon.BaseballBat);
-    //GiveWeapon(self, test_weapon);
-//}
-
-if (keyboard_check_pressed(vk_f6)) {
-    // Direct score add test
-    if (instance_exists(obj_game_manager)) {
-        obj_game_manager.score_manager.AddScore(100);
-        var current = obj_game_manager.score_manager.GetScore();
-        show_debug_message("Added 100 score. Total now: " + string(current));
-    }
-}
-
-
-
-
-
-// In obj_player Step_0
-if (keyboard_check_pressed(vk_f5)) {
-    show_debug_message("===== SYNERGY DEBUG =====");
-    
-    // Better character tag display
-    if (variable_instance_exists(id, "synergy_tags")) {
-        var char_tags = synergy_tags.GetAllTags();
-        var char_str = "";
-        for (var i = 0; i < array_length(char_tags); i++) {
-            char_str += GetTagName(char_tags[i]);
-            if (i < array_length(char_tags) - 1) char_str += ", ";
-        }
-        show_debug_message("Character Tags: " + char_str);
-    }
-    
-    // Better weapon tag display
-    if (weapons[current_weapon_index] != noone) {
-        var weapon = weapons[current_weapon_index];
-        if (variable_struct_exists(weapon, "synergy_tags")) {
-            var weap_tags = weapon.synergy_tags.GetAllTags();
-            var weap_str = "";
-            for (var i = 0; i < array_length(weap_tags); i++) {
-                weap_str += GetTagName(weap_tags[i]);
-                if (i < array_length(weap_tags) - 1) weap_str += ", ";
-            }
-            show_debug_message("Weapon Tags: " + weap_str);
-        }
-    }
-    
-    // Combined tags
-    if (variable_instance_exists(id, "active_combined_tags")) {
-        var combined = active_combined_tags.GetAllTags();
-        var comb_str = "";
-        for (var i = 0; i < array_length(combined); i++) {
-            comb_str += GetTagName(combined[i]);
-            if (i < array_length(combined) - 1) comb_str += ", ";
-        }
-        show_debug_message("Combined Tags: " + comb_str);
-    }
-    
-    // Active synergies
-    if (variable_instance_exists(id, "active_synergies")) {
-        var syn_str = "";
-        for (var i = 0; i < array_length(active_synergies); i++) {
-            syn_str += GetTagName(active_synergies[i]);
-            if (i < array_length(active_synergies) - 1) syn_str += ", ";
-        }
-        show_debug_message("Active Synergies: " + syn_str);
-    }
-}
-
-
-// Temporary test - press F6 to manually update tags
-if (keyboard_check_pressed(vk_f6)) {
-    if (weapons[current_weapon_index] != noone) {
-        UpdateWeaponTags(self, current_weapon_index);
-        show_debug_message("Force updated weapon tags!");
-    }
-}
-
-
-
-if (keyboard_check_pressed(ord("1"))) {
-    status.ApplyStatusEffect(ELEMENT.FIRE, {damage: 5, duration: 180});
-}
-if (keyboard_check_pressed(ord("2"))) {
-    status.ApplyStatusEffect(ELEMENT.ICE, {slow_mult: 0.4, duration: 180});
-}
-if (keyboard_check_pressed(ord("3"))) {
-    status.ApplyStatusEffect(ELEMENT.POISON, {damage: 2, duration: 240});
-}
-if (keyboard_check_pressed(ord("4"))) {
-    status.ApplyStatusEffect(ELEMENT.LIGHTNING, {duration: 90});
-}
-
-
-if (keyboard_check_pressed(vk_f9)) {
-    show_debug_message("=== WEAPON SLOTS DEBUG ===");
-    show_debug_message("Total slots: " + string(weapon_slots));
-    show_debug_message("Current weapon index: " + string(current_weapon_index));
-    
-    for (var i = 0; i < weapon_slots; i++) {
-        var w = weapons[i];
-        var _status = "EMPTY";
-        if (w != noone) {
-            _status = w.name;
-        }
-        show_debug_message("Slot " + string(i) + ": " + _status);
-    }
-}

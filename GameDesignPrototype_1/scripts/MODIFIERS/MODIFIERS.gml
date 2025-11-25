@@ -69,6 +69,7 @@ global.Modifiers = {};
 global.Modifiers.FireEnchantment = {
     name: "Fire Enchantment",
     description: "10% chance to ignite (10% per stack, max 50%)",
+	max_level: 3,
     triggers: [MOD_TRIGGER.ON_ATTACK],
     synergy_tags: [SYNERGY_TAG.FIRE],
     proc_chance: 0.10,
@@ -95,6 +96,7 @@ global.Modifiers.FireEnchantment = {
 global.Modifiers.IceEnchantment = {
     name: "Ice Enchantment",
     description: "10% chance to freeze (10% per stack, max 50%)",
+	max_level: 3,
     triggers: [MOD_TRIGGER.ON_ATTACK],
     synergy_tags: [SYNERGY_TAG.ICE],
     proc_chance: 0.10,
@@ -121,6 +123,7 @@ global.Modifiers.IceEnchantment = {
 global.Modifiers.LightningEnchantment = {
     name: "Lightning Enchantment",
     description: "10% chance to shock (10% per stack, max 50%)",
+	max_level: 3,
     triggers: [MOD_TRIGGER.ON_ATTACK],
     synergy_tags: [SYNERGY_TAG.LIGHTNING],
     proc_chance: 0.10,
@@ -145,6 +148,7 @@ global.Modifiers.LightningEnchantment = {
 global.Modifiers.PoisonEnchantment = {
     name: "Poison Enchantment",
     description: "10% chance to poison (10% per stack, max 50%)",
+	max_level: 3,
     triggers: [MOD_TRIGGER.ON_ATTACK],
     synergy_tags: [SYNERGY_TAG.POISON],
     proc_chance: 0.10,
@@ -171,6 +175,7 @@ global.Modifiers.PoisonEnchantment = {
 global.Modifiers.Souls2x = {
     name: "Double Souls",
     description: "Earn 2x souls from kills",
+	max_level: 1,
     triggers: [MOD_TRIGGER.ON_KILL],
     synergy_tags: [],
     
@@ -197,7 +202,7 @@ global.Modifiers.ChainLightning = {
     damage_multiplier: 0.5, // Damage relative to attack damage
     damage_falloff: 0.75,   // 75% damage retained per jump
     synergy_tags: [SYNERGY_TAG.LIGHTNING, SYNERGY_TAG.CHAIN],
-    
+    max_level: 1,
     action: function(_entity, _event) {
         var mod_template = global.Modifiers[$ _event.mod_instance.template_key];
         var stack = _event.stack_level ?? 1;
@@ -259,7 +264,7 @@ global.Modifiers.Multishot = {
     triggers: [MOD_TRIGGER.ON_ATTACK],
     activation_chance: 100,
     synergy_tags: [SYNERGY_TAG.PIERCING_SHOT],
-    
+    max_level: 1,
     bonus_projectiles: 2,
     
     action: function(_entity, _event) {
@@ -274,7 +279,7 @@ global.Modifiers.PiercingShot = {
     triggers: [MOD_TRIGGER.ON_ATTACK],
     activation_chance: 100,
     synergy_tags: [SYNERGY_TAG.PIERCING_SHOT],
-    
+    max_level: 5,
     pierce_count: 2,
     
     action: function(_entity, _event) {
@@ -295,7 +300,7 @@ global.Modifiers.CorpseExplosion = {
     description: "25% chance for enemies to explode on death, firing projectiles in all directions",
     triggers: [MOD_TRIGGER.ON_KILL],
     synergy_tags: [SYNERGY_TAG.EXPLOSIVE],
-    
+    max_level: 1,
     proc_chance: 0.25,           // 100% chance (or make it 0.5 for 50%)
     projectile_count: 8,
     projectile_type: obj_arrow,
@@ -337,7 +342,7 @@ global.Modifiers.StrengthBoost = {
     triggers: [MOD_TRIGGER.PASSIVE],
     activation_chance: 100,
     synergy_tags: [SYNERGY_TAG.STRENGTH],
-    
+    max_level: 10,
     stats: {
         damage_bonus: 5,
 		damage_mult: 1.5,
@@ -354,7 +359,7 @@ global.Modifiers.SpeedBoost = {
     triggers: [MOD_TRIGGER.PASSIVE],
     activation_chance: 100,
     synergy_tags: [SYNERGY_TAG.SPEED],
-    
+    max_level: 10,
     stats: {
         speed_bonus: 0.5,
 		speed_mult: 1.2  // This needs to exist
@@ -371,7 +376,7 @@ global.Modifiers.GlassCannon = {
     triggers: [MOD_TRIGGER.PASSIVE],
     activation_chance: 100,
     synergy_tags: [SYNERGY_TAG.GLASS_CANNON, SYNERGY_TAG.STRENGTH],
-    
+    max_level: 1,
     stats: {
         damage_mult: 1.5,
         defense_mult: 0.5
@@ -388,7 +393,7 @@ global.Modifiers.Tank = {
     triggers: [MOD_TRIGGER.PASSIVE],
     activation_chance: 100,
     synergy_tags: [SYNERGY_TAG.TANKY, SYNERGY_TAG.WEIGHT],
-    
+    max_level: 1,
     stats: {
         max_hp_bonus: 50,
         speed_mult: 0.8
@@ -405,7 +410,7 @@ global.Modifiers.CriticalStrike = {
     triggers: [MOD_TRIGGER.ON_HIT],
     proc_chance: 0.15, // 15% chance
     synergy_tags: [SYNERGY_TAG.CRITICAL],
-    
+    max_level: 1,
     crit_multiplier: 2.0,
     
     action: function(_entity, _event) {
@@ -438,7 +443,7 @@ global.Modifiers.Lifesteal = {
     description: "Heal 10% of damage dealt",
     triggers: [MOD_TRIGGER.ON_HIT],
     synergy_tags: [SYNERGY_TAG.LIFESTEAL],
-    
+    max_level: 1,
     lifesteal_percent: 0.10,
     
     action: function(_entity, _event) {
@@ -466,7 +471,7 @@ global.Modifiers.Regeneration = {
     synergy_tags: [SYNERGY_TAG.REGENERATION],
     heal_per_tick: 1,
     tick_rate: 180,
-    
+    max_level: 1,
     action: function(_entity, _event) {
         if (!variable_instance_exists(_entity.stats, "regen_timer")) _entity.stats.regen_timer = 0;
         
@@ -486,7 +491,7 @@ global.Modifiers.warrior_rage = {
     triggers: [MOD_TRIGGER.PASSIVE],
     is_innate: true,  // Can't be removed
     synergy_tags: [SYNERGY_TAG.BRUTAL],
-    
+    max_level: 1,
     stats: {
         // Calculated dynamically in action
     },
@@ -507,6 +512,7 @@ global.Modifiers.warrior_rage = {
 global.Modifiers.armor_plating = {
     name: "Armor Plating",
     description: "+2 Armor (reduces damage taken)",
+	max_level: 1,
     triggers: [MOD_TRIGGER.PASSIVE],
     is_innate: true,
     synergy_tags: [SYNERGY_TAG.TANKY],
@@ -544,6 +550,7 @@ global.Modifiers.mana_system = {
 global.Modifiers.blessed_ground = {
     name: "Blessed Ground",
     description: "Standing in holy water heals 1 HP/sec",
+	max_level: 1,
     triggers: [MOD_TRIGGER.PASSIVE],
     is_innate: true,
     synergy_tags: [SYNERGY_TAG.HOLY],
@@ -566,6 +573,7 @@ global.Modifiers.blessed_ground = {
 global.Modifiers.lifesteal_passive = {
     name: "Lifesteal",
     description: "15% of damage dealt heals you",
+	max_level: 1,
     triggers: [MOD_TRIGGER.ON_HIT],
     is_innate: true,
     synergy_tags: [SYNERGY_TAG.LIFESTEAL, SYNERGY_TAG.VAMPIRE],
@@ -586,6 +594,7 @@ global.Modifiers.lifesteal_passive = {
 global.Modifiers.blood_frenzy = {
     name: "Blood Frenzy",
     description: "Killing enemies grants +50% speed for 3 seconds",
+	max_level: 1,
     triggers: [MOD_TRIGGER.ON_KILL, MOD_TRIGGER.PASSIVE],
     is_innate: true,
     synergy_tags: [SYNERGY_TAG.VAMPIRE, SYNERGY_TAG.SPEED],
@@ -625,6 +634,7 @@ global.Modifiers.blood_frenzy = {
 global.Modifiers.Lucky = {
     name: "Lucky",
     description: "+10% to ALL proc chances, +30% drop rates, +30% gold",
+	max_level: 5,
     triggers: [MOD_TRIGGER.PASSIVE],
     synergy_tags: [],
     
@@ -648,6 +658,7 @@ global.Modifiers.Lucky = {
 global.Modifiers.ExpBoost = {
     name: "Adrenaline Rush",
     description: "+100% XP gain from kills",
+	max_level: 5,
     triggers: [],  // ← REMOVE PASSIVE TRIGGER
     synergy_tags: [],
     stats: { experience_mult: 2.0 }
@@ -658,6 +669,7 @@ global.Modifiers.ExpBoost = {
 global.Modifiers.Investor = {
     name: "Investor",
     description: "Gold generates 1% interest per second (max 2x starting gold)",
+	max_level: 5,
     triggers: [MOD_TRIGGER.PASSIVE],
     synergy_tags: [],
     
@@ -689,6 +701,7 @@ global.Modifiers.Investor = {
 global.Modifiers.Compounding = {
     name: "Compounding Interest",
     description: "Each kill increases soul gain by 1% (stacks infinitely)",
+	max_level: 5,
     triggers: [MOD_TRIGGER.ON_KILL, MOD_TRIGGER.PASSIVE],
     synergy_tags: [],
     bonus_per_kill: 0.01,

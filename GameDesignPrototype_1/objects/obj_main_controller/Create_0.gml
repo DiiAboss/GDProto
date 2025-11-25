@@ -53,7 +53,6 @@ textbox_system = new TextboxSystem();
 /// @function ReturnToOverworld()
 function ReturnToOverworld() {
     if (sub_room_return_data == noone) {
-        show_debug_message("ERROR: No return data!");
         room_goto(rm_demo_room);
         return;
     }
@@ -92,6 +91,4 @@ function UnlockDoor(_zone, _door_type) {
     // Save to persistent data
     global.SaveData.discovered_doors[$ zone_key][$ door_key] = true;
     SaveGame();
-    
-    show_debug_message("UNLOCKED: " + zone_key + " " + door_key);
 }

@@ -258,6 +258,7 @@ function DamageComponent(_owner, _max_hp) constructor {
 	        if (is_player) {
 	            invincibility.Activate();
 	            timers.Set("hp_bar", 120);
+				OnPlayerDamaged();
 	        }
 	        
 	        // Everyone can flash

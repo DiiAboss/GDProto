@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"scr_WeaponsManager",
   "parent":{
-    "name":"PLAYER_SCRIPTS",
-    "path":"folders/PlayerGroup/Sprites/PLAYER_SCRIPTS.yy",
+    "name":"Scripts",
+    "path":"folders/_Player/Scripts.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

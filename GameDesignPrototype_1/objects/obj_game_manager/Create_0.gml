@@ -20,7 +20,6 @@ score_display = new ScoreDisplayManager();
 time_manager.SetupDefaultMilestones();
 
 time_manager.OnMilestoneReached = function(_milestone) {
-    show_debug_message("MILESTONE: " + _milestone.name);
     
     
     if (_milestone.time_seconds % 120 == 0 && _milestone.time_seconds > 0) {
@@ -123,7 +122,6 @@ function SpawnMiniBossWave() {
     var boss_type = choose(obj_miniboss_berserker, obj_miniboss_summoner, obj_miniboss_tank);
     
     instance_create_depth(spawn_x, spawn_y, 0, boss_type);
-    show_debug_message("Mini-boss spawned!");
 }
 
 
@@ -184,7 +182,6 @@ function gm_calculate_player_stats(_atk, _hp, _kb, _spd) {
 
 /// @function OnChestOpening(_chest)
 function OnChestOpening(_chest) {
-    show_debug_message("Chest opening - starting slowdown effect");
     slowdown_active = true;
     slowdown_timer = 0;
     
@@ -195,7 +192,6 @@ function OnChestOpening(_chest) {
 
 /// @function OnChestClosing(_chest)
 function OnChestClosing(_chest) {
-    show_debug_message("Chest closing - resuming game");
     pause_manager.Resume(PAUSE_REASON.CHEST_OPENING);
 }
 
@@ -218,8 +214,7 @@ function HandleGameplayStart() {
     CreateUIManager();
     
     games_played_this_session++;
-    
-    show_debug_message("=== GAME START ===");
+
 }
 
 function HandleGameOverStart() {
@@ -228,73 +223,141 @@ function HandleGameOverStart() {
     var final_score = score_manager.GetScore();
     var final_time = time_manager.GetFormattedTime();
     var style_stats = score_manager.GetStyleStats();
-    
-    show_debug_message("=== GAME OVER ===");
-    show_debug_message("Final Score: " + string(final_score));
-    show_debug_message("Time Survived: " + final_time);
 }
 
 function HandleHighscoreStart() {
     // Future highscore loading
 }
 
+
 /// @function ShowLevelUpPopup()
-/// Add this to obj_game_manager
 function ShowLevelUpPopup(_can_click) {
-    // Don't show popup if one is already active
-    if (global.selection_popup != noone || can_click == false) {
-		// Resume game
+    if (global.selection_popup != noone || _can_click == false) {
         return;
     }
     
-	
-    // Generate 3 random modifier choices
     var options = [];
     var available_mods = GetAvailableModifiers();
     
-    // Pick 3 random unique modifiers
-    var chosen_mods = [];
-    for (var i = 0; i < 3; i++) {
-        if (array_length(available_mods) == 0) break;
-        
-        var random_index = irandom(array_length(available_mods) - 1);
-        var mod_key = available_mods[random_index];
-        array_push(chosen_mods, mod_key);
-        
-        // Remove from available to avoid duplicates
-        array_delete(available_mods, random_index, 1);
+    if (array_length(available_mods) == 0) {
+        pause_manager.Resume(PAUSE_REASON.LEVEL_UP);
+        return;
     }
     
-    // Build option structs for popup
+    // Separate new mods from upgrades
+    var new_mods = [];
+    var upgrade_mods = [];
+    
+    for (var i = 0; i < array_length(available_mods); i++) {
+        if (available_mods[i].is_upgrade) {
+            array_push(upgrade_mods, available_mods[i]);
+        } else {
+            array_push(new_mods, available_mods[i]);
+        }
+    }
+    
+    // Pick 3 random mods (guarantee 1 upgrade if player has mods)
+    var chosen_mods = [];
+    var guaranteed_upgrade = array_length(upgrade_mods) > 0 && array_length(obj_player.mod_list) > 0;
+    
+    for (var i = 0; i < 3; i++) {
+        if (i == 0 && guaranteed_upgrade && array_length(upgrade_mods) > 0) {
+            var random_index = irandom(array_length(upgrade_mods) - 1);
+            array_push(chosen_mods, upgrade_mods[random_index]);
+            array_delete(upgrade_mods, random_index, 1);
+            continue;
+        }
+        
+        // Pick from combined pool
+        var combined = [];
+        for (var j = 0; j < array_length(new_mods); j++) array_push(combined, new_mods[j]);
+        for (var j = 0; j < array_length(upgrade_mods); j++) array_push(combined, upgrade_mods[j]);
+        
+        if (array_length(combined) == 0) break;
+        
+        var random_index = irandom(array_length(combined) - 1);
+        var picked = combined[random_index];
+        array_push(chosen_mods, picked);
+        
+        // Remove from source array
+        if (picked.is_upgrade) {
+            for (var j = 0; j < array_length(upgrade_mods); j++) {
+                if (upgrade_mods[j].key == picked.key) {
+                    array_delete(upgrade_mods, j, 1);
+                    break;
+                }
+            }
+        } else {
+            for (var j = 0; j < array_length(new_mods); j++) {
+                if (new_mods[j].key == picked.key) {
+                    array_delete(new_mods, j, 1);
+                    break;
+                }
+            }
+        }
+    }
+    
+    // Shuffle so upgrade isn't always first
+    for (var i = array_length(chosen_mods) - 1; i > 0; i--) {
+        var j = irandom(i);
+        var temp = chosen_mods[i];
+        chosen_mods[i] = chosen_mods[j];
+        chosen_mods[j] = temp;
+    }
+    
+    // Build option structs
     for (var i = 0; i < array_length(chosen_mods); i++) {
-        var mod_key = chosen_mods[i];
+        var mod_info = chosen_mods[i];
+        var mod_key = mod_info.key;
         var mod_data = global.Modifiers[$ mod_key];
         
-        // Get sprite for this modifier
         var mod_sprite = GetModifierSprite(mod_key);
         
+        // Build description
+        var desc = "A powerful modifier";
+        if (variable_struct_exists(mod_data, "description")) {
+            desc = mod_data.description;
+        }
+        
+        if (mod_info.is_upgrade) {
+            desc = "Lv" + string(mod_info.current_level) + " → Lv" + string(mod_info.current_level + 1) + "\n" + desc;
+        }
+        
+        var mod_name = mod_key;
+        if (variable_struct_exists(mod_data, "name")) {
+            mod_name = mod_data.name;
+        }
+        
         array_push(options, {
-            name: mod_data.name ?? mod_key,
-            desc: GetModifierDescription(mod_key),
+            name: mod_name,
+            desc: desc,
             sprite: mod_sprite,
-            mod_key: mod_key
+            mod_key: mod_key,
+            current_level: mod_info.current_level,
+            max_level: mod_info.max_level,
+            is_upgrade: mod_info.is_upgrade
         });
     }
     
-    // Callback when player selects
+    // Callback
     function on_modifier_select(index, option) {
-		// Add modifier to player
-        AddModifier(obj_player, option.mod_key);
-        show_debug_message("Player selected: " + option.name);
+        if (option.is_upgrade) {
+            for (var j = 0; j < array_length(obj_player.mod_list); j++) {
+                if (obj_player.mod_list[j].template_key == option.mod_key) {
+                    obj_player.mod_list[j].stack_level++;
+                    break;
+                }
+            }
+            CalculateCachedStats(obj_player);
+        } else {
+            AddModifier(obj_player, option.mod_key);
+        }
         
-        // Resume game
         obj_game_manager.pause_manager.Resume(PAUSE_REASON.LEVEL_UP);
     }
     
-    // Pause game
     pause_manager.Pause(PAUSE_REASON.LEVEL_UP, 0);
     
-    // Create popup
     global.selection_popup = new SelectionPopup(
         display_get_gui_width() / 2,
         display_get_gui_height() / 2,
@@ -302,28 +365,79 @@ function ShowLevelUpPopup(_can_click) {
         on_modifier_select
     );
 }
+/// @function GetModifierRarityColor(_mod_key)
+/// @description Returns a color based on modifier's synergy tags
+function GetModifierRarityColor(_mod_key) {
+    var template = global.Modifiers[$ _mod_key];
+    if (template == undefined) return c_white;
+    
+    var tags = template.synergy_tags ?? [];
+    
+    for (var i = 0; i < array_length(tags); i++) {
+        switch (tags[i]) {
+            case SYNERGY_TAG.FIRE: return make_color_rgb(255, 100, 50);
+            case SYNERGY_TAG.ICE: return make_color_rgb(100, 200, 255);
+            case SYNERGY_TAG.LIGHTNING: return make_color_rgb(180, 100, 255);
+            case SYNERGY_TAG.POISON: return make_color_rgb(100, 255, 100);
+            case SYNERGY_TAG.LIFESTEAL: return make_color_rgb(255, 50, 80);
+            case SYNERGY_TAG.EXPLOSIVE: return make_color_rgb(255, 150, 50);
+        }
+    }
+    
+    return c_white;
+}
 
 /// @function GetAvailableModifiers()
-/// @returns {array} Array of modifier keys
+/// @returns {array} Array of {key, current_level, is_upgrade, max_level} structs
 function GetAvailableModifiers() {
     var available = [];
     var mod_keys = struct_get_names(global.Modifiers);
     
     for (var i = 0; i < array_length(mod_keys); i++) {
         var key = mod_keys[i];
+        var template = global.Modifiers[$ key];
+        
+        // Get max level - use variable_struct_exists to avoid the error
+        var max_level = 5; // default
+        if (variable_struct_exists(template, "max_level")) {
+            max_level = template.max_level;
+        }
+        
+        // Skip innate modifiers (class abilities)
+        if (variable_struct_exists(template, "is_innate") && template.is_innate) {
+            continue;
+        }
         
         // Check if player already has this modifier
-        var already_has = false;
+        var current_level = 0;
+        var existing_mod = noone;
+        
         for (var j = 0; j < array_length(obj_player.mod_list); j++) {
             if (obj_player.mod_list[j].template_key == key) {
-                already_has = true;
+                existing_mod = obj_player.mod_list[j];
+                current_level = 1;
+                if (variable_struct_exists(existing_mod, "stack_level")) {
+                    current_level = existing_mod.stack_level;
+                }
                 break;
             }
         }
         
-        // Only add if player doesn't have it
-        if (!already_has) {
-            array_push(available, key);
+        // Include if: doesn't have it OR has it but can upgrade
+        if (existing_mod == noone) {
+            array_push(available, {
+                key: key,
+                current_level: 0,
+                is_upgrade: false,
+                max_level: max_level
+            });
+        } else if (current_level < max_level) {
+            array_push(available, {
+                key: key,
+                current_level: current_level,
+                is_upgrade: true,
+                max_level: max_level
+            });
         }
     }
     

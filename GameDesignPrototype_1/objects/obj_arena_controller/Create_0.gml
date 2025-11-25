@@ -49,8 +49,6 @@ function StartNextWave() {
     enemies_to_spawn = 5 + (current_wave * 2);
     enemies_spawned = 0;
     spawn_timer = 0;
-    
-    show_debug_message("WAVE " + string(current_wave) + " START");
 }
 
 /// @function SpawnWaveEnemy()
@@ -73,8 +71,6 @@ function CompleteWave() {
     
     // Drop random items
     DropRandomItems();
-    
-    show_debug_message("WAVE " + string(current_wave) + " COMPLETE");
 }
 
 /// @function DropRandomItems()

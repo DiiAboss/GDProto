@@ -29,7 +29,7 @@
   "origin":4,
   "parent":{
     "name":"Priest",
-    "path":"folders/PlayerGroup/Sprites/Player_Characters/Priest.yy",
+    "path":"folders/_Player/Sprites/Player_Characters/Priest.yy",
   },
   "preMultiplyAlpha":false,
   "resourceType":"GMSprite",

@@ -231,7 +231,7 @@ if (has_ice_effect)
 	scr_spawn_element_particles(
     self,
     spr_ice_particle,
-    [c_red, c_orange, c_yellow],
+    [c_aqua, c_blue, c_teal],
     3,
     [1.5, 3],
     [0.5, 1],
@@ -256,7 +256,7 @@ if (has_lightning_effect)
 	scr_spawn_element_particles(
     self,
     spr_lightning_particle,
-    [c_red, c_orange, c_yellow],
+    [c_yellow, c_aqua],
     3,
     [1.5, 3],
     [0.5, 1],

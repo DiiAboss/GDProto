@@ -29,7 +29,7 @@
   "origin":4,
   "parent":{
     "name":"BBallPlayer",
-    "path":"folders/PlayerGroup/Sprites/Player_Characters/BBallPlayer.yy",
+    "path":"folders/_Player/Sprites/Player_Characters/BBallPlayer.yy",
   },
   "preMultiplyAlpha":false,
   "resourceType":"GMSprite",

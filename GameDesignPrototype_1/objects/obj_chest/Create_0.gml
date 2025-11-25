@@ -48,7 +48,6 @@ function BeginOpening() {
         can_afford = (obj_player.gold >= cost);
         
         if (!can_afford) {
-            show_debug_message("Not enough gold! Need: " + string(cost));
             return;
         }
         

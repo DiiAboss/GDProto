@@ -27,7 +27,13 @@ stats = new StatsComponent(
 // Initialize character synergy tags
 synergy_tags = InitializeCharacterTags(character_class);
 
+// Track which weapon slot was last used (for visual display)
+last_attack_slot = 0;
 
+// COMBO SYSTEM - increments on hit, resets on damage
+combo_count = 0;
+combo_display_timer = 0; // For UI display
+max_combo_reached = 0;   // Track best combo this run
 
 
 status = new StatusEffectComponent(self);
@@ -65,9 +71,6 @@ last_timing_quality		 = "normal";
 attack_timing_window	 = 0;
 perfect_timing_threshold = 10;  // Frames for perfect timing
 
-// Combo tracking
-current_combo_count  = 0;
-combo_decay_timer	 = 0;
 
 // Style tracking
 dodge_count		    = 0;

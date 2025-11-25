@@ -7,7 +7,7 @@
   "overriddenProperties":[],
   "parent":{
     "name":"Player_Weapons",
-    "path":"folders/PlayerGroup/Sprites/Player_Weapons.yy",
+    "path":"folders/_Player/Sprites/Player_Weapons.yy",
   },
   "parentObjectId":null,
   "persistent":false,

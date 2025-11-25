@@ -6,5 +6,5 @@ depth = -y;
 active = false;
 
 alarm[0] = 5;
-justhit = false;
+just_hit = false;
 sound_played = false;

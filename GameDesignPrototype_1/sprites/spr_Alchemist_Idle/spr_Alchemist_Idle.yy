@@ -27,7 +27,7 @@
   "origin":4,
   "parent":{
     "name":"Alchemist",
-    "path":"folders/PlayerGroup/Sprites/Player_Characters/Alchemist.yy",
+    "path":"folders/_Player/Sprites/Player_Characters/Alchemist.yy",
   },
   "preMultiplyAlpha":false,
   "resourceType":"GMSprite",

@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"scr_StatComponent",
   "parent":{
-    "name":"PlayerGroup",
-    "path":"folders/PlayerGroup.yy",
+    "name":"_Player",
+    "path":"folders/_Player.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

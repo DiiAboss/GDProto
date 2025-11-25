@@ -4,8 +4,8 @@ event_inherited(); // Call parent create
 // Override/customize sword-specific properties
 swordSprite = spr_sword;
 sprite_index = spr_sword;
-attack = 10;
-knockbackForce = 4;
+attack = 15;
+knockbackForce = 3;
 angleOffset = 100;
-swingSpeed = 8;
+swingSpeed = 6;
 swordLength = 8;

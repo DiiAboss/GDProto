@@ -53,21 +53,3 @@ else
 	}
 	
 }
-
-
-
-
-
-// DEBUG: Save system testing
-if (keyboard_check_pressed(vk_f11)) {
-    show_debug_message("=== CURRENT SAVE DATA ===");
-    show_debug_message("Total Runs: " + string(global.SaveData.career.total_runs));
-    show_debug_message("Total Kills: " + string(global.SaveData.career.total_kills));
-    show_debug_message("Best Score: " + string(global.SaveData.career.best_score));
-    show_debug_message("Unlocked Characters: " + json_stringify(global.SaveData.unlocks.characters));
-}
-
-if (keyboard_check_pressed(vk_f9)) {
-    show_debug_message("Manually saving game...");
-    SaveGame();
-}

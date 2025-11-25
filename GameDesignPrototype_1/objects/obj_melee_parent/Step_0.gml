@@ -4,14 +4,7 @@ if (instance_exists(owner)) {
     // Update weapon position to follow player
     x = owner.x;
     y = owner.y;
-    
-    // Handle combo timer
-    if (comboTimer > 0) {
-        comboTimer--;
-        if (comboTimer == 0) {
-            comboCount = 0;
-        }
-    }
+   
     
     // Handle swing initiation
     if (startSwing && !swinging) {
@@ -70,7 +63,6 @@ if (instance_exists(owner)) {
             currentPosition = targetPosition;
             currentAngleOffset = (currentPosition == SwingPosition.Down) ? angleOffset : -angleOffset;
             
-            comboTimer = comboWindow;
         }
     }
     
@@ -138,20 +130,26 @@ if (instance_exists(owner)) {
                 ds_list_add(hitList, hit);
                 hit.lastKnockedBy = owner;
                 
-                // Increment combo
-                if (comboTimer > 0) {
-                    comboCount++;
-                } else {
-                    comboCount = 1;
-                }
-                
-                // Calculate damage with combo bonus
-                var baseDamage = attack;
-                var damage = baseDamage * (1 + comboCount * 0.25);
-                
-                // Deal damage
-                //takeDamage(hit, damage, owner);
-                hit.damage_sys.TakeDamage(damage, owner);
+               // INCREMENT PLAYER COMBO (no timer-based decay)
+    if (instance_exists(owner) && owner.object_index == obj_player) {
+        owner.combo_count++;
+        owner.combo_display_timer = 120; // Show combo for 2 seconds
+        
+        // Award style points for combo milestones
+        if (owner.combo_count == 10) AwardStylePoints("10 HIT COMBO", 50, 1);
+        if (owner.combo_count == 25) AwardStylePoints("25 HIT COMBO", 150, 1);
+        if (owner.combo_count == 50) AwardStylePoints("50 HIT COMBO", 500, 1);
+        if (owner.combo_count == 100) AwardStylePoints("100 HIT COMBO", 2000, 1);
+    }
+    
+    // Calculate damage WITH combo bonus
+    var baseDamage = attack;
+    var combo_bonus = 1 + (owner.combo_count * 0.02); // +2% per combo hit
+    combo_bonus = min(combo_bonus, 2.0); // Cap at 2x damage
+    var damage = baseDamage * combo_bonus;
+    
+    // Deal damage...
+    hit.damage_sys.TakeDamage(damage, owner);
                 
                 // TRIGGER ON_HIT MODIFIERS
                 

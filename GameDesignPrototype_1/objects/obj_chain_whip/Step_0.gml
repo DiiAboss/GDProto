@@ -32,12 +32,6 @@ if (swinging && swingProgress > 0.05 && swingProgress < 0.95) {
             ds_list_add(hitList, enemy);
             enemy.lastKnockedBy = owner;
             
-            // Combo tracking
-            if (comboTimer > 0) {
-                comboCount++;
-            } else {
-                comboCount = 1;
-            }
             
             // Damage with combo bonus
             var baseDamage = attack;

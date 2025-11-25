@@ -80,8 +80,6 @@ if (keyboard_check_pressed(ord("P"))) {
     if global.selection_popup == noone {
         ShowLevelUpPopup(can_click);
     }
-	
-	show_debug_message("Step Event Loaded");
 }
 
 

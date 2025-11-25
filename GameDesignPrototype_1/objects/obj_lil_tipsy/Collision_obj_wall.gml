@@ -24,12 +24,7 @@ if (knockback.GetSpeed() > min_shatter_speed) {
     soul.speed = random_range(2, 5);
     
     // Shatter effects
-    repeat(15) {
-        var particle = instance_create_depth(x, y, depth - 1, obj_particle);
-        particle.direction = random(360);
-        particle.speed = random_range(2, 6);
-        particle.image_blend = c_white; // Glass shards
-    }
+    spawn_death_particles(x, y, [c_red, c_white]);
     
     // Destroy
     instance_destroy();

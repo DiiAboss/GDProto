@@ -11,7 +11,7 @@ if (show_timer > 0)
 }
 else
 {
-	justhit = false;
+	just_hit = false;
 }
 
 

@@ -197,145 +197,121 @@ global.WeaponStruct =
 },
     
     Sword: {
-        name: "Sword",
-        id: Weapon.Sword,
-        type: WeaponType.Melee,
-        projectile_struct: noone,
-        melee_object_type: obj_sword,
-        default_element: ELEMENT.PHYSICAL,
-		synergy_tags: InitializeWeaponTags(Weapon.Sword),
-		sprite: spr_sword,
-        combo_count: 0,
-        max_combo: 3,
-        combo_timer: 0,
-        combo_window: 30,
-        attack_cooldown: 0,
+    name: "Sword",
+    id: Weapon.Sword,
+    type: WeaponType.Melee,
+    projectile_struct: noone,
+    melee_object_type: obj_sword,
+    default_element: ELEMENT.PHYSICAL,
+    synergy_tags: InitializeWeaponTags(Weapon.Sword),
+    sprite: spr_sword,
+    
+    // SWORD STATS: High damage, low knockback, slower swing
+    attack_cooldown: 0,
+    
+    primary_attack: function(_self, _direction, _range, _projectile_struct) {
+        if (attack_cooldown > 0) return noone;
         
-        combo_attacks: [
-            {duration: 25, damage_mult: 1.0, knockback_mult: 1.0},
-            {duration: 30, damage_mult: 1.2, knockback_mult: 1.1},
-            {duration: 40, damage_mult: 1.5, knockback_mult: 1.3}
-        ],
+        // Sword: 1.5x player attack, low knockback, slower cooldown
+        var melee_attack = _self.attack * 1.5;
         
-        primary_attack: function(_self, _direction, _range, _projectile_struct) {
-            if (attack_cooldown > 0) return noone;
-            if (combo_timer <= 0) combo_count = 0;
-            
-            var attack_data = combo_attacks[combo_count];
-            var melee_attack = _self.attack * attack_data.damage_mult;
-            
-            if (instance_exists(_self.melee_weapon)) {
-                _self.melee_weapon.attack = melee_attack;
-                _self.melee_weapon.knockbackForce = 24 * attack_data.knockback_mult;
-                _self.melee_weapon.startSwing = true;
-                _self.melee_weapon.current_combo_hit = combo_count;
-            }
-            
-            attack_cooldown = attack_data.duration;
-            var current_hit = combo_count;
-            combo_count = (combo_count + 1) % max_combo;
-            combo_timer = combo_window;
-            
-            var attack_event = CreateAttackEvent(_self, AttackType.MELEE, _direction, noone);
-            attack_event.damage = melee_attack;
-            attack_event.combo_hit = current_hit;
-            
-            TriggerModifiers(_self, MOD_TRIGGER.ON_ATTACK, attack_event);
-            
-            return _self.melee_weapon;
-        },
-        
-        secondary_attack: function(_self, _direction, _range, _projectile_struct) {},
-        
-        step: function(_self) {
-            if (attack_cooldown > 0) attack_cooldown = timer_tick(attack_cooldown);
-            if (combo_timer > 0) combo_timer = timer_tick(combo_timer);
+        if (instance_exists(_self.melee_weapon)) {
+            _self.melee_weapon.attack = melee_attack;
+            _self.melee_weapon.knockbackForce = 12; // LOW knockback
+            _self.melee_weapon.startSwing = true;
+            _self.melee_weapon.swingSpeed = 6; // SLOWER swing
         }
+        
+        attack_cooldown = 35; // Slower attack rate
+        
+        var attack_event = CreateAttackEvent(_self, AttackType.MELEE, _direction, noone);
+        attack_event.damage = melee_attack;
+        TriggerModifiers(_self, MOD_TRIGGER.ON_ATTACK, attack_event);
+        
+        return _self.melee_weapon;
     },
     
-    Dagger: {
-        name: "Dagger",
-        id: Weapon.Dagger,
-        type: WeaponType.Melee,
-        projectile_struct: global.Projectile_.Knife,
-        melee_object_type: obj_dagger,
-        default_element: ELEMENT.PHYSICAL,
-		synergy_tags: InitializeWeaponTags(Weapon.Dagger),
-		sprite: spr_dagger,
-        combo_count: 0,
-        max_combo: 3,
-        combo_timer: 0,
-        combo_window: 25,
-        attack_cooldown: 0,
-        
-        combo_attacks: [
-            {duration: 18, damage_mult: 0.8, knockback_mult: 0.7, lunge: false},
-            {duration: 20, damage_mult: 0.9, knockback_mult: 0.8, lunge: false},
-            {duration: 28, damage_mult: 1.5, knockback_mult: 1.5, lunge: true, lunge_power: 15}
-        ],
-        
-        primary_attack: function(_self, _direction, _range, _projectile_struct) {
-            if (attack_cooldown > 0) return noone;
-            if (combo_timer <= 0) combo_count = 0;
-            
-            var attack_data = combo_attacks[combo_count];
-            
-            if (attack_data.lunge) {
-				_self.knockback.Apply(_direction, attack_data.lunge_power);
-            }
-            
-            var melee_attack = _self.attack * attack_data.damage_mult;
-            
-            if (instance_exists(_self.melee_weapon)) {
-                _self.melee_weapon.attack = melee_attack;
-                _self.melee_weapon.knockbackForce = 16 * attack_data.knockback_mult;
-                _self.melee_weapon.startSwing = true;
-                _self.melee_weapon.current_combo_hit = combo_count;
-            }
-            
-            attack_cooldown = attack_data.duration;
-            var current_hit = combo_count;
-            combo_count = (combo_count + 1) % max_combo;
-            combo_timer = combo_window;
-            
-            var attack_event = CreateAttackEvent(_self, AttackType.MELEE, _direction, noone);
-            attack_event.damage = melee_attack;
-            attack_event.combo_hit = current_hit;
-            
-            TriggerModifiers(_self, MOD_TRIGGER.ON_ATTACK, attack_event);
-            
-            return _self.melee_weapon;
-        },
-        
-        secondary_attack: function(_self, _direction, _range, _projectile_struct) {
-            if (attack_cooldown > 0) return noone;
-            
-            var proj = instance_create_depth(_self.x, _self.y, _self.depth - 1, obj_knife);
-            proj.direction = _direction;
-            proj.speed = 12;
-            proj.damage = _self.attack * 0.6;
-            proj.owner = _self.id;
-            proj.image_angle = _direction;
-            
-            var attack_event = CreateAttackEvent(_self, AttackType.RANGED, _direction, proj);
-            attack_event.projectile_count_bonus = 2; // 3 total knives
-            
-			// NEW: Apply synergy behaviors to projectile
-		    if (variable_instance_exists(_self, "active_combined_tags")) {
-		        ApplySynergyBehavior(proj, _self.active_combined_tags, _self.active_synergies, _self);
-		    }
-
-			
-			
-            TriggerModifiers(_self, MOD_TRIGGER.ON_ATTACK, attack_event);
-            return proj;
-        },
-        
-        step: function(_self) {
-            if (attack_cooldown > 0) attack_cooldown--;
-            if (combo_timer > 0) combo_timer--;
-        }
+    secondary_attack: function(_self, _direction, _range, _projectile_struct) {
+        // No secondary for sword
     },
+    
+    step: function(_self) {
+        if (attack_cooldown > 0) attack_cooldown = timer_tick(attack_cooldown);
+    }
+},
+    
+   Dagger: {
+    name: "Dagger",
+    id: Weapon.Dagger,
+    type: WeaponType.Melee,
+    projectile_struct: global.Projectile_.Knife,
+    melee_object_type: obj_dagger,
+    default_element: ELEMENT.PHYSICAL,
+    synergy_tags: InitializeWeaponTags(Weapon.Dagger),
+    sprite: spr_dagger,
+    
+    // DAGGER STATS: Fast, always lunges, lunge based on speed
+    attack_cooldown: 0,
+    
+    primary_attack: function(_self, _direction, _range, _projectile_struct) {
+        if (attack_cooldown > 0) return noone;
+        
+        // Dagger: 0.7x player attack, very low knockback, VERY fast
+        var melee_attack = _self.attack * 0.7;
+        
+        // LUNGE CALCULATION - Based on player speed stat
+        var base_lunge = 8;
+        var speed_stat = _self.stats.speed; // Player's speed stat
+        var lunge_power = base_lunge + (speed_stat * 1.5); // More speed = longer lunge
+        lunge_power = clamp(lunge_power, 8, 30); // Min 8, max 30
+        
+        // Apply lunge to player
+        _self.knockback.Apply(_direction, lunge_power);
+        
+        if (instance_exists(_self.melee_weapon)) {
+            _self.melee_weapon.attack = melee_attack;
+            _self.melee_weapon.knockbackForce = 6; // Very low knockback
+            _self.melee_weapon.startSwing = true;
+            _self.melee_weapon.swingSpeed = 18; // VERY FAST swing
+            _self.melee_weapon.is_lunging = true;
+            _self.melee_weapon.lunge_distance = lunge_power;
+        }
+        
+        attack_cooldown = 12; // Very fast attack rate
+        
+        var attack_event = CreateAttackEvent(_self, AttackType.MELEE, _direction, noone);
+        attack_event.damage = melee_attack;
+        attack_event.is_lunge = true;
+        TriggerModifiers(_self, MOD_TRIGGER.ON_ATTACK, attack_event);
+        
+        return _self.melee_weapon;
+    },
+    
+    secondary_attack: function(_self, _direction, _range, _projectile_struct) {
+        if (attack_cooldown > 0) return noone;
+        
+        // Throw knife
+        var proj = instance_create_depth(_self.x, _self.y, _self.depth - 1, obj_knife);
+        proj.direction = _direction;
+        proj.speed = 14;
+        proj.damage = _self.attack * 0.5;
+        proj.owner = _self.id;
+        proj.image_angle = _direction;
+        
+        attack_cooldown = 15;
+        
+        var attack_event = CreateAttackEvent(_self, AttackType.RANGED, _direction, proj);
+        TriggerModifiers(_self, MOD_TRIGGER.ON_ATTACK, attack_event);
+        
+        return proj;
+    },
+    
+    step: function(_self) {
+        if (attack_cooldown > 0) attack_cooldown = timer_tick(attack_cooldown);
+    }
+},
+
+
 	HolyWater: {
         name: "Holy_Water",
         id: Weapon.Holy_Water,
@@ -425,55 +401,54 @@ global.WeaponStruct =
     type: WeaponType.Melee,
     projectile_struct: noone,
     melee_object_type: obj_baseball_bat,
-	synergy_tags: InitializeWeaponTags(Weapon.BaseballBat),    
-	sprite: spr_way_better_bat,
-    combo_count: 0,
-    max_combo: 3,
-    combo_timer: 0,
-    combo_window: 35,
-    attack_cooldown: 0,
+    synergy_tags: InitializeWeaponTags(Weapon.BaseballBat),    
+    sprite: spr_way_better_bat,
     
-    combo_attacks: [
-        {duration: 30, damage_mult: 1.2, knockback_mult: 1.5},  // Slower but harder hits
-        {duration: 32, damage_mult: 1.4, knockback_mult: 1.7},
-        {duration: 40, damage_mult: 2.0, knockback_mult: 2.5}   // Grand slam finisher
-    ],
+    // BAT STATS: Lower damage, HIGH knockback, faster swing
+    attack_cooldown: 0,
     
     primary_attack: function(_self, _direction, _range, _projectile_struct) {
         if (attack_cooldown > 0) return noone;
-        if (combo_timer <= 0) combo_count = 0;
         
-        var attack_data = combo_attacks[combo_count];
-        var melee_attack = _self.attack * attack_data.damage_mult;
+        // Bat: 0.8x player attack, HIGH knockback, faster cooldown
+        var melee_attack = _self.attack * 0.8;
+        var base_knockback = 48; // HIGH knockback
+        
+        // CHECK FOR BASEBALL PLAYER HOMERUN SYNERGY
+        var homerun_chance = 0;
+        if (_self.character_class == CharacterClass.BASEBALL_PLAYER) {
+            // Baseball player gets homerun chance based on luck
+            var luck = variable_instance_exists(_self, "luck") ? _self.luck : 0;
+            homerun_chance = 0.05 + (luck * 0.01); // 5% base + 1% per luck point
+            homerun_chance = min(homerun_chance, 0.35); // Cap at 35%
+        }
         
         if (instance_exists(_self.melee_weapon)) {
             _self.melee_weapon.attack = melee_attack;
-            _self.melee_weapon.knockbackForce = 32 * attack_data.knockback_mult; // Higher base knockback
+            _self.melee_weapon.knockbackForce = base_knockback;
             _self.melee_weapon.startSwing = true;
-            _self.melee_weapon.current_combo_hit = combo_count;
+            _self.melee_weapon.swingSpeed = 12; // FASTER swing
+            
+            // Pass homerun chance to bat object
+            _self.melee_weapon.homerun_chance = homerun_chance;
+            _self.melee_weapon.is_baseball_player = (_self.character_class == CharacterClass.BASEBALL_PLAYER);
         }
         
-        attack_cooldown = attack_data.duration;
-        var current_hit = combo_count;
-        combo_count = (combo_count + 1) % max_combo;
-        combo_timer = combo_window;
+        attack_cooldown = 20; // Faster attack rate
         
         var attack_event = CreateAttackEvent(_self, AttackType.MELEE, _direction, noone);
         attack_event.damage = melee_attack;
-        attack_event.combo_hit = current_hit;
-        
         TriggerModifiers(_self, MOD_TRIGGER.ON_ATTACK, attack_event);
         
         return _self.melee_weapon;
     },
     
     secondary_attack: function(_self, _direction, _range, _projectile_struct) {
-        // Could add a charged swing or bunt
+        // No secondary for bat
     },
     
     step: function(_self) {
-        if (attack_cooldown > 0) attack_cooldown--;
-        if (combo_timer > 0) combo_timer--;
+        if (attack_cooldown > 0) attack_cooldown = timer_tick(attack_cooldown);
     }
 },
 	

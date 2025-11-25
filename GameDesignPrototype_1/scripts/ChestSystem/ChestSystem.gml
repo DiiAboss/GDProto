@@ -1,35 +1,44 @@
-/// @desc Unified chest reward system
-
 function ChestReward(_type, _id) constructor {
-    type = _type;  // RewardType enum
+    type = _type;
     id = _id;
     
-    // Populated based on type
     name = "";
     desc = "";
-    sprite = spr_mod_default; // Default
-    rarity = 0; // 0=common, 1=uncommon, 2=rare, 3=legendary
+    sprite = spr_mod_default;
+    rarity = 0;
     
-    // Initialize based on type
     switch (type) {
         case RewardType.MODIFIER:
             var _mod = get_mod_by_id(_id);
             if (_mod != noone) {
                 name = _mod.id;
-                desc = _mod.description ?? "A powerful modifier";
+                if (variable_struct_exists(_mod, "description")) {
+                    desc = _mod.description;
+                } else {
+                    desc = "A powerful modifier";
+                }
                 sprite = spr_mod_default;
             }
             break;
             
         case RewardType.WEAPON:
-            // You'll expand this when you have weapon data
-            name = "Weapon: " + string(_id);
-            desc = "A legendary weapon";
-            sprite = spr_mod_default;
+            // Get actual weapon data
+            var weapon_struct = GetWeaponStructById(_id);
+            if (weapon_struct != noone) {
+                name = weapon_struct.name;
+                desc = "A " + weapon_struct.name;
+                
+                // Try to get weapon sprite
+                if (variable_struct_exists(weapon_struct, "sprite")) {
+                    sprite = weapon_struct.sprite;
+                }
+            } else {
+                name = "Mystery Weapon";
+                desc = "A mysterious weapon";
+            }
             break;
             
         case RewardType.ITEM:
-            // You'll expand this when you have item data
             name = "Item: " + string(_id);
             desc = "A useful item";
             sprite = spr_mod_default;
@@ -90,6 +99,8 @@ function GenerateChestRewards(_chest_type, _chests_opened) {
     return rewards;
 }
 
+
+
 function GetRandomRewardID(_reward_type, _force_rare = false) {
     // Placeholder - you'll expand this with your actual pools
     switch (_reward_type) {
@@ -119,24 +130,42 @@ function GetRandomRewardID(_reward_type, _force_rare = false) {
 // INTEGRATION WITH CHEST SYSTEM
 
 
-/// @function ApplyReward_Updated(_player, _reward)
-/// @description Updated ApplyReward function for weapon handling
-/// REPLACE the one in ChestSystem.gml with this
+/// @function ApplyReward(_player, _reward)
+/// @description Apply a chest reward - weapons spawn on ground, mods apply directly
 function ApplyReward(_player, _reward) {
-    switch (_reward.type) {
+    var reward_type = RewardType.MODIFIER;
+    if (variable_struct_exists(_reward, "type")) {
+        reward_type = _reward.type;
+    }
+    
+    switch (reward_type) {
         case RewardType.MODIFIER:
+            // Apply modifier directly
             AddModifier(_player, _reward.id);
-            show_debug_message("Applied modifier: " + _reward.id);
             break;
             
         case RewardType.WEAPON:
-            // Use new weapon system
-            GiveWeapon(_player, _reward.id);
+            // SPAWN ON GROUND instead of giving directly
+            var weapon_struct = GetWeaponStructById(_reward.id);
+            
+            if (weapon_struct != noone) {
+                // Spawn near player with slight offset
+                var spawn_x = _player.x + random_range(-32, 32);
+                var spawn_y = _player.y + random_range(16, 48);
+                
+                SpawnWeaponPickup(spawn_x, spawn_y, weapon_struct);
+                
+                
+                // Visual feedback
+                var popup = instance_create_depth(_player.x, _player.y - 60, -9999, obj_floating_text);
+                popup.text = "WEAPON DROPPED!";
+                popup.color = make_color_rgb(255, 150, 50);
+            } else {
+            }
             break;
             
         case RewardType.ITEM:
             // Your item logic here
-            show_debug_message("Gave item: " + _reward.id);
             break;
     }
 }

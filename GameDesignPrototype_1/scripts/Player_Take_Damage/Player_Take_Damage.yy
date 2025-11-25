@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"Player_Take_Damage",
   "parent":{
-    "name":"PLAYER_SCRIPTS",
-    "path":"folders/PlayerGroup/Sprites/PLAYER_SCRIPTS.yy",
+    "name":"Scripts",
+    "path":"folders/_Player/Scripts.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

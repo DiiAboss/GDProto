@@ -1,5 +1,4 @@
-/// @file scr_SkillTreeHelpers (add these functions)
-
+/// @file scr_SkillTreeHelpers
 function GetCharacterLoadout(_character_class) {
     // Ensure structure exists
     if (!variable_struct_exists(global.SaveData.career, "character_loadouts")) {
@@ -21,8 +20,6 @@ function GetCharacterLoadout(_character_class) {
 
 	/// @function SaveCharacterLoadout(_character_class, _loadout_array)
 	function SaveCharacterLoadout(_character_class, _loadout_array) {
-
-    
 	    var key = string(_character_class);
 	    global.SaveData.career.character_loadouts[$ key] = _loadout_array;
 	    SaveGame();
@@ -30,8 +27,6 @@ function GetCharacterLoadout(_character_class) {
 
 	/// @function LoadCharacterLoadout(_character_class)
 	function LoadCharacterLoadout(_character_class) {
-	    //global.SaveData.career.active_loadout = ["", "", "", "", ""];
-    
 	    global.SaveData.career.active_loadout = GetCharacterLoadout(_character_class);
 	}
 
@@ -70,19 +65,11 @@ function GetCharacterLoadout(_character_class) {
 	    return available_mods;
 	}
 
-	///// @function IsModEquipped(_mod_id, _loadout_array)
-	//function IsModEquipped(_mod_id, _loadout_array) {
-	//    return array_contains(_loadout_array, _mod_id);
-	//}
+
 	/// @function IsModEquipped(_mod_id, _loadout_array)
 function IsModEquipped(_mod_id, _loadout_array) {
-    // Safety check
-    if (!is_array(_loadout_array)) {
-        show_debug_message("WARNING: IsModEquipped received non-array: " + string(_loadout_array));
-		show_debug_message("WARNING: IsModEquipped received non-array: " + string(typeof(_loadout_array)));
-        return false;
-    }
     
+    if (!is_array(_loadout_array)) return false; // Safety check
     return array_contains(_loadout_array, _mod_id);
 }
 
@@ -102,7 +89,6 @@ function ApplyLoadoutToPlayer(_player) {
         var modifier_key = GetModifierKeyFromNodeId(node_id);
         
         if (modifier_key == undefined) {
-            show_debug_message("WARNING: No modifier mapping for node: " + node_id);
             continue;
         }
         
@@ -110,13 +96,11 @@ function ApplyLoadoutToPlayer(_player) {
         CalculateCachedStats(_player);
         if (mod_instance != noone) {
             applied_count++;
-            show_debug_message("Applied: " + node.name + " -> " + modifier_key);
         }
     }
     
     
     
-    show_debug_message("=== Loadout Applied: " + string(applied_count) + " mods ===");
 }
 
 	/// @function ClearPlayerLoadoutMods(_player)
@@ -144,7 +128,6 @@ function ApplyLoadoutToPlayer(_player) {
 	        var _mod = _player.mod_list[i];
 	        if (array_contains(mods_to_remove, _mod.template_key)) {
 	            array_delete(_player.mod_list, i, 1);
-	            show_debug_message("Removed loadout mod: " + _mod.template_key);
 	        }
 	    }
     
@@ -169,19 +152,17 @@ function ApplyLoadoutToPlayer(_player) {
 	    if (object_is_ancestor(_player.object_index, obj_player)) {
 	        CalculateCachedStats(_player);
 	    }
-    
-	    show_debug_message("Cleared loadout mods from player");
-	}	/// @function ApplyWeaponsToPlayer(_player, _character_class)
+	}	
+	
+	
+	/// @function ApplyWeaponsToPlayer(_player, _character_class)
 	function ApplyWeaponsToPlayer(_player, _character_class) {
 	    var weapon_loadout = GetCharacterWeaponLoadout(_character_class);
     
-	    show_debug_message("=== Applying Weapon Loadout ===");
-    
+		
 	    for (var i = 0; i < array_length(weapon_loadout); i++) {
 	        var weapon_enum = weapon_loadout[i];
-        
 	        if (weapon_enum == noone) {
-	            show_debug_message("Weapon slot " + string(i) + ": Empty");
 	            _player.weapons[i] = noone;
 	            continue;
 	        }
@@ -190,7 +171,6 @@ function ApplyLoadoutToPlayer(_player) {
 	        var weapon_struct = GetWeaponStructById(weapon_enum);
         
 	        if (weapon_struct == noone) {
-	            show_debug_message("ERROR: Invalid weapon ID: " + string(weapon_enum));
 	            _player.weapons[i] = noone;
 	            continue;
 	        }
@@ -198,12 +178,9 @@ function ApplyLoadoutToPlayer(_player) {
 	        // Equip weapon to slot using your existing function
 	        EquipWeaponToSlot(_player, weapon_struct, i);
         
-	        show_debug_message("Equipped weapon to slot " + string(i) + ": " + weapon_struct.name);
 	    }
     
 	    // Make sure current weapon is set
-	    if (_player.current_weapon_index == 0 && _player.weapons[0] != noone) {
-	        _player.weaponCurrent = _player.weapons[0];
-	        show_debug_message("Set current weapon to: " + _player.weapons[0].name);
-	    }
+	    if (_player.current_weapon_index == 0 && _player.weapons[0] != noone)  _player.weaponCurrent = _player.weapons[0];
+	    
 	}

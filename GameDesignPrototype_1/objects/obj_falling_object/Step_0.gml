@@ -22,11 +22,7 @@ if (!landed) {
         instance_create_depth(shadow_x, shadow_y, -100, spawn_on_land);
         
         // Impact VFX
-        repeat(15) {
-            var p = instance_create_depth(shadow_x, shadow_y, -9999, obj_particle);
-            p.direction = random(360);
-            p.speed = random_range(2, 6);
-        }
+        spawn_death_particles(x, y, [c_red, c_white]);
         
         // Shake
         if (instance_exists(obj_player)) {

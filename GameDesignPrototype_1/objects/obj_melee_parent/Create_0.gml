@@ -53,10 +53,6 @@ poison_damage = 0;
 attack = 10;
 knockbackForce = 64;
 
-// Combo tracking
-comboCount = 0;
-comboTimer = 0;
-comboWindow = 30; // Steps to chain attacks
 
 // Visual properties
 swordLength = 12; // Distance from player center

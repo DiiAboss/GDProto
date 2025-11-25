@@ -111,7 +111,6 @@ function CreateBonusProjectiles(_entity, _event) {
             bonus_proj.synergy_tags = original_proj.synergy_tags;
         }
         
-        show_debug_message("Created bonus projectile with spread: " + string(angle_offset));
     }
 }
 
@@ -156,7 +155,6 @@ function TriggerModifiers(_entity, _trigger, _event_data) {
 }
 
 function AddModifier(_entity, _modifier_key) {
-    show_debug_message("AddModifier called with key: " + _modifier_key);
     
     if (!variable_instance_exists(_entity, "mod_list")) {
         _entity.mod_list = [];
@@ -165,12 +163,10 @@ function AddModifier(_entity, _modifier_key) {
     
     // Check if modifier exists in global.Modifiers
     if (!variable_struct_exists(global.Modifiers, _modifier_key)) {
-        show_debug_message("ERROR: Modifier not found in global.Modifiers: " + _modifier_key);
         return noone;
     }
     
     var mod_template = global.Modifiers[$ _modifier_key];
-    show_debug_message("Found modifier template: " + mod_template.name);
     
     // Create instance
     var mod_instance = {
@@ -181,7 +177,6 @@ function AddModifier(_entity, _modifier_key) {
     };
     
     array_push(_entity.mod_list, mod_instance);
-    show_debug_message("Added to mod_list. New length: " + string(array_length(_entity.mod_list)));
     
     // Cache by trigger type
     for (var i = 0; i < array_length(mod_template.triggers); i++) {
@@ -195,7 +190,6 @@ function AddModifier(_entity, _modifier_key) {
         array_push(_entity.mod_cache[$ trigger_str], mod_instance);
     }
     
-    show_debug_message("Successfully added modifier: " + _modifier_key);
     return mod_instance;
 }
 

@@ -19,12 +19,7 @@ if (damage_sys.hp  <= 0 && !scored_this_death) {
     }
     
     // Death effects
-    repeat(15) {
-        var p = instance_create_depth(x, y, depth - 1, obj_particle);
-        p.direction = random(360);
-        p.speed = random_range(2, 6);
-        p.image_blend = choose(c_red, c_orange, c_purple);
-    }
+    spawn_death_particles(x, y, [c_red, c_orange, c_purple]);
     
     instance_destroy();
     exit;

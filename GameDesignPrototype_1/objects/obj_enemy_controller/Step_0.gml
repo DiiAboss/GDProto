@@ -62,12 +62,7 @@ if (difficulty_timer >= difficulty_interval) {
         popup.rise_speed = 0.5;
         popup.scale = 1.5;
     }
-    
-    show_debug_message("=== DIFFICULTY LEVEL UP ===");
-    show_debug_message("Level: " + string(difficulty_level));
-    show_debug_message("Damage: " + string(enemy_damage_mult) + "x");
-    show_debug_message("Speed: " + string(enemy_speed_mult) + "x");
-    show_debug_message("HP: " + string(enemy_hp_mult) + "x");
+  
 }
 
 
@@ -106,8 +101,6 @@ if (summoner_spawn_timer <= 0) {
                 popup.lifetime = 90;
                 popup.rise_speed = 1.0;
                 popup.scale = 1.2;
-                
-                show_debug_message("New summoner spawned at difficulty level " + string(difficulty_level));
             }
         }
     }

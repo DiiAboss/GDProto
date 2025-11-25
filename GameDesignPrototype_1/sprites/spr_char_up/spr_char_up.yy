@@ -29,7 +29,7 @@
   "origin":4,
   "parent":{
     "name":"Legacy",
-    "path":"folders/PlayerGroup/Sprites/Player_Characters/Legacy.yy",
+    "path":"folders/_Player/Sprites/Player_Characters/Legacy.yy",
   },
   "preMultiplyAlpha":false,
   "resourceType":"GMSprite",
