@@ -9,9 +9,9 @@
 /// @function PlaceSubRoomDoors(_zone)
 function PlaceSubRoomDoors(_zone) {
     var doors_to_place = [
-        { type: ROOM_TYPE.ARENA, sprite: spr_door_arena },
-        { type: ROOM_TYPE.CHALLENGE, sprite: spr_door_challenge },
-        { type: ROOM_TYPE.BOSS, sprite: spr_door_boss }
+        { type: ROOM_TYPE.ARENA, sprite: spr_door },
+        { type: ROOM_TYPE.CHALLENGE, sprite: spr_door },
+        { type: ROOM_TYPE.BOSS, sprite: spr_door }
     ];
     
     for (var i = 0; i < array_length(doors_to_place); i++) {
@@ -36,7 +36,7 @@ function PlaceSubRoomDoors(_zone) {
             
             if (is_safe && far_from_spawn && !place_meeting(door_x, door_y, obj_obstacle)) {
                 // Found valid spot
-                var door = instance_create_depth(door_x, door_y, -100, obj_zone_door);
+                var door = instance_create_depth(door_x, door_y, -100, obj_portal_door);
                 door.door_type = door_data.type;
                 door.target_zone = _zone;
                 door.sprite_index = door_data.sprite;

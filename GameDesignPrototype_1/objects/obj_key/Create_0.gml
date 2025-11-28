@@ -16,7 +16,6 @@ bob_offset = 0
 /// @function UnlockDoor(_door)
 function UnlockDoor(_door) {
     _door.is_unlocked = true;
-    _door.sprite_index = spr_door_unlocked;
     
     // Save permanently
     obj_main_controller.UnlockDoor(_door.target_zone, _door.door_type);

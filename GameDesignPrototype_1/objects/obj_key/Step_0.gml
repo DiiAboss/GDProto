@@ -12,7 +12,7 @@ if (!is_being_carried && !is_projectile) {
 
 // Check door collision when thrown
 if (is_projectile) {
-    var door = instance_place(x, y, obj_zone_door);
+    var door = instance_place(x, y, obj_portal_door);
     if (door != noone && !door.is_unlocked) {
         UnlockDoor(door);
     }

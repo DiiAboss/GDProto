@@ -184,7 +184,7 @@ if (weaponCurrent && !is_falling_in_pit)
 	if (input.FirePress && weapons[0] != noone) {
 	    last_attack_slot = 0;
 	    var primary_weapon = weapons[0];
-    
+		SwitchToWeaponSlot(0);
 	    // Update weaponCurrent for systems that need it
 	    weaponCurrent = primary_weapon;
 	    UpdateWeaponTags(self, 0);
@@ -200,7 +200,7 @@ if (weaponCurrent && !is_falling_in_pit)
 	if (input.AltPress && weapons[1] != noone) {
 	    last_attack_slot = 1;
 	    var alt_weapon = weapons[1];
-    
+		SwitchToWeaponSlot(1);
 	    // Update weaponCurrent for systems that need it
 	    weaponCurrent = alt_weapon;
 	    UpdateWeaponTags(self, 1);

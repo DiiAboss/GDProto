@@ -6,6 +6,7 @@
 chest_type = choose(ChestType.MINI, ChestType.MINI, ChestType.MINI, ChestType.GOLD);
 interactable = true;
 interact_range = 32;
+close_timer = 0;
 
 // State
 state = ChestState.IDLE;

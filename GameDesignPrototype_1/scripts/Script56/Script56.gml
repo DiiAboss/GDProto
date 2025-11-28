@@ -111,7 +111,9 @@ function GetSouls() {
 /// @function AddSouls(_amount)
 function AddSouls(_amount) {
 
-    GiveSouls(_amount);
+    var soul_value = GiveSouls(_amount);
+	// Show floating text
+    spawn_damage_number(x, y - 20, "+" + string(soul_value) + " Soul", c_aqua, false);
 	SaveGame();
 }
 

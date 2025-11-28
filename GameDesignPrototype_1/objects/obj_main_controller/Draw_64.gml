@@ -34,7 +34,8 @@ draw_set_halign(fa_right);
 draw_set_valign(fa_top);
 draw_set_font(fnt_small_1);
 draw_set_color(c_aqua);
-draw_text(20, 20, "Souls: " + string(souls));
+draw_text(gui_w - 20, 20, "Souls: " + string(souls));
+draw_text(gui_w - 20, 40, "Gold: " + string(GetGold()));
 draw_set_color(c_white);
 }
 

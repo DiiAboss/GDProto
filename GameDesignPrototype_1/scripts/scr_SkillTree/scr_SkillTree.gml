@@ -20,7 +20,7 @@ root: {
     cost: 0,
     unlocked: false,  // STARTS LOCKED
     position: {x: 400, y: 300},
-    connections: ["arsenal_path", "pregame_path", "character_path", "level_path", "back_button_unlock"],
+    connections: ["arsenal_path", "pregame_path", "character_path", "level_path", "back_button_unlock", "soul_path"],
     sprite: spr_mod_default,
     grants_character: CharacterClass.BASEBALL_PLAYER
 },
@@ -37,6 +37,121 @@ back_button_unlock: {
     sprite: spr_mod_default,
     grants_back_button: true
 },  
+
+
+
+// ==========================================
+// SOUTHWEST: SOUL PATH - Opposite of back_button
+// Position: Left of root, branching down
+// ==========================================
+
+soul_path: {
+    id: "soul_path",
+    type: "branch",
+    name: "Soul Harvesting",
+    description: "Increase soul collection efficiency",
+    cost: 50,
+    unlocked: false,
+    position: {x: 300, y: 380},  // Left and down from root
+    connections: ["root", "soul_mult_1"],
+    sprite: spr_mod_default
+},
+
+soul_mult_1: {
+    id: "soul_mult_1",
+    type: "stat_boost",
+    name: "Soul Siphon I",
+    description: "Souls collected are worth 1.25x",
+    stat_key: "soul_mult",
+    stat_value: 1.25,
+    cost: 100,
+    unlocked: false,
+    position: {x: 200, y: 450},
+    connections: ["soul_path", "soul_mult_2"],
+    sprite: spr_mod_default,
+    max_stacks: 1,
+    current_stacks: 0
+},
+
+soul_mult_2: {
+    id: "soul_mult_2",
+    type: "stat_boost",
+    name: "Soul Siphon II",
+    description: "Souls collected are worth 1.5x",
+    stat_key: "soul_mult",
+    stat_value: 1.5,
+    cost: 250,
+    unlocked: false,
+    position: {x: 100, y: 520},
+    connections: ["soul_mult_1", "soul_mult_3"],
+    sprite: spr_mod_default,
+    max_stacks: 1,
+    current_stacks: 0
+},
+
+soul_mult_3: {
+    id: "soul_mult_3",
+    type: "stat_boost",
+    name: "Soul Siphon III",
+    description: "Souls collected are worth 2x",
+    stat_key: "soul_mult",
+    stat_value: 2.0,
+    cost: 500,
+    unlocked: false,
+    position: {x: 0, y: 590},
+    connections: ["soul_mult_2", "soul_mult_4"],
+    sprite: spr_mod_default,
+    max_stacks: 1,
+    current_stacks: 0
+},
+
+soul_mult_4: {
+    id: "soul_mult_4",
+    type: "stat_boost",
+    name: "Soul Siphon IV",
+    description: "Souls collected are worth 4x",
+    stat_key: "soul_mult",
+    stat_value: 4.0,
+    cost: 1000,
+    unlocked: false,
+    position: {x: -100, y: 660},
+    connections: ["soul_mult_3", "soul_mult_5"],
+    sprite: spr_mod_default,
+    max_stacks: 1,
+    current_stacks: 0
+},
+
+soul_mult_5: {
+    id: "soul_mult_5",
+    type: "stat_boost",
+    name: "Soul Siphon V",
+    description: "Souls collected are worth 8x",
+    stat_key: "soul_mult",
+    stat_value: 8.0,
+    cost: 5000,
+    unlocked: false,
+    position: {x: -200, y: 730},
+    connections: ["soul_mult_4", "soul_mult_6"],
+    sprite: spr_mod_default,
+    max_stacks: 1,
+    current_stacks: 0
+},
+
+soul_mult_6: {
+    id: "soul_mult_6",
+    type: "stat_boost",
+    name: "Soul Siphon VI",
+    description: "Souls collected are worth 16x",
+    stat_key: "soul_mult",
+    stat_value: 16.0,
+    cost: 25000,
+    unlocked: false,
+    position: {x: -300, y: 800},
+    connections: ["soul_mult_5"],
+    sprite: spr_mod_default,
+    max_stacks: 1,
+    current_stacks: 0
+},
     // ==========================================
     // NORTH: ARSENAL BRANCH - Weapon Categories
     // Position: Far North with sub-branches
@@ -47,7 +162,7 @@ back_button_unlock: {
         type: "branch",
         name: "Arsenal",
         description: "Unlock new weapons",
-        cost: 0,
+        cost: 50,
         unlocked: false,
         position: {x: 400, y: -100},
         connections: ["root", "blade_branch", "blunt_branch", "thrown_branch", "ranged_branch", "exotic_branch"],
@@ -60,7 +175,7 @@ back_button_unlock: {
         type: "branch",
         name: "Bladed Weapons",
         description: "Sharp and deadly",
-        cost: 0,
+        cost: 50,
         unlocked: false,
         position: {x: 100, y: -200},
         connections: ["arsenal_path", "dagger_unlock", "knife_unlock"],
@@ -112,7 +227,7 @@ back_button_unlock: {
         type: "branch",
         name: "Swords",
         description: "The classics",
-        cost: 0,
+        cost: 50,
         unlocked: false,
         position: {x: 250, y: -200},
         connections: ["arsenal_path"],
@@ -128,7 +243,7 @@ back_button_unlock: {
         type: "branch",
         name: "Blunt Weapons",
         description: "Crushing force",
-        cost: 0,
+        cost: 50,
         unlocked: false,
         position: {x: 400, y: -200},
         connections: ["arsenal_path", "club_unlock", "bat_unlock"],
@@ -180,7 +295,7 @@ back_button_unlock: {
         type: "branch",
         name: "Thrown Weapons",
         description: "Projectile power",
-        cost: 0,
+        cost: 50,
         unlocked: false,
         position: {x: 550, y: -200},
         connections: ["arsenal_path", "boomerang_unlock", "grenade_unlock"],
@@ -245,7 +360,7 @@ back_button_unlock: {
         type: "branch",
         name: "Ranged Weapons",
         description: "Distance attacks",
-        cost: 0,
+        cost: 50,
         unlocked: false,
         position: {x: 700, y: -200},
         connections: ["arsenal_path", "bow_branch", "gun_branch"],
@@ -258,7 +373,7 @@ back_button_unlock: {
         type: "branch",
         name: "Bows",
         description: "Precision archery",
-        cost: 0,
+        cost: 50,
         unlocked: false,
         position: {x: 650, y: -300},
         connections: ["ranged_branch"],
@@ -273,7 +388,7 @@ back_button_unlock: {
         type: "branch",
         name: "Firearms",
         description: "Gunpowder weapons",
-        cost: 0,
+        cost: 50,
         unlocked: false,
         position: {x: 750, y: -300},
         connections: ["ranged_branch"],
@@ -288,7 +403,7 @@ back_button_unlock: {
         type: "branch",
         name: "Exotic Weapons",
         description: "Rare and unusual",
-        cost: 0,
+        cost: 50,
         unlocked: false,
         position: {x: 850, y: -200},
         connections: ["arsenal_path"],
@@ -306,7 +421,7 @@ character_path: {
     type: "branch",
     name: "Champions",
     description: "Unlock new playable characters",
-    cost: 0,
+    cost: 50,
     unlocked: false,
     position: {x: 850, y: 300},
     connections: ["root", "priest_unlock", "alchemist_unlock", "assassin_unlock"],  // No baseball - it's from root
@@ -387,7 +502,7 @@ assassin_unlock: {
         type: "branch",
         name: "Arenas",
         description: "Unlock new battlegrounds",
-        cost: 0,
+        cost: 50,
         unlocked: false,
         position: {x: 400, y: 700},
         connections: ["root", "arena_2_unlock", "arena_3_unlock"],
@@ -429,7 +544,7 @@ assassin_unlock: {
         type: "branch",
         name: "Pre-Game Advantages",
         description: "Permanent modifiers for all runs",
-        cost: 0,
+        cost: 50,
         unlocked: false,
         position: {x: -200, y: 300},
         connections: ["root", "pregame_physics_branch", "pregame_combat_branch", "pregame_movement_branch", "pregame_economy_branch"],
@@ -445,7 +560,7 @@ assassin_unlock: {
         type: "branch",
         name: "Physics Manipulators",
         description: "Change how entities interact",
-        cost: 0,
+        cost: 50,
         unlocked: false,
         position: {x: -400, y: 100},
         connections: ["pregame_path", "pregame_bouncy", "pregame_meteor", "pregame_heavy_hitter", "pregame_featherweight", "pregame_gravity_well"],
@@ -578,7 +693,7 @@ assassin_unlock: {
         type: "branch",
         name: "Movement & Utility",
         description: "Enhance mobility and utility",
-        cost: 0,
+        cost: 50,
         unlocked: false,
         position: {x: -200, y: -100},
         connections: ["pregame_path", "pregame_time_slow", "pregame_speed_demon", "pregame_teleport", "pregame_hover_boots"],
@@ -672,7 +787,7 @@ assassin_unlock: {
         type: "branch",
         name: "Combat Modifiers",
         description: "Enhance your damage and abilities",
-        cost: 0,
+        cost: 50,
         unlocked: false,
         position: {x: -400, y: 500},
         connections: ["pregame_path", "pregame_glass_cannon", "pregame_berserk", "pregame_crit_addict", "pregame_auto_aim"],
@@ -831,7 +946,7 @@ assassin_unlock: {
         type: "branch",
         name: "Economy & Progression",
         description: "Boost rewards and growth",
-        cost: 0,
+        cost: 50,
         unlocked: false,
         position: {x: -200, y: 700},
         connections: ["pregame_path", "pregame_souls_2x", "pregame_lucky", "pregame_investor", "pregame_stat_hp"],
@@ -844,7 +959,7 @@ assassin_unlock: {
         name: "Soul Harvest",
         description: "Earn 2x souls per run",
         mod_id: PreGameMod.SOULS_2X,
-        cost: 0,
+        cost: 50,
         unlocked: false,
         position: {x: -150, y: 850},
         connections: ["pregame_economy_branch"],
@@ -1514,6 +1629,11 @@ static ShowEscapeBlockedMessage = function() {
                 
             case "stat_boost":
                 ApplyStatBoost(_node_id, _node);
+				 // Special: If this is a soul multiplier, save it to career data
+    if (variable_struct_exists(_node, "stat_key") && _node.stat_key == "soul_mult") {
+        global.SaveData.career.soul_multiplier = _node.stat_value;
+        SaveGame();
+    }
                 break;
                 
             case "pregame_mod_unlock":

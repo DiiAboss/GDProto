@@ -139,7 +139,7 @@ function StatsComponent(_base_attack, _base_hp, _base_speed, _base_knockback, _s
     pickup_radius   = 1.0;      // Item/XP pickup range multiplier
     experience_mult = 1.0;    // XP gain multiplier
     gold_mult	    = 1.0;          // Gold gain multiplier
-    
+    soul_mult      = 1.0;
     // ===========================================
     // METHODS
     // ===========================================

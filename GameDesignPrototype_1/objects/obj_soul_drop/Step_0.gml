@@ -48,8 +48,7 @@ if (!being_collected) {
                 obj_game_manager._audio_system.PlaySFX(snd_menu_hover); // Use coin/collect sound
             }
             
-            // Show floating text
-            spawn_damage_number(x, y - 20, "+" + string(soul_value) + " Soul", c_aqua, false);
+            
             
             instance_destroy();
         }

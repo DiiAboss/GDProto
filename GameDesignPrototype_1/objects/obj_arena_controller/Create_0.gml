@@ -92,9 +92,6 @@ function DropRandomItems() {
 function CompleteArena() {
     arena_complete = true;
     
-    // Rewards
-    var souls = 100 + (max_waves * 10);
-    AddSouls(souls);
     
     // Unlock permanently
     obj_main_controller.UnlockDoor(arena_zone, arena_type);

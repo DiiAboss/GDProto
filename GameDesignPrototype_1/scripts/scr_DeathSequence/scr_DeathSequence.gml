@@ -12,7 +12,7 @@ function DeathSequence(_self) constructor {
     final_time = "";
     
     main_controller = _self;
-    
+    _self.death_sequence_active = false;
     // Highscore tracking
     made_highscore = false;
     highscore_rank = -1;
@@ -20,9 +20,14 @@ function DeathSequence(_self) constructor {
     
     static Trigger = function(_game_manager, _player_obj, _highscore_system) {
         if (active) return;
-        
+        main_controller.death_sequence_active = true;
         active = true;
-        phase = 0;
+        
+		
+		// CLEANUP FIRST - before anything else
+    CleanupGameWorld();
+		
+		phase = 0;
         timer = 0;
         fade_alpha = 0;
         stats_alpha = 0;
@@ -57,6 +62,36 @@ function DeathSequence(_self) constructor {
         // Audio fade
         main_controller._audio_system.FadeMusic(0.2, 90, FADE_TYPE.SMOOTH);
     }
+	/// @function CleanupGameWorld()
+static CleanupGameWorld = function() {
+    // Stop enemy spawners
+    with (obj_summoner_maggots) {
+        active = false;
+    }
+    with (obj_summoner_demon) {
+        activated = false;
+    }
+    
+    // Destroy all enemies
+    with (obj_enemy) {
+        instance_destroy();
+    }
+    
+    // Destroy all enemy projectiles
+    with (obj_enemySpawner) {
+        instance_destroy();
+    }
+    
+    // Destroy hazards that could still damage
+    with (obj_rolling_ball) {
+        instance_destroy();
+    }
+    
+    // Clear floating text/particles (optional - looks nice to keep some)
+    // with (obj_floating_text) { instance_destroy(); }
+    
+    show_debug_message("Death cleanup: Removed all enemies and hazards");
+}
     
     static Update = function(_input) {
         if (!active) return;

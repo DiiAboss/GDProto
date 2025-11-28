@@ -38,7 +38,7 @@ if (instance_exists(owner)) {
 			
 			
             TriggerModifiers(owner, MOD_TRIGGER.ON_ATTACK, attack_event);
-			owner.invincibility.Activate();
+			
         }
     }
     

@@ -36,7 +36,8 @@ global.SaveData = {
 		currency: {
 		    souls: 1,        // Meta currency (persists)
 		    lifetime_souls: 0, // Total ever earned (for achievements)
-		    lifetime_gold: 0   // Total ever earned (for stats)
+		    lifetime_gold: 0,   // Total ever earned (for stats)
+			gold: 0
 		},
 		tutorial: {
     soul_sold: false,
@@ -367,8 +368,8 @@ function MergeSaveData(_loaded) {
 
 
 function GetGold() {
-
-        return obj_game_manager.current_gold;
+	if !(instance_exists(obj_player)) return 0;
+        return obj_player.gold;
  
 }
 
@@ -524,7 +525,12 @@ function ResetSaveData() {
             weapons: [Weapon.Sword, Weapon.Bow],
             modifiers: []
         },
-        
+        discovered_doors: {
+        forest: {},
+        desert: {},
+        hell: {},
+        tutorial: {}
+    },
         // Career Stats
         career: {
             total_runs: 0,
@@ -536,7 +542,8 @@ function ResetSaveData() {
             currency: {
                 souls: 1,
                 lifetime_souls: 0,
-                lifetime_gold: 0
+                lifetime_gold: 0,
+				gold: 0,
             },
             tutorial: {
     soul_sold: false,
@@ -578,6 +585,7 @@ function ResetSaveData() {
                 unlocked_nodes: [],
                 node_stacks: {}
             },
+			
             
             character_loadouts: {},
             active_loadout: [noone, noone, noone, noone, noone],

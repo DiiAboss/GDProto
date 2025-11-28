@@ -155,7 +155,7 @@ just_hit = 0;
 
 experience_points = 0;
 player_level = 1; // Start at level 1, not 0
-gold = 999;
+gold = global.SaveData.career.currency.gold;
 
 // Leveling formula constants (tuned for 15-30 min arcade sessions)
 exp_base = 5;         // Base XP required for first level

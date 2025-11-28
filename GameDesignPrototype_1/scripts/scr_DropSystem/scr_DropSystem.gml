@@ -96,15 +96,19 @@ function DropCoins(_x, _y, _count = 3, _spread = 16) {
 // ===========================================
 
 /// @function GiveSouls(_base_amount)
-/// @description Give souls with multipliers applied (saved permanently)
 function GiveSouls(_base_amount) {
     var final_amount = _base_amount;
     
-    // Apply soul multiplier from modifiers (Souls2x)
+    // Apply soul multiplier from skill tree (permanent unlock)
+    if (variable_struct_exists(global.SaveData.career, "soul_multiplier")) {
+        final_amount *= global.SaveData.career.soul_multiplier;
+    }
+    
+    // Apply soul multiplier from in-game modifiers (temporary)
     if (instance_exists(obj_player)) {
-        if (variable_instance_exists(obj_player.stats, "soul_mult")) {
+
             final_amount *= obj_player.stats.soul_mult;
-        }
+        
     }
     
     // Round to whole number
@@ -114,6 +118,7 @@ function GiveSouls(_base_amount) {
     global.SaveData.career.currency.souls += final_amount;
     global.SaveData.career.currency.lifetime_souls += final_amount;
     global.Souls = global.SaveData.career.currency.souls;
+    
     show_debug_message("Souls: +" + string(final_amount) + " (base: " + string(_base_amount) + ")");
     
     return final_amount;

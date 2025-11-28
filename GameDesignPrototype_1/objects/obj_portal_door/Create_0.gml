@@ -1,11 +1,12 @@
-/// @desc obj_zone_door Create Event
-
+/// @description Insert description here
+// You can write your code in this editor
+event_inherited();
 // Door properties
 door_type = ROOM_TYPE.ARENA;
 target_zone = MAP_ZONE.FOREST;
 is_unlocked = false;
 is_discovered = false;
-
+depth = -y;
 // Visual
 sprite_index = spr_door; // Different sprites per type
 door_text = "Arena Door";
@@ -126,3 +127,11 @@ function GetSecretRoom(_zone) {
     // Secret rooms can be procedural or hand-crafted
     return rm_secret_room;
 }
+
+
+open = false;
+
+door = instance_create_layer(x, y, "DoorEffect", obj_portal_door_bg);
+
+
+alarm[3] = 60;
