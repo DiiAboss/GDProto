@@ -186,19 +186,19 @@ function GetCharacterName(_class) {
 function GetDefaultWeaponsForCharacter(_class) {
     switch (_class) {
         case CharacterClass.VAMPIRE_HUNTER:
-            return [Weapon.Sword, Weapon.Bow];
+            return [Weapon.Sword, Weapon.None];
             
         case CharacterClass.PRIEST:
-            return [Weapon.Staff, Weapon.Holy_Water];
+            return [Weapon.Holy_Water, Weapon.None];
             
         case CharacterClass.ALCHEMIST:
-            return [Weapon.Dagger, Weapon.PotionBomb];
+            return [Weapon.PotionBomb, Weapon.None];
             
         case CharacterClass.BASEBALL_PLAYER:
-            return [Weapon.BaseballBat, Weapon.BBallGun];
+            return [Weapon.BaseballBat, Weapon.None];
             
         case CharacterClass.ASSASSIN:
-            return [Weapon.Dagger, Weapon.ThrowingKnife];
+            return [Weapon.Dagger, Weapon.None];
             
         case CharacterClass.LEGACY:
             return [Weapon.Sword, Weapon.Fists];

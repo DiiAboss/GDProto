@@ -35,7 +35,7 @@ if (player_in_range && can_interact) {
         var input = obj_player.input;
         
         // Check for Action button press
-        if (input.Action) {
+        if (keyboard_check_pressed(ord("E"))) {
             ExecuteAction();
         }
     }

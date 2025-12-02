@@ -21,7 +21,7 @@ root: {
     unlocked: false,  // STARTS LOCKED
     position: {x: 400, y: 300},
     connections: ["arsenal_path", "pregame_path", "character_path", "level_path", "back_button_unlock", "soul_path"],
-    sprite: spr_mod_default,
+    sprite: Sprite168,
     grants_character: CharacterClass.BASEBALL_PLAYER
 },
 
@@ -52,9 +52,9 @@ soul_path: {
     description: "Increase soul collection efficiency",
     cost: 50,
     unlocked: false,
-    position: {x: 300, y: 380},  // Left and down from root
+    position: {x: 250, y: 380},  // Left and down from root
     connections: ["root", "soul_mult_1"],
-    sprite: spr_mod_default
+    sprite: Sprite169,
 },
 
 soul_mult_1: {
@@ -68,7 +68,7 @@ soul_mult_1: {
     unlocked: false,
     position: {x: 200, y: 450},
     connections: ["soul_path", "soul_mult_2"],
-    sprite: spr_mod_default,
+    sprite: Sprite169,
     max_stacks: 1,
     current_stacks: 0
 },
@@ -82,9 +82,9 @@ soul_mult_2: {
     stat_value: 1.5,
     cost: 250,
     unlocked: false,
-    position: {x: 100, y: 520},
+    position: {x: 150, y: 520},
     connections: ["soul_mult_1", "soul_mult_3"],
-    sprite: spr_mod_default,
+    sprite: Sprite169,
     max_stacks: 1,
     current_stacks: 0
 },
@@ -98,9 +98,9 @@ soul_mult_3: {
     stat_value: 2.0,
     cost: 500,
     unlocked: false,
-    position: {x: 0, y: 590},
+    position: {x: 125, y: 590},
     connections: ["soul_mult_2", "soul_mult_4"],
-    sprite: spr_mod_default,
+    sprite: Sprite169,
     max_stacks: 1,
     current_stacks: 0
 },
@@ -114,9 +114,9 @@ soul_mult_4: {
     stat_value: 4.0,
     cost: 1000,
     unlocked: false,
-    position: {x: -100, y: 660},
+    position: {x: 100, y: 660},
     connections: ["soul_mult_3", "soul_mult_5"],
-    sprite: spr_mod_default,
+    sprite: Sprite169,
     max_stacks: 1,
     current_stacks: 0
 },
@@ -130,9 +130,9 @@ soul_mult_5: {
     stat_value: 8.0,
     cost: 5000,
     unlocked: false,
-    position: {x: -200, y: 730},
+    position: {x: 80, y: 730},
     connections: ["soul_mult_4", "soul_mult_6"],
-    sprite: spr_mod_default,
+    sprite: Sprite169,
     max_stacks: 1,
     current_stacks: 0
 },
@@ -146,9 +146,9 @@ soul_mult_6: {
     stat_value: 16.0,
     cost: 25000,
     unlocked: false,
-    position: {x: -300, y: 800},
+    position: {x: 75, y: 800},
     connections: ["soul_mult_5"],
-    sprite: spr_mod_default,
+    sprite: Sprite169,
     max_stacks: 1,
     current_stacks: 0
 },
@@ -166,7 +166,7 @@ soul_mult_6: {
         unlocked: false,
         position: {x: 400, y: -100},
         connections: ["root", "blade_branch", "blunt_branch", "thrown_branch", "ranged_branch", "exotic_branch"],
-        sprite: spr_mod_default
+        sprite: spr_mod_weapon
     },
     
     // BLADE WEAPONS (Left side of Arsenal)
@@ -179,7 +179,7 @@ soul_mult_6: {
         unlocked: false,
         position: {x: 100, y: -200},
         connections: ["arsenal_path", "dagger_unlock", "knife_unlock"],
-        sprite: spr_mod_default
+        sprite: spr_sword
     },
     
     dagger_unlock: {
@@ -194,19 +194,31 @@ soul_mult_6: {
         connections: ["blade_branch"],
         sprite: spr_dagger
     },
-    
-    knife_unlock: {
-        id: "knife_unlock",
+	    sword_unlock: {
+        id: "sword_unlock",
         type: "weapon_unlock",
-        name: "Unlock: Knife",
-        description: "Quick slashing attacks",
-        weapon: Weapon.Knife,
-        cost: 200,
+        name: "Unlock: Sword",
+        description: "Slow Swinging Weapon",
+        weapon: Weapon.Sword,
+        cost: 250,
         unlocked: false,
         position: {x: 150, y: -300},
-        connections: ["blade_branch", "throwing_knife_unlock"],
-        sprite: spr_mod_default
+        connections: ["blade_branch"],
+        sprite: spr_sword
     },
+    
+    //knife_unlock: {
+    //    id: "knife_unlock",
+    //    type: "weapon_unlock",
+    //    name: "Unlock: Knife",
+    //    description: "Quick slashing attacks",
+    //    weapon: Weapon.Knife,
+    //    cost: 200,
+    //    unlocked: false,
+    //    position: {x: 150, y: -300},
+    //    connections: ["blade_branch", "throwing_knife_unlock"],
+    //    sprite: spr_mod_default
+    //},
     
     throwing_knife_unlock: {
         id: "throwing_knife_unlock",
@@ -218,21 +230,21 @@ soul_mult_6: {
         unlocked: false,
         position: {x: 150, y: -400},
         connections: ["knife_unlock"],
-        sprite: spr_mod_default
+        sprite: spr_knife
     },
     
-    // SWORDS (Center-left of Arsenal)
-    sword_branch: {
-        id: "sword_branch",
-        type: "branch",
-        name: "Swords",
-        description: "The classics",
-        cost: 50,
-        unlocked: false,
-        position: {x: 250, y: -200},
-        connections: ["arsenal_path"],
-        sprite: spr_mod_default
-    },
+    //// SWORDS (Center-left of Arsenal)
+    //sword_branch: {
+    //    id: "sword_branch",
+    //    type: "branch",
+    //    name: "Swords",
+    //    description: "The classics",
+    //    cost: 50,
+    //    unlocked: false,
+    //    position: {x: 250, y: -200},
+    //    connections: ["arsenal_path"],
+    //    sprite: spr_sword
+    //},
     
     // Placeholder for future swords
     // longsword_unlock, greatsword_unlock, etc.
@@ -247,21 +259,21 @@ soul_mult_6: {
         unlocked: false,
         position: {x: 400, y: -200},
         connections: ["arsenal_path", "club_unlock", "bat_unlock"],
-        sprite: spr_mod_default
+        sprite: spr_way_better_bat
     },
     
-    club_unlock: {
-        id: "club_unlock",
-        type: "weapon_unlock",
-        name: "Unlock: Club",
-        description: "Heavy overhead smash",
-        weapon: Weapon.Club,
-        cost: 250,
-        unlocked: false,
-        position: {x: 350, y: -300},
-        connections: ["blunt_branch"],
-        sprite: spr_mod_default
-    },
+    //club_unlock: {
+    //    id: "club_unlock",
+    //    type: "weapon_unlock",
+    //    name: "Unlock: Club",
+    //    description: "Heavy overhead smash",
+    //    weapon: Weapon.Club,
+    //    cost: 250,
+    //    unlocked: false,
+    //    position: {x: 350, y: -300},
+    //    connections: ["blunt_branch"],
+    //    sprite: spr_mod_default
+    //},
     
     bat_unlock: {
         id: "bat_unlock",
@@ -276,18 +288,18 @@ soul_mult_6: {
         sprite: spr_way_better_bat
     },
     
-    homerun_bat_unlock: {
-        id: "homerun_bat_unlock",
-        type: "weapon_unlock",
-        name: "Unlock: Home Run Bat",
-        description: "Maximum knockback power",
-        weapon: Weapon.HomeRunBat,
-        cost: 500,
-        unlocked: false,
-        position: {x: 450, y: -400},
-        connections: ["bat_unlock"],
-        sprite: spr_mod_default
-    },
+    //homerun_bat_unlock: {
+    //    id: "homerun_bat_unlock",
+    //    type: "weapon_unlock",
+    //    name: "Unlock: Home Run Bat",
+    //    description: "Maximum knockback power",
+    //    weapon: Weapon.HomeRunBat,
+    //    cost: 500,
+    //    unlocked: false,
+    //    position: {x: 450, y: -400},
+    //    connections: ["bat_unlock"],
+    //    sprite: spr_mod_default
+    //},
     
     // THROWN WEAPONS (Center-right of Arsenal)
     thrown_branch: {
@@ -299,7 +311,7 @@ soul_mult_6: {
         unlocked: false,
         position: {x: 550, y: -200},
         connections: ["arsenal_path", "boomerang_unlock", "grenade_unlock"],
-        sprite: spr_mod_default
+        sprite: spr_boomerang
     },
     
     boomerang_unlock: {
@@ -315,30 +327,30 @@ soul_mult_6: {
         sprite: spr_boomerang
     },
     
-    bomberang_unlock: {
-        id: "bomberang_unlock",
-        type: "weapon_unlock",
-        name: "Unlock: Bomberang",
-        description: "Explosive boomerang",
-        weapon: Weapon.Bomberang,
-        cost: 500,
-        unlocked: false,
-        position: {x: 500, y: -400},
-        connections: ["boomerang_unlock"],
-        sprite: spr_mod_default
-    },
+    //bomberang_unlock: {
+    //    id: "bomberang_unlock",
+    //    type: "weapon_unlock",
+    //    name: "Unlock: Bomberang",
+    //    description: "Explosive boomerang",
+    //    weapon: Weapon.Bomberang,
+    //    cost: 500,
+    //    unlocked: false,
+    //    position: {x: 500, y: -400},
+    //    connections: ["boomerang_unlock"],
+    //    sprite: spr_mod_default
+    //},
     
     grenade_unlock: {
         id: "grenade_unlock",
         type: "weapon_unlock",
-        name: "Unlock: Grenade",
+        name: "Unlock: Potion Bomb",
         description: "AOE explosive damage",
         weapon: Weapon.Grenade,
         cost: 400,
         unlocked: false,
         position: {x: 600, y: -300},
         connections: ["thrown_branch"],
-        sprite: spr_mod_default
+        sprite: spr_potions
     },
     
     holy_water_unlock: {
@@ -364,7 +376,7 @@ soul_mult_6: {
         unlocked: false,
         position: {x: 700, y: -200},
         connections: ["arsenal_path", "bow_branch", "gun_branch"],
-        sprite: spr_mod_default
+        sprite: spr_arrow
     },
     
     // BOW SUB-BRANCH
@@ -377,38 +389,38 @@ soul_mult_6: {
         unlocked: false,
         position: {x: 650, y: -300},
         connections: ["ranged_branch"],
-        sprite: spr_mod_default
+        sprite: spr_crossbow
     },
     
     // Placeholder for bow, crossbow, multi-bow
     
-    // GUN SUB-BRANCH
-    gun_branch: {
-        id: "gun_branch",
-        type: "branch",
-        name: "Firearms",
-        description: "Gunpowder weapons",
-        cost: 50,
-        unlocked: false,
-        position: {x: 750, y: -300},
-        connections: ["ranged_branch"],
-        sprite: spr_mod_default
-    },
+    //// GUN SUB-BRANCH
+    //gun_branch: {
+    //    id: "gun_branch",
+    //    type: "branch",
+    //    name: "Firearms",
+    //    description: "Gunpowder weapons",
+    //    cost: 50,
+    //    unlocked: false,
+    //    position: {x: 750, y: -300},
+    //    connections: ["ranged_branch"],
+    //    sprite: spr_mod_default
+    //},
     
     // Placeholder for flintlock, revolver, burst pistol, snakeshot
     
-    // EXOTIC WEAPONS (Far right of Arsenal)
-    exotic_branch: {
-        id: "exotic_branch",
-        type: "branch",
-        name: "Exotic Weapons",
-        description: "Rare and unusual",
-        cost: 50,
-        unlocked: false,
-        position: {x: 850, y: -200},
-        connections: ["arsenal_path"],
-        sprite: spr_mod_default
-    },
+    //// EXOTIC WEAPONS (Far right of Arsenal)
+    //exotic_branch: {
+    //    id: "exotic_branch",
+    //    type: "branch",
+    //    name: "Exotic Weapons",
+    //    description: "Rare and unusual",
+    //    cost: 50,
+    //    unlocked: false,
+    //    position: {x: 850, y: -200},
+    //    connections: ["arsenal_path"],
+    //    sprite: spr_mod_default
+    //},
     
     // Placeholder for magic wands, crystal balls, weird stick, 
     // inhaler, charge cannon, black hole gun, bags of items, etc.
@@ -425,7 +437,7 @@ character_path: {
     unlocked: false,
     position: {x: 850, y: 300},
     connections: ["root", "priest_unlock", "alchemist_unlock", "assassin_unlock"],  // No baseball - it's from root
-    sprite: spr_mod_default
+    sprite: spr_vh_walk_south
 },
 
 priest_unlock: {
@@ -477,21 +489,21 @@ assassin_unlock: {
         unlocked: false,
         position: {x: 1000, y: 400},
         connections: ["character_path"],
-        sprite: spr_mod_default
+        sprite: spr_BBallPlayer_South
     },
     
-    alchemist_unlock: {
-        id: "alchemist_unlock",
-        type: "character_unlock",
-        name: "Unlock: Alchemist",
-        description: "Potion master and explosive expert",
-        character: CharacterClass.ALCHEMIST,
-        cost: 1400,
-        unlocked: false,
-        position: {x: 1000, y: 500},
-        connections: ["character_path"],
-        sprite: spr_mod_default
-    },
+    //alchemist_unlock: {
+    //    id: "alchemist_unlock",
+    //    type: "character_unlock",
+    //    name: "Unlock: Alchemist",
+    //    description: "Potion master and explosive expert",
+    //    character: CharacterClass.ALCHEMIST,
+    //    cost: 1400,
+    //    unlocked: false,
+    //    position: {x: 1000, y: 500},
+    //    connections: ["character_path"],
+    //    sprite: spr_mod_default
+    //},
     
     // ==========================================
     // SOUTH: LEVEL UNLOCKS
@@ -509,31 +521,31 @@ assassin_unlock: {
         sprite: spr_mod_default
     },
     
-    arena_2_unlock: {
-        id: "arena_2_unlock",
-        type: "level_unlock",
-        name: "Unlock: Cursed Catacombs",
-        description: "Harder enemies, better soul rewards",
-        level_id: "arena_2",
-        cost: 1500,
-        unlocked: false,
-        position: {x: 300, y: 850},
-        connections: ["level_path"],
-        sprite: spr_mod_default
-    },
+    //arena_2_unlock: {
+    //    id: "arena_2_unlock",
+    //    type: "level_unlock",
+    //    name: "Unlock: Cursed Catacombs",
+    //    description: "Harder enemies, better soul rewards",
+    //    level_id: "arena_2",
+    //    cost: 1500,
+    //    unlocked: false,
+    //    position: {x: 300, y: 850},
+    //    connections: ["level_path"],
+    //    sprite: spr_mod_default
+    //},
     
-    arena_3_unlock: {
-        id: "arena_3_unlock",
-        type: "level_unlock",
-        name: "Unlock: Hellgate Fortress",
-        description: "Elite challenge with massive rewards",
-        level_id: "arena_3",
-        cost: 3000,
-        unlocked: false,
-        position: {x: 500, y: 850},
-        connections: ["level_path"],
-        sprite: spr_mod_default
-    },
+    //arena_3_unlock: {
+    //    id: "arena_3_unlock",
+    //    type: "level_unlock",
+    //    name: "Unlock: Hellgate Fortress",
+    //    description: "Elite challenge with massive rewards",
+    //    level_id: "arena_3",
+    //    cost: 3000,
+    //    unlocked: false,
+    //    position: {x: 500, y: 850},
+    //    connections: ["level_path"],
+    //    sprite: spr_mod_default
+    //},
     
     // ==========================================
     // WEST: PRE-GAME MODIFIER PATH
@@ -919,7 +931,7 @@ assassin_unlock: {
         mod_id: PreGameMod.MULTI_HIT,
         cost: 600,
         unlocked: false,
-        position: {x: -300, y: 400},
+        position: {x: -550, y: 500},
         connections: ["pregame_combat_branch"],
         sprite: spr_mod_default
     },
@@ -961,7 +973,7 @@ assassin_unlock: {
         mod_id: PreGameMod.SOULS_2X,
         cost: 50,
         unlocked: false,
-        position: {x: -150, y: 850},
+        position: {x: -50, y: 750},
         connections: ["pregame_economy_branch"],
         sprite: spr_mod_default
     },
@@ -1013,7 +1025,7 @@ assassin_unlock: {
         mod_id: PreGameMod.STAT_HP,
         cost: 300,
         unlocked: false,
-        position: {x: -100, y: 750},
+        position: {x: -100, y: 650},
         connections: ["pregame_economy_branch"],
         sprite: spr_mod_default
     },
@@ -1026,7 +1038,7 @@ assassin_unlock: {
         mod_id: PreGameMod.STAT_DAMAGE,
         cost: 300,
         unlocked: false,
-        position: {x: -200, y: 800},
+        position: {x: -350, y: 950},
         connections: ["pregame_economy_branch"],
         sprite: spr_mod_default
     },

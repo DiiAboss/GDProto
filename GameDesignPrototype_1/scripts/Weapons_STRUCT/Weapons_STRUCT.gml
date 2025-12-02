@@ -586,7 +586,7 @@ global.WeaponStruct =
     min_charge_damage_mult: 0.5, // 0.5x damage at no charge
     default_element: ELEMENT.PHYSICAL,
 	synergy_tags: InitializeWeaponTags(Weapon.ThrowableItem),
-	sprite: spr_rock_proj,
+	
     primary_attack: function(_self, _direction, _range, _projectile_struct) {
         // Only attack if carrying something
         if (!_self.is_carrying || !instance_exists(_self.carried_object)) {

@@ -2,6 +2,8 @@
 
 hp = -999;
 
+next_attack = 0;
+
 depth = -y;
 active = false;
 

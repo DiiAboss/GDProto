@@ -38,8 +38,8 @@
   "resourceVersion":"2.0",
   "solid":false,
   "spriteId":{
-    "name":"spr_summoning_demon",
-    "path":"sprites/spr_summoning_demon/spr_summoning_demon.yy",
+    "name":"spr_summing_cave_maggot",
+    "path":"sprites/spr_summing_cave_maggot/spr_summing_cave_maggot.yy",
   },
   "spriteMaskId":null,
   "visible":true,

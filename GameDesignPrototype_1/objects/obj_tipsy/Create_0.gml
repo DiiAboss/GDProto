@@ -584,7 +584,7 @@ ExplodeAndDie = function() {
 context_sens = CreateContextPrompt(
     self,
     CreateCustomAction(method(self, PayGold)),
-    "Press [E] to Pay Gold (100 needed)",
+    "Press [E] to Pay Gold (??? needed)",
     64
 );
 context_sens.offset_y = -40;

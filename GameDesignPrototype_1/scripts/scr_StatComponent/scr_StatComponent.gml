@@ -103,7 +103,7 @@ function StatsComponent(_base_attack, _base_hp, _base_speed, _base_knockback, _s
     // Assassin
     stealth_timer = 0;
     backstab_mult = 1.0;
-    
+    drop_rate_mult = 1.0;
     // Alchemist
     flask_charges = 0;
     flask_cooldown = 0;

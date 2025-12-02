@@ -18,7 +18,7 @@ global.Player_Class = {
         name: "VAMPIRE HUNTER",
         desc: "Balanced fighter\nWeapon master",
         color: c_red,
-        portrait: spr_vh_bg,
+        portrait: spr_vampirehunter_bg,
         sprites: {
             west:  spr_vh_walk_west,
             east:  spr_vh_walk_east,
@@ -32,7 +32,7 @@ global.Player_Class = {
         name: "PRIEST",
         desc: "Holy magic\nArea control",
         color: c_aqua,
-        portrait: spr_Baseball_Bg,
+        portrait: spr_priest_bg,
         sprites: {
             west:  spr_vh_walk_west,  // TODO: priest sprites
             east:  spr_vh_walk_east,
@@ -41,19 +41,19 @@ global.Player_Class = {
         }
     },
     
-    Alchemist: {
-        type: CharacterClass.ALCHEMIST,
-        name: "ALCHEMIST",
-        desc: "Potions\nExplosives",
-        color: c_green,
-        portrait: spr_Baseball_Bg,
-        sprites: {
-            west:  spr_Alchemist_West,
-            east:  spr_Alchemist_East,
-            north: spr_Alchemist_North,
-            south: spr_Alchemist_South
-        }
-    },
+    //Alchemist: {
+    //    type: CharacterClass.ALCHEMIST,
+    //    name: "ALCHEMIST",
+    //    desc: "Potions\nExplosives",
+    //    color: c_green,
+    //    portrait: spr_vh_bg,
+    //    sprites: {
+    //        west:  spr_Alchemist_West,
+    //        east:  spr_Alchemist_East,
+    //        north: spr_Alchemist_North,
+    //        south: spr_Alchemist_South
+    //    }
+    //},
     
     Baseball_Player: {
         type: CharacterClass.BASEBALL_PLAYER,
@@ -74,7 +74,7 @@ global.Player_Class = {
         name: "ASSASSIN",
         desc: "Critical hits\nHigh mobility",
         color: c_gray,
-        portrait: spr_Baseball_Bg,
+        portrait: spr_vh_bg,
         sprites: {
             west:  spr_Assassin_West,
             east:  spr_Assassin_East,

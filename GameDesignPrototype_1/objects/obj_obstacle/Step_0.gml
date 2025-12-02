@@ -33,6 +33,7 @@ if (hit.isSwinging)
 			alarm[1] = 30;
 		obj_main_controller._audio_system.PlaySFXAt(sfx_damage_hit2, x, y);
 		}
-		hp -= hit.attack * 0.1;
+		alarm[2] = 1;
+		next_attack = hit.attack;
 	}
 }

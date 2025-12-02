@@ -50,7 +50,7 @@ if (instance_exists(obj_player) && obj_player.combo_count > 0 && obj_player.comb
     draw_set_alpha(alpha);
     draw_set_color(col);
     
-    draw_text_transformed(cx, cy, string(combo) + " HIT COMBO", scale, scale, 0);
+    //draw_text_transformed(cx, cy, string(combo) + " HIT COMBO", scale, scale, 0);
     
     // Bonus damage indicator
     var bonus = min(combo * 2, 100);

@@ -9,9 +9,11 @@ img_index = 0;
 context_sens = CreateContextPrompt(
     self,
     CreateDialogueAction("The MAW", "HUNGY!"),
-    "Press ACTION to... Talk?",
+    "Press ?? to... Talk?",
     64
 );
+
+show_text = 0;
 
 context_sens.offset_y = 0;
 

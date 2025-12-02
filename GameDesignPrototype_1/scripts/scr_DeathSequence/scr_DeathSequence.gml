@@ -48,7 +48,7 @@ function DeathSequence(_self) constructor {
             
             // Check highscores
             if (_highscore_system) {
-                _highscore_system.AddHighscore(final_score, "DEMO");
+                _highscore_system.AddHighscore(final_score, ">");
                 
                 // Check if we made top 10
                 var rank = _highscore_system.GetScoreRank(final_score);
@@ -130,6 +130,7 @@ static CleanupGameWorld = function() {
                     if (_input.Action || _input.FirePress) {
                         active = false;
                         //global.gameSpeed = 1;
+						obj_main_controller.state = MENU_STATE.UNLOCKS;
                         room_goto(rm_main_menu);
                     }
                 }
@@ -137,97 +138,58 @@ static CleanupGameWorld = function() {
         }
     }
     
-    static Draw = function(_w, _h, _cx, _cy, _highscore_system) {
-        // Black fade overlay
-        if (fade_alpha > 0) {
-            drawAlphaRectangle(0, 0, _w, _h, fade_alpha);
-        }
-        
-        // Player death sprite
-        draw_sprite_ext(spr_vh_dead, 0, _cx, _cy - 50, 3, 3, 0, c_white, fade_alpha);
-        
-        // Stats display
-        if (phase >= 2 && stats_alpha > 0) {
-            draw_set_alpha(stats_alpha);
-            draw_set_halign(fa_center);
-            draw_set_valign(fa_middle);
-            draw_set_color(c_white);
-            
-            // Title
-            draw_set_font(fnt_large);
-            draw_text(_cx, _cy - 180, "GAME OVER");
-            
-            draw_set_font(fnt_default);
-            
-            // Highscore notification
-            if (made_highscore) {
-                var pulse = 0.8 + sin(current_time * 0.01) * 0.2;
-                draw_set_color(merge_color(c_yellow, c_white, pulse));
-                draw_text(_cx, _cy - 120, "NEW HIGHSCORE!");
-                draw_set_color(c_yellow);
-                draw_text(_cx, _cy - 100, "RANK #" + string(highscore_rank));
-            }
-            
-            draw_set_color(c_white);
-            
-            // Final stats
-            draw_text(_cx, _cy - 60, "FINAL SCORE: " + string(final_score));
-            draw_text(_cx, _cy - 30, "TIME SURVIVED: " + final_time);
-            
-            // Style stats (if available)
-            if (instance_exists(obj_game_manager)) {
-                var stats = obj_game_manager.score_manager.GetStyleStats();
-                draw_set_color(c_gray);
-                draw_set_font(fnt_small);
-                
-                var stat_y = _cy + 10;
-                if (stats.perfect_timing_kills > 0) {
-                    draw_text(_cx, stat_y, "Perfect Kills: " + string(stats.perfect_timing_kills));
-                    stat_y += 20;
-                }
-                if (stats.highest_chain > 1) {
-                    draw_text(_cx, stat_y, "Best Chain: x" + string(stats.highest_chain));
-                    stat_y += 20;
-                }
-                if (stats.highest_combo > 1) {
-                    draw_text(_cx, stat_y, "Best Combo: x" + string_format(stats.highest_combo, 1, 1));
-                    stat_y += 20;
-                }
-            }
-            
-            draw_set_font(fnt_default);
-            draw_set_color(c_white);
-            draw_set_alpha(1);
-        }
-        
-        // Highscore table
-        if (phase >= 3 && show_highscores && _highscore_system) {
-            _highscore_system.DrawCompactHighscores(_w, _h, made_highscore ? highscore_rank - 1 : -1);
-        }
-        
-        // Thank you message
-        if (phase >= 2 && stats_alpha > 0) {
-            draw_set_alpha(stats_alpha);
-            draw_set_color(c_yellow);
-            draw_set_halign(fa_center);
-            draw_text(_cx, _cy + 140, "Thanks for playing the");
-            draw_set_font(fnt_large);
-            draw_text(_cx, _cy + 170, "TARLHS GAME DEMO");
-            draw_set_font(fnt_default);
-            draw_set_alpha(1);
-        }
-        
-        // Return prompt
-        if (phase >= 3 && timer > 60) {
-            var pulse = 0.5 + sin(current_time * 0.005) * 0.5;
-            draw_set_alpha(pulse);
-            draw_set_halign(fa_center);
-            draw_set_valign(fa_middle);
-            draw_set_color(c_white);
-            
-            draw_text(_cx, _h - 80, "Press ENTER/SPACE or Click to return to Main Menu");
-            
-            draw_set_alpha(1);
-        }
+   static Draw = function(_w, _h, _cx, _cy, _highscore_system) {
+    // Black fade overlay
+    if (fade_alpha > 0) {
+        drawAlphaRectangle(0, 0, _w, _h, fade_alpha);
     }
+    
+    // "YOU DIED" text
+    if (phase >= 2 && stats_alpha > 0) {
+        draw_set_alpha(stats_alpha);
+        draw_set_halign(fa_center);
+        draw_set_valign(fa_middle);
+        
+        // YOU DIED
+        draw_set_font(fnt_large);
+        draw_set_color(c_red);
+        draw_text(_cx, _cy - 80, "YOU DIED");
+        
+        // Score & Time
+        draw_set_font(fnt_default);
+        draw_set_color(c_white);
+        draw_text(_cx, _cy - 20, "SCORE: " + string(final_score));
+        draw_text(_cx, _cy + 10, "TIME: " + final_time);
+        
+        // Player Level
+        var player_level = 1;
+        if (instance_exists(obj_game_manager)) {
+            player_level = obj_game_manager.player_level;
+        }
+        draw_set_color(c_yellow);
+        draw_text(_cx, _cy + 50, "LEVEL: " + string(player_level));
+        
+        // Mods collected
+        draw_set_color(c_aqua);
+        var mod_count = 0;
+        if (instance_exists(obj_player) && variable_instance_exists(obj_player, "mod_list")) {
+            mod_count = array_length(obj_player.mod_list);
+        }
+        draw_text(_cx, _cy + 80, "MODS: " + string(mod_count));
+        
+        draw_set_color(c_white);
+        draw_set_alpha(1);
+    }
+    
+    // Return prompt
+    if (phase >= 3 && timer > 60) {
+        var pulse = 0.5 + sin(current_time * 0.005) * 0.5;
+        draw_set_alpha(pulse);
+        draw_set_halign(fa_center);
+        draw_set_color(c_gray);
+        draw_set_font(fnt_default);
+        draw_text(_cx, _h - 80, "Press any key to continue...");
+        draw_set_alpha(1);
+    }
+}
 }

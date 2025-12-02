@@ -63,7 +63,7 @@ function GenerateChestRewards(_chest_type, _chests_opened) {
     switch (_chest_type) {
         case ChestType.MINI:
             // 1 random reward
-            var rand_type = choose(RewardType.MODIFIER, RewardType.WEAPON, RewardType.ITEM);
+            var rand_type = choose(RewardType.MODIFIER, RewardType.WEAPON);
             var rand_id = GetRandomRewardID(rand_type);
             array_push(rewards, new ChestReward(rand_type, rand_id));
             break;
@@ -71,7 +71,7 @@ function GenerateChestRewards(_chest_type, _chests_opened) {
         case ChestType.GOLD:
             // 3 random rewards, free
             repeat(3) {
-                var rand_type = choose(RewardType.MODIFIER, RewardType.WEAPON, RewardType.ITEM);
+                var rand_type = choose(RewardType.MODIFIER, RewardType.WEAPON);
                 var rand_id = GetRandomRewardID(rand_type);
                 array_push(rewards, new ChestReward(rand_type, rand_id));
             }
@@ -89,7 +89,7 @@ function GenerateChestRewards(_chest_type, _chests_opened) {
             // Add more based on chests opened (scaling rewards)
             var bonus_count = min(2, floor(_chests_opened / 5)); // +1 per 5 chests
             repeat(2 + bonus_count) {
-                var rand_type = choose(RewardType.MODIFIER, RewardType.WEAPON, RewardType.ITEM);
+                var rand_type = choose(RewardType.MODIFIER, RewardType.WEAPON);
                 var rand_id = GetRandomRewardID(rand_type);
                 array_push(rewards, new ChestReward(rand_type, rand_id));
             }

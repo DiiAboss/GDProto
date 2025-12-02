@@ -366,10 +366,10 @@ RespawnFromPit = function() {
         p.image_blend = c_aqua;
     }
     
-    show_debug_message("PLAYER RESPAWNED at " + string(x) + ", " + string(y));
+   // show_debug_message("PLAYER RESPAWNED at " + string(x) + ", " + string(y));
 }
 
-SpawnWeaponPickup(x, y - 64, global.WeaponStruct.PotionBomb);
+//SpawnWeaponPickup(x, y - 64, global.WeaponStruct.PotionBomb);
 
 
 is_dead = false;

@@ -25,7 +25,7 @@ if (global.gameSpeed > 0)
 	    			speed += 0.1 * game_speed_delta();
     			
 	    			// Step event or collision with player
-					if (place_meeting(x, y, obj_player)) {
+					if (_dist_to_player <= 8) {
 					    GiveExperience(obj_player, obj_exp.amount);  // exp_value = how much this orb gives
 					    instance_destroy();
 					}

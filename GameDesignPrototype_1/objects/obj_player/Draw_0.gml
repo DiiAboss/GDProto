@@ -3,9 +3,9 @@
 if (instance_exists(obj_death_sequence)) exit;
 
 
-if (!is_falling_in_pit) {
-    draw_sprite_shadow(self, spr_shadow, image_index, x, y+8, 0, 1, 0.2);
-}
+//if (!is_falling_in_pit) {
+//    draw_sprite_shadow(self, spr_shadow, image_index, x, y+8, 0, 1, 0.2);
+//}
 
 // Draw player sprite
 if (is_falling_in_pit) {

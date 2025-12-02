@@ -11,7 +11,7 @@ depth = -y;
 sprite_index = spr_door; // Different sprites per type
 door_text = "Arena Door";
 unlock_text = "[E] Enter Arena";
-locked_text = "Find the Arena Key";
+locked_text = "Find Key...";
 
 // Room to return to
 return_room = room;

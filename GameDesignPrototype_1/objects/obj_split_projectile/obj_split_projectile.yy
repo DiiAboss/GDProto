@@ -35,5 +35,5 @@
     "path":"sprites/spr_orb/spr_orb.yy",
   },
   "spriteMaskId":null,
-  "visible":true,
+  "visible":false,
 }

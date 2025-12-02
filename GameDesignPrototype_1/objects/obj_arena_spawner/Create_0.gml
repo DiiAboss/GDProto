@@ -22,8 +22,8 @@ function SpawnArenaEnemy() {
     
     // Find safe spawn point
     while (attempts < max_attempts) {
-        spawn_x = random_range(100, room_width - 100);
-        spawn_y = random_range(100, room_height - 100);
+        spawn_x = random_range(256, room_width - 256);
+        spawn_y = random_range(256, room_height - 256);
         
         // Check if safe
         var tile = tilemap_get_at_pixel(tilemap_id, spawn_x, spawn_y);
@@ -60,18 +60,18 @@ function SpawnArenaEnemy() {
 function PickEnemyForWave(_wave_num) {
     // Early waves - basic enemies
     if (_wave_num <= 3) {
-        return choose(obj_enemy, obj_maggot, obj_enemy_2);
+        return choose(obj_enemy, obj_maggot, obj_maggot);
     }
     // Mid waves - add variety
     else if (_wave_num <= 6) {
-        return choose(obj_enemy, obj_enemy_triangle, obj_enemy_fly, obj_enemy_2);
+        return choose(obj_enemy, obj_enemy_triangle, obj_maggot_2, obj_maggot, obj_enemy_fly);
     }
     // Late waves - add dangerous enemies
     else if (_wave_num <= 9) {
-        return choose(obj_enemy_triangle, obj_enemy_fly, obj_enemy_dasher, obj_enemy_bomber);
+        return choose(obj_enemy_triangle, obj_enemy_fly, obj_enemy_dasher, obj_enemy_bomber, obj_enemy_2);
     }
     // Final wave - everything
     else {
-        return choose(obj_enemy_dasher, obj_enemy_bomber, obj_miniboss_berserker);
+        return choose(obj_maggot_2, obj_maggot, obj_enemy_triangle, obj_enemy_dasher, obj_enemy_bomber, obj_miniboss_berserker, obj_enemy_bomber, obj_enemy_2);
     }
 }

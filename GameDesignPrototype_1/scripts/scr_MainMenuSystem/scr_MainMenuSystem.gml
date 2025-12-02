@@ -269,7 +269,7 @@ active_loadout_weapons = [noone, noone]; // Current weapon selection
     selected_option = 0;
     selected_class = 0;
     selected_level = 0;
-    selected_character_class = CharacterClass.VAMPIRE_HUNTER;
+    selected_character_class = CharacterClass.BASEBALL_PLAYER;
     stats_selected_mod = 0;
 	
     // Sub-menu states
@@ -277,7 +277,7 @@ active_loadout_weapons = [noone, noone]; // Current weapon selection
     show_controls = false;
     show_stats = false;
     stats_scroll_offset = 0;
-    stats_selected_character = CharacterClass.VAMPIRE_HUNTER;
+    stats_selected_character = CharacterClass.BASEBALL_PLAYER;
     
     // Visual animation
     logo_scale = 0;
@@ -298,10 +298,11 @@ active_loadout_weapons = [noone, noone]; // Current weapon selection
     settings_options  = array_length(main_menu_options); // Master, Music, SFX, Voice, Back
     
     class_options = [
+	global.Player_Class.Baseball_Player,
     global.Player_Class.Vampire_Hunter,
     global.Player_Class.Priest,
-    global.Player_Class.Alchemist,
-    global.Player_Class.Baseball_Player,
+    //global.Player_Class.Alchemist,
+    
     global.Player_Class.Assassin
 ];
     
@@ -653,7 +654,7 @@ static DrawMainMenu = function(_w, _h, _cx, _cy) {
     draw_set_valign(fa_top);
     draw_set_font(fnt_default);
     draw_set_color(make_color_rgb(0, 255, 255));
-    draw_text(132, 36, "SOULS: " + string(GetSouls()));
+    draw_text(132, 20, "SOULS: " + string(GetSouls()));
     
     // === TITLE: TARLHS GAME ===
     draw_set_halign(fa_center);
@@ -792,8 +793,8 @@ static DrawMainMenu = function(_w, _h, _cx, _cy) {
     var control_x = _w - 30;
     var control_y = _h - 32;
     
-    draw_text(control_x, control_y, "[Enter] Select");
-    draw_text(control_x, control_y - 20, "[WASD] / [Arrows] Navigate");
+    draw_text(control_x, control_y, "[Enter/Space] Select");
+    draw_text(control_x, control_y - 20, "Mouse Navigate");
     
     // === TARLHS HINT (when menu locked) ===
     if (!menu_unlocked) {
@@ -1441,13 +1442,13 @@ static DrawWeaponSelectPopup = function(_cx, _cy) {
         draw_text(popup_x + popup_w/2, arrow_y - 20, "MORE (" + string(remaining) + ")");
     }
     
-    // Instructions
-    draw_set_halign(fa_center);
-    draw_set_color(c_white);
-    draw_text(_cx, popup_y + popup_h - 25, "[W/S] Navigate  [SCROLL] Browse  [ENTER] Select  [ESC] Cancel");
+    //// Instructions
+    //draw_set_halign(fa_center);
+    //draw_set_color(c_white);
+    //draw_text(_cx, popup_y + popup_h + 25, "[W/S] Navigate  [SCROLL] Browse  [ENTER] Select  [ESC] Cancel");
     
-    draw_set_halign(fa_left);
-    draw_set_valign(fa_top);
+    //draw_set_halign(fa_left);
+    //draw_set_valign(fa_top);
 }
 
 
@@ -3434,11 +3435,10 @@ static GetCharacterLoadoutPreview = function(_character_class) {
 	    var controls = [
 	        "WASD - Move",
 	        "Mouse - Aim",
-	        "Left Click - Attack",
-	        "Right Click - Special Attack",
+	        "Left Click - Use Primary Attack",
+	        "Right Click - Use Secondary Attack",
 	        "E - Interact / Pickup",
 	        "Q - Drop Item",
-	        "1/2 - Switch Weapons",
 	        "SPACE - Dash/Dodge",
 	        "ESC - Pause Menu"
 	    ];
@@ -3541,6 +3541,7 @@ static GetCharacterLoadoutPreview = function(_character_class) {
 	            var mod_sprite = spr_mod_default;
 	            var template = undefined;
             
+				
 	            // Get mod data
 	            if (variable_struct_exists(_mod, "name")) {
 	                mod_name = _mod.name;
@@ -3659,9 +3660,20 @@ static GetCharacterLoadoutPreview = function(_character_class) {
     
 	    if (variable_struct_exists(_mod, "template_key")) {
 	        // Get sprite
-	        if (instance_exists(obj_game_manager)) {
+			if (variable_struct_exists(_mod, "sprite"))
+			{
+				mod_sprite = _mod.sprite;
+			}
+			else
+			{
+				if (instance_exists(obj_game_manager)) {
 	            mod_sprite = obj_game_manager.GetModifierSprite(_mod.template_key);
 	        }
+			}
+			
+			
+			
+	        
         
 	        // Get template data
 	        if (variable_struct_exists(global.Modifiers, _mod.template_key)) {

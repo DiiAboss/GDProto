@@ -77,6 +77,7 @@ global.Modifiers.FireEnchantment = {
     max_base_chance: 0.50,
     burn_duration: 180,
     burn_damage_per_tick: 2,
+	sprite: spr_mod_FireEnchantment,
     
     action: function(_entity, _event) {
         var target = _event.projectile;
@@ -104,7 +105,7 @@ global.Modifiers.IceEnchantment = {
     max_base_chance: 0.50,
     slow_duration: 120,
     slow_amount: 0.5,
-    
+    sprite: spr_mod_IceEnchantment,
     action: function(_entity, _event) {
         var target = _event.projectile;
         if (target == noone || !instance_exists(target)) return;
@@ -130,6 +131,7 @@ global.Modifiers.LightningEnchantment = {
     proc_chance_per_stack: 0.10,
     max_base_chance: 0.50,
     shock_duration: 90,
+	sprite: spr_mod_LightningEnchantment,
     
     action: function(_entity, _event) {
         var target = _event.projectile;
@@ -156,7 +158,7 @@ global.Modifiers.PoisonEnchantment = {
     max_base_chance: 0.50,
     poison_duration: 240,
     poison_damage_per_tick: 1,
-    
+    sprite: spr_mod_PoisonEnchantment,
     action: function(_entity, _event) {
         var target = _event.projectile;
         if (target == noone || !instance_exists(target)) return;
@@ -522,7 +524,7 @@ global.Modifiers.armor_plating = {
 // MAGE CLASS MODIFIERS
 
 global.Modifiers.mana_system = {
-    name: "Mana Pool",
+    name: "Mystery... [May have placebo effect]",
     description: "100 mana, regenerates 0.5 per frame",
     triggers: [MOD_TRIGGER.PASSIVE],
     is_innate: true,

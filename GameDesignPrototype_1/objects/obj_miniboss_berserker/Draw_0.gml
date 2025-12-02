@@ -15,6 +15,19 @@ if (is_burning) {
     drawColor = merge_color(drawColor, c_orange, 0.5);
 }
 
+// Draw main sprite
+draw_sprite_ext(
+    spr_mini_boss_1,
+    image_index,
+    x,
+    y,
+    chargeScale * breathScale,
+    chargeScale * breathScale,
+    image_angle + wobbleAngle,
+    drawColor,
+    image_alpha
+);
+
 // Charging effect - add pulsing glow
 if (isCharging && chargeProgress > 0) {
     var glowAlpha = 0.3 + (sin(current_time * 0.01) * 0.2);
@@ -37,7 +50,7 @@ if (isCharging && chargeProgress > 0) {
 
 // Draw main sprite
 draw_sprite_ext(
-    currentSprite,
+    spr_mini_boss_head,
     image_index,
     x,
     y,

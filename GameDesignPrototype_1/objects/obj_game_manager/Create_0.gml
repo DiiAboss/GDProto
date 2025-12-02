@@ -472,7 +472,11 @@ function GetModifierSprite(_mod_key) {
             return spr_mod_MultiShot;
         case "BurstFire":
             return spr_mod_BurstFire;
+
+        
         default:
+		
+		
             // Fallback
             if (sprite_exists(spr_mod_default)) {
                 return spr_mod_default;
