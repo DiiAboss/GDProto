@@ -6,12 +6,14 @@ if (!variable_instance_exists(id, "lob_direction")) {
 lobStep = lobShot(self, 0.02, lob_direction, xStart, yStart, targetDistance);
 
 if (lobStep >= 1) {
-    // Create directional splash effect for Holy Water
-    if (sprite_index == spr_holy_water || object_index == obj_holy_water) {
-        CreateHolyWaterSplash(x, y, owner, lob_direction); // PASS DIRECTION
-    }
+    // Get synergy data from projectile (or create empty)
+    var tags = synergy_tags ?? new SynergyTags();
+    var syns = active_synergies ?? [];
     
-    // Create knockback area
+    // NEW: Synergy-aware explosion
+    ApplyExplosionSynergies(x, y, owner, tags, syns, 15, 64);
+    
+    // Existing knockback
     instance_create_depth(x, y, depth, obj_knockback);
     
     instance_destroy();

@@ -87,19 +87,19 @@ if (!spawn_search_active && summon_timer > 0) {
             // Progressive enemy unlocks
             if (game_time < 60) {
                 // 0-60 seconds: Basic enemies only
-                current_spawn_pool = [obj_enemy, obj_maggot]; // Weight basic enemy
+                current_spawn_pool = [obj_enemy, obj_maggot, obj_enemy_2, obj_enemy_bird]; // Weight basic enemy
             }
             else if (game_time < 90) {
                 // 60-90 seconds: Add triangles and flies
-                current_spawn_pool = [obj_enemy, obj_maggot, obj_enemy_triangle, obj_enemy_fly];
+                current_spawn_pool = [obj_enemy, obj_maggot, obj_enemy_triangle, obj_enemy_fly, obj_enemy_2, obj_enemy_bird];
             }
             else if (game_time < 120) {
                 // 90-120 seconds: Add dashers
-                current_spawn_pool = [obj_enemy, obj_enemy_triangle, obj_enemy_fly, obj_enemy_dasher];
+                current_spawn_pool = [obj_enemy, obj_enemy_triangle, obj_enemy_fly, obj_enemy_dasher, obj_enemy_2, obj_enemy_bird];
             }
             else {
                 // 120+ seconds: Everything including bombers
-                current_spawn_pool = [obj_enemy, obj_enemy_triangle, obj_enemy_fly, obj_enemy_dasher, obj_enemy_bomber];
+                current_spawn_pool = [obj_enemy, obj_enemy_triangle, obj_enemy_fly, obj_enemy_dasher, obj_enemy_bomber, obj_enemy_2, obj_enemy_bird];
             }
         }
         

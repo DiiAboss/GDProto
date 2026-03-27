@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"Script30",
+  "%Name":"particle_emitter_helper",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"Script30",
+  "name":"particle_emitter_helper",
   "parent":{
     "name":"Scripts",
     "path":"folders/Scripts.yy",

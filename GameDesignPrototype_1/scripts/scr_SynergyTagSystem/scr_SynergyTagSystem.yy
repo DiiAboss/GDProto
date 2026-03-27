@@ -1,12 +1,12 @@
 {
   "$GMScript":"v1",
-  "%Name":"Script20",
+  "%Name":"scr_SynergyTagSystem",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"Script20",
+  "name":"scr_SynergyTagSystem",
   "parent":{
-    "name":"Scripts",
-    "path":"folders/Scripts.yy",
+    "name":"Main Controller",
+    "path":"folders/Main Controller.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

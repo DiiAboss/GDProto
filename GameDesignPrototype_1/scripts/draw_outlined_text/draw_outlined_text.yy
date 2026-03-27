@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"Script46",
+  "%Name":"draw_outlined_text",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"Script46",
+  "name":"draw_outlined_text",
   "parent":{
     "name":"Scripts",
     "path":"folders/Scripts.yy",
